@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
-
 import { ArrowRight, Sparkles, ChevronDown } from 'lucide-react'
+import ParticlesBackground from './ParticlesBackground'
 
 export default function HeroSection() {
   const containerVariants: Variants = {
@@ -31,11 +31,14 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-[calc(100vh-80px)] w-full flex flex-col items-center justify-center bg-brand-dark px-6 overflow-hidden">
       
+      {/* Interactive Constellation Particle Background */}
+      <ParticlesBackground />
+
       {/* Decorative Premium Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-brand-gray)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-gray)_1px,transparent_1px)] bg-[size:5rem_5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-brand-gray)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-gray)_1px,transparent_1px)] bg-[size:5rem_5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none -z-10" />
 
       {/* Decorative Neon Ambient Light (Glow) */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand-neon/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand-neon/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
       <motion.div
         variants={containerVariants}

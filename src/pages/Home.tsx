@@ -6,7 +6,7 @@ import CtaSection from '../components/CtaSection'
 
 export default function Home() {
   return (
-    <div className="w-full bg-brand-dark overflow-hidden">
+    <div className="w-full bg-brand-dark overflow-hidden pt-20">
       {/* Hero Entrance Section */}
       <HeroSection />
 

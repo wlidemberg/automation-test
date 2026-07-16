@@ -11,7 +11,7 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen flex flex-col bg-brand-dark text-white relative">
       {/* Structural layout wrappers */}
       <Header />
-      <main className="flex-grow w-full flex flex-col relative z-10">
+      <main className="flex-grow w-full flex flex-col relative z-10 pt-20">
         {children}
       </main>
       <Footer />
