@@ -49,7 +49,7 @@ await automation.optimize({
     <section id="sobre" className="relative py-32 px-6 bg-brand-dark overflow-hidden border-t border-brand-gray/60">
       
       {/* Background radial glow */}
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[350px] h-[350px] bg-brand-neon/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[350px] h-[350px] bg-brand-neon/[0.02] blur-[120px] rounded-full pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         
@@ -66,10 +66,10 @@ await automation.optimize({
           </span>
           
           <h2 className="text-3xl sm:text-5xl font-space font-bold tracking-tight text-white leading-tight">
-            Nós lideramos com engenharia de alto padrão.
+            Nós lideramos com Engenharia de alto padrão.
           </h2>
           
-          <p className="text-gray-400 font-light leading-relaxed">
+          <p className="font-sans text-gray-400 font-light leading-relaxed">
             Somos especialistas em automação de processos corporativos, robótica de dados e desenvolvimento de interfaces de alto valor. Nosso propósito é acelerar as operações digitais de empresas com o máximo nível de refino estético e estabilidade de infraestrutura.
           </p>
 
@@ -93,10 +93,11 @@ await automation.optimize({
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex justify-center items-center relative group"
+          className="flex justify-center items-center relative group z-10"
         >
           {/* Neon Glow Backdrop that fades in on group hover */}
-          <div className="absolute inset-0 bg-brand-neon/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-500 rounded-lg pointer-events-none -z-10" />
+          <div className="absolute inset-0 bg-brand-neon/[0.02] opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500 rounded-lg pointer-events-none -z-10" />
+
 
           {/* Perspective Wrapper for 3D Tilt */}
           <div className="w-full max-w-[500px] h-[360px] [perspective:1000px]">

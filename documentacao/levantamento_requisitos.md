@@ -10,10 +10,12 @@ Os Requisitos Funcionais descrevem as funcionalidades que o portal e o painel de
 
 ### 1.1. Portal Institucional e Serviços (Landing Page)
 *   **RF-001**: O sistema deve exibir uma Landing Page premium com a apresentação dos serviços de automação disponíveis.
-*   **RF-002**: O sistema deve permitir que o usuário explore o catálogo de serviços web oferecidos.
+*   **RF-002**: O sistema deve permitir que o usuário explore o catálogo de produtos digitais oferecidos.
 *   **RF-003**: O sistema deve fornecer um formulário de contato integrado para solicitação de orçamentos personalizados.
 *   **RF-004**: O sistema deve possuir uma área de autenticação (Login e Cadastro de clientes).
 *   **RF-012**: O sistema deve possuir navegação global persistente e responsiva através de um cabeçalho fixo.
+*   **RF-013**: O sistema deve expor uma vitrine dinâmica de produtos estruturados com 7 itens catalogados (Sites, Landing Pages, Lojas Virtuais, Agendamentos, Automações e Agentes de IA).
+
 
 ### 1.2. Painel do Cliente (Dashboard)
 *   **RF-005**: O cliente autenticado deve ter acesso a um dashboard contendo o resumo dos serviços contratados.
