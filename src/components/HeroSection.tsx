@@ -57,7 +57,7 @@ export default function HeroSection() {
         {/* Monumental Title */}
         <motion.h1 
           variants={itemVariants}
-          className="text-4xl sm:text-6xl md:text-8xl font-space font-extrabold tracking-tight leading-[1.05] text-white flex flex-col"
+          className="text-4xl sm:text-6xl md:text-8xl font-sans font-extrabold tracking-tight leading-[1.05] text-white flex flex-col"
         >
           <span>DESENVOLVEMOS SITES</span>
           <span className="text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.35)] [text-stroke:1px_rgba(255,255,255,0.35)]">

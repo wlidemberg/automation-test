@@ -12,7 +12,8 @@ export default {
         'brand-gray': '#1A1A1A',
       },
       fontFamily: {
-        sans: ['Inter', 'Geist', 'Satoshi', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        space: ['Space Grotesk', 'sans-serif'],
       },
       boxShadow: {
         'glow-neon': '0 0 15px rgba(204, 255, 0, 0.35)',

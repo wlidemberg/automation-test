@@ -34,12 +34,13 @@ Todas as cores foram integradas sob o prefixo `brand` no arquivo `tailwind.confi
 A tipografia deve evocar modernidade, sofisticação e precisão técnica.
 
 *   **Títulos Monumentais (Headers)**:
-    *   **Fonte**: *Space Grotesk* ou *Syncopate* (Google Fonts).
-    *   **Estilo**: Sans-serif geométrica, peso Bold ou Extra-Bold (600/700).
+    *   **Fonte**: *Space Grotesk* ou *Inter* (Google Fonts).
+    *   **Estilo**: Sans-serif de alta precisão geométrica, pesos Bold ou Extra-Bold (700/800).
     *   **Espaçamento de Letras**: Levemente expandido para títulos (`tracking-wider` ou `tracking-widest`).
 *   **Texto de Leitura (Body)**:
-    *   **Fonte**: *Inter*, *Geist* ou *Satoshi* (mapeadas em `font-sans` no `tailwind.config.js`).
-    *   **Estilo**: Sans-serif legível e limpa, pesos Light, Regular e Medium (300/400/500).
+    *   **Fonte**: *Inter* (Sans-Serif oficial do projeto, importada via Google Fonts e mapeada em `font-sans` no `tailwind.config.js`).
+    *   **Estilo**: Sans-serif de leitura limpa e corporativa, pesos Light, Regular e Medium (300/400/500).
+
 
 
 ### Escala Tipográfica (Exemplos Tailwind)
