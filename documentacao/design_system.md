@@ -59,8 +59,14 @@ A tipografia deve evocar modernidade, sofisticação e precisão técnica.
 *   Configuração do arredondamento: cantos discretos (`rounded-sm` ou `rounded-md`, equivalente a `4px` e `6px`). Evitar cantos muito arredondados (`rounded-2xl` ou superior), para manter a robustez geométrica.
 
 ### Efeitos de Vidro (Glassmorphism)
-*   Cards e painéis suspensos devem usar opacidade no fundo combinada com filtro de desfoque.
-*   **Classe Tailwind recomendada**: `bg-brand-gray/60 backdrop-blur-md border border-brand-gray`.
+*   Menus suspensos, cabeçalhos fixos e elementos sobrepostos devem usar opacidade no fundo combinada com filtro de desfoque para manter o contexto visual do conteúdo traseiro sem comprometer a legibilidade.
+*   **Regra de opacidade de fundo**: `80%` a `95%` de opacidade de fundo (`bg-brand-dark/80` ou `bg-brand-gray/95`).
+*   **Intensidade do Desfoque (Blur)**: Mínimo de `8px` (`backdrop-blur-md` ou `backdrop-blur-lg`).
+*   **Bordas de Separação**: Adicionar sempre uma borda ultra-fina (`1px`) semi-transparente na base ou no contorno do elemento (`border-brand-gray/60` ou `border-white/5`) para delinear o componente.
+*   **Classes Tailwind recomendadas**:
+    *   Para Header Fixo: `bg-brand-dark/80 backdrop-blur-md border-b border-brand-gray/60`
+    *   Para Modais/Dropdowns: `bg-brand-gray/95 backdrop-blur-lg border border-brand-gray`
+
 
 ### Glow (Brilho Neon)
 *   Destaques visuais e estados de foco devem irradiar um brilho sutil.

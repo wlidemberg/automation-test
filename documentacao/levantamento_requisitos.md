@@ -13,6 +13,7 @@ Os Requisitos Funcionais descrevem as funcionalidades que o portal e o painel de
 *   **RF-002**: O sistema deve permitir que o usuário explore o catálogo de serviços web oferecidos.
 *   **RF-003**: O sistema deve fornecer um formulário de contato integrado para solicitação de orçamentos personalizados.
 *   **RF-004**: O sistema deve possuir uma área de autenticação (Login e Cadastro de clientes).
+*   **RF-012**: O sistema deve possuir navegação global persistente e responsiva através de um cabeçalho fixo.
 
 ### 1.2. Painel do Cliente (Dashboard)
 *   **RF-005**: O cliente autenticado deve ter acesso a um dashboard contendo o resumo dos serviços contratados.

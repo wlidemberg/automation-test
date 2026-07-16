@@ -1,28 +1,14 @@
 import { motion } from 'framer-motion'
-import { Terminal, Shield, Cpu, ExternalLink } from 'lucide-react'
+import { Shield, Cpu, Terminal, ExternalLink } from 'lucide-react'
+import Layout from './components/Layout'
 
 function App() {
   return (
-    <div className="min-h-screen bg-brand-dark text-white font-sans flex flex-col justify-between items-center p-6 relative overflow-hidden">
-      {/* Background Decorative Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-brand-gray)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-gray)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
+    <Layout>
+      <div className="flex-grow flex flex-col justify-center items-center max-w-4xl mx-auto text-center px-6 my-16 relative">
+        {/* Background Decorative Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-brand-gray)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-gray)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none -z-10" />
 
-      {/* Header */}
-      <header className="w-full max-w-6xl flex justify-between items-center z-10 border-b border-brand-gray pb-4">
-        <div className="flex items-center gap-2">
-          <Terminal className="text-brand-neon w-6 h-6" />
-          <span className="font-space font-bold tracking-widest text-lg">AUTOMATION <span className="text-brand-neon">TEST</span></span>
-        </div>
-        <div className="flex items-center gap-4 text-sm text-gray-400">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 bg-brand-neon rounded-full animate-ping" />
-            <span className="text-white font-mono text-xs">v1.0.0-alpha</span>
-          </span>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col justify-center items-center max-w-4xl text-center z-10 my-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -31,10 +17,10 @@ function App() {
         >
           <div className="inline-flex items-center gap-2 bg-brand-gray border border-brand-gray px-4 py-1.5 rounded-full text-xs text-gray-400 uppercase tracking-widest">
             <Cpu className="w-3.5 h-3.5 text-brand-neon" />
-            Design System Base Configurado
+            Layout Base Inicializado
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-space font-bold tracking-tight leading-none">
+          <h1 className="text-5xl md:text-7xl font-space font-bold tracking-tight leading-none text-white">
             Tech-Luxo Portal & <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-300 to-brand-neon">
               Client Management
@@ -42,7 +28,7 @@ function App() {
           </h1>
 
           <p className="text-gray-400 text-lg max-w-xl mx-auto font-light leading-relaxed">
-            O tema base do Tailwind CSS foi configurado na branch <code className="text-brand-neon bg-brand-gray/50 px-1.5 py-0.5 rounded">chore/setup-design-system</code> seguindo a identidade visual exclusiva.
+            Os componentes de Header persistente com Glassmorphism, Footer responsivo e Layout Principal foram configurados e estruturados com sucesso.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
@@ -83,30 +69,18 @@ function App() {
 
           <div className="bg-brand-gray border border-brand-gray p-6 rounded-md text-left group hover:border-brand-neon/30 transition-all duration-300">
             <Cpu className="text-brand-neon w-8 h-8 mb-4 opacity-80 group-hover:scale-110 transition-transform" />
-            <h3 className="font-space font-semibold text-lg mb-2">Tailwind v4 & Config</h3>
-            <p className="text-gray-500 text-sm">Tema customizado configurado com cores e fontes herdadas do arquivo tailwind.config.js.</p>
+            <h3 className="font-space font-semibold text-lg mb-2">Header Glassmorphism</h3>
+            <p className="text-gray-500 text-sm">Design com cabeçalho fixo com desfoque de fundo inteligente que se adapta à rolagem.</p>
           </div>
 
           <div className="bg-brand-gray border border-brand-gray p-6 rounded-md text-left group hover:border-brand-neon/30 transition-all duration-300">
             <Terminal className="text-brand-neon w-8 h-8 mb-4 opacity-80 group-hover:scale-110 transition-transform" />
-            <h3 className="font-space font-semibold text-lg mb-2">Framer Motion</h3>
-            <p className="text-gray-500 text-sm">Animações de entrada e interações fluidas para proporcionar uma experiência de alta patente.</p>
+            <h3 className="font-space font-semibold text-lg mb-2">Footer Responsivo</h3>
+            <p className="text-gray-500 text-sm">Layout com links sociais minimalistas e copyright, perfeitamente alinhado em qualquer dispositivo.</p>
           </div>
         </motion.div>
-      </main>
-
-      {/* Footer */}
-      <footer className="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center z-10 border-t border-brand-gray pt-4 text-xs text-gray-500 gap-4">
-        <div>
-          © 2026 Automation Test. Todos os direitos reservados.
-        </div>
-        <div className="flex gap-4">
-          <a href="/documentacao/fluxo_git.md" target="_blank" className="hover:text-brand-neon transition-colors">Fluxo Git</a>
-          <span>•</span>
-          <a href="https://github.com" target="_blank" className="hover:text-brand-neon transition-colors">GitHub</a>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </Layout>
   )
 }
 
