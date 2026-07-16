@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Terminal, Menu, X, ArrowUpRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 // Custom SVG Brand Icons since Lucide v0.400+ removed them
 const GithubIcon = () => (
@@ -30,11 +31,11 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
 
   const navLinks = [
-    { name: 'Início', href: '#inicio' },
-    { name: 'Sobre', href: '#sobre' },
-    { name: 'Serviços', href: '#servicos' },
-    { name: 'Portfólio', href: '#portfolio' },
-    { name: 'Contato', href: '#contato' }
+    { name: 'Início', href: '/#inicio' },
+    { name: 'Sobre', href: '/#sobre' },
+    { name: 'Produtos', href: '/#produtos' },
+    { name: 'Portfólio', href: '/#portfolio' },
+    { name: 'Contato', href: '/#contato' }
   ]
 
   return (
@@ -42,12 +43,12 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
         
         {/* Logo (Left) */}
-        <a href="#" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2 group">
           <Terminal className="text-brand-neon w-6 h-6 group-hover:rotate-12 transition-transform duration-300" />
           <span className="font-space font-bold tracking-widest text-lg text-white">
             AUTOMATION <span className="text-brand-neon">TEST</span>
           </span>
-        </a>
+        </Link>
 
         {/* Desktop Nav Links (Center) */}
         <nav className="hidden md:flex items-center gap-8">
@@ -71,7 +72,7 @@ export default function Header() {
               boxShadow: "0 0 15px rgba(204, 255, 0, 0.4)" 
             }}
             whileTap={{ scale: 0.98 }}
-            href="#contato"
+            href="/#contato"
             className="px-5 py-2.5 bg-transparent border border-brand-neon text-brand-neon font-medium rounded text-sm flex items-center gap-2 transition-shadow duration-300"
           >
             Solicitar Orçamento
@@ -114,7 +115,7 @@ export default function Header() {
               </nav>
               <div className="pt-4 flex flex-col gap-6">
                 <a
-                  href="#contato"
+                  href="/#contato"
                   onClick={() => setIsOpen(false)}
                   className="w-full text-center py-3 bg-brand-neon text-black font-semibold rounded text-sm hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-shadow duration-300"
                 >

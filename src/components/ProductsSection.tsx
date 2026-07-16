@@ -32,7 +32,7 @@ export default function ProductsSection() {
 
   return (
     <section 
-      id="servicos" 
+      id="produtos" 
       className="relative py-32 px-6 bg-brand-dark bg-cover bg-center bg-no-repeat overflow-hidden border-t border-brand-gray/60"
       style={{ backgroundImage: `linear-gradient(to bottom, rgba(5, 5, 5, 0.95), rgba(5, 5, 5, 0.97)), url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1200&auto=format&fit=crop')` }}
     >

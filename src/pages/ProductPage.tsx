@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Check, ArrowLeft, ArrowUpRight } from 'lucide-react'
@@ -6,6 +7,10 @@ import { productsData } from '../data/productsData'
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [slug])
 
   // Find product by slug
   const product = productsData.find(p => p.slug === slug)
