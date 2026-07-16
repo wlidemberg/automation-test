@@ -71,7 +71,7 @@ export default function HeroSection() {
         {/* Supporting Text */}
         <motion.p 
           variants={itemVariants}
-          className="text-gray-400 text-base sm:text-xl max-w-2xl mx-auto font-light leading-relaxed"
+          className="font-sans text-gray-400 text-base sm:text-xl max-w-2xl mx-auto font-light leading-relaxed"
         >
           Soluções modernas, rápidas e estratégicas para escalar sua empresa e criar uma presença digital marcante.
         </motion.p>
