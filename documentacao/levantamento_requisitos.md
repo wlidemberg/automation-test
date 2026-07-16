@@ -42,7 +42,7 @@ Os Requisitos Não Funcionais especificam os critérios de operação do sistema
 *   **RNF-005**: O sistema deve ser totalmente responsivo, garantindo excelente experiência de uso em dispositivos móveis, tablets e desktops de alta resolução.
 *   **RNF-006**: A acessibilidade deve ser garantida por meio do uso correto de tags HTML semânticas e atributos ARIA.
 *   **RNF-009**: A plataforma deve seguir o padrão visual Dark Mode focado em alto contraste e performance de renderização.
-
+*   **RNF-010**: As páginas devem utilizar animações de entrada suaves (Fade e Transformação) para melhorar a percepção de qualidade do usuário sem prejudicar o tempo de carregamento.
 
 ### 2.3. Tecnologia e Custo
 *   **RNF-007**: A infraestrutura do backend deve utilizar o **Supabase** (Banco de dados PostgreSQL relacional, Auth e Realtime) sob o plano gratuito (Free Tier).

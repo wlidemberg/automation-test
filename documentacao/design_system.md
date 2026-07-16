@@ -103,3 +103,25 @@ Animações devem ser rápidas, orgânicas e imperceptíveis na velocidade, mas 
 
 3.  **Cascata de Cards (Staggered Animation)**:
     Quando múltiplos elementos entrarem na tela (ex: cards no dashboard), a animação de cada card sucessivo deve ter um pequeno atraso (`delay`) incremental para criar um efeito de cascata refinado.
+
+4.  **Revelação do Hero (Hero Section Reveal)**:
+    Os componentes do Hero (subtítulo, título principal, descrição e CTAs) devem surgir em cascata vertical, movendo-se de baixo para cima com fade-in.
+    *   **Variants Sugeridas**:
+        ```typescript
+        const container = {
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15, delayChildren: 0.2 }
+          }
+        };
+        const item = {
+          hidden: { opacity: 0, y: 25 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+          }
+        };
+        ```
+
