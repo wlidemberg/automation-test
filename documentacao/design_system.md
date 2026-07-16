@@ -14,20 +14,18 @@ A estética **Tech-Luxo** baseia-se em quatro pilares fundamentais:
 
 ---
 
-## 2. Paleta de Cores
+## 2. Paleta de Cores (Tailwind CSS Configured)
 
-Todas as cores são especificadas para uso direto no arquivo de configuração do Tailwind CSS (`tailwind.config.js`) ou variáveis CSS customizadas.
+Todas as cores foram integradas sob o prefixo `brand` no arquivo `tailwind.config.js` para utilização direta:
 
-| Nome | Hex | Descrição | Utilização |
+| Nome Tailwind | Hex | Descrição | Utilização |
 | :--- | :--- | :--- | :--- |
-| **Dark Absoluto** | `#000000` | Preto puro | Fundo principal da aplicação (Body) |
-| **Dark Elevado** | `#050505` | Preto extremamente escuro | Fundo de painéis e seções secundárias |
-| **Dark Card** | `#0A0A0A` | Cinza grafite profundo | Fundo de cards, modais e menus |
-| **Neon Accent** | `#00FF66` | Verde Neon vibrante | Call to Action (CTA), status ativo, destaque de dados |
-| **Neon Glow** | `rgba(0, 255, 102, 0.15)` | Verde Neon translúcido | Efeitos de sombra projetada (Glow) e hover de botões |
-| **Neutral Border** | `#1A1A1A` | Cinza escuro discreto | Bordas padrão, divisórias de seções |
-| **Neutral Text Primary** | `#FFFFFF` | Branco puro | Títulos principais e textos críticos |
-| **Neutral Text Secondary** | `#8E8E93` | Cinza suave | Descrições, legendas e textos de suporte |
+| **`brand-dark`** | `#050505` | Preto absoluto de fundo | Fundo principal da aplicação (`body`) |
+| **`brand-neon`** | `#CCFF00` | Verde lima / Neon vibrante | Call to Action (CTA), status ativo, bordas iluminadas |
+| **`brand-gray`** | `#1A1A1A` | Cinza profundo elegante | Fundo de cards, painéis, modais e bordas estruturais |
+| **`white`** | `#FFFFFF` | Branco puro | Texto principal, títulos e elementos de destaque |
+| **`gray-400`/`gray-500`**| `#9CA3AF` / `#6B7280` | Tons de cinza de suporte | Textos secundários e descrições menos relevantes |
+
 
 ---
 
@@ -40,8 +38,9 @@ A tipografia deve evocar modernidade, sofisticação e precisão técnica.
     *   **Estilo**: Sans-serif geométrica, peso Bold ou Extra-Bold (600/700).
     *   **Espaçamento de Letras**: Levemente expandido para títulos (`tracking-wider` ou `tracking-widest`).
 *   **Texto de Leitura (Body)**:
-    *   **Fonte**: *Inter* ou *Outfit* (Google Fonts).
+    *   **Fonte**: *Inter*, *Geist* ou *Satoshi* (mapeadas em `font-sans` no `tailwind.config.js`).
     *   **Estilo**: Sans-serif legível e limpa, pesos Light, Regular e Medium (300/400/500).
+
 
 ### Escala Tipográfica (Exemplos Tailwind)
 *   `text-5xl` ou `text-6xl`: Títulos de páginas de destaque (Landing Hero).
@@ -56,16 +55,17 @@ A tipografia deve evocar modernidade, sofisticação e precisão técnica.
 
 ### Bordas e Linhas de Grade
 *   Todas as bordas devem ter a espessura padrão de `1px`.
-*   Usar gradientes lineares sutis em bordas ativas (ex: gradiente de `#1A1A1A` para `#00FF66`).
+*   Usar gradientes lineares sutis em bordas ativas (ex: gradiente de `brand-gray` para `brand-neon`).
 *   Configuração do arredondamento: cantos discretos (`rounded-sm` ou `rounded-md`, equivalente a `4px` e `6px`). Evitar cantos muito arredondados (`rounded-2xl` ou superior), para manter a robustez geométrica.
 
 ### Efeitos de Vidro (Glassmorphism)
 *   Cards e painéis suspensos devem usar opacidade no fundo combinada com filtro de desfoque.
-*   **Classe Tailwind recomendada**: `bg-black/60 backdrop-blur-md border border-neutral-800`.
+*   **Classe Tailwind recomendada**: `bg-brand-gray/60 backdrop-blur-md border border-brand-gray`.
 
 ### Glow (Brilho Neon)
 *   Destaques visuais e estados de foco devem irradiar um brilho sutil.
-*   **Classe customizada CSS**: `box-shadow: 0 0 15px rgba(0, 255, 102, 0.3)`.
+*   **Classe Tailwind configurada**: `shadow-glow-neon` (mapeada no `tailwind.config.js` com sombra baseada em `#CCFF00`).
+
 
 ---
 
