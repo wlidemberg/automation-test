@@ -2,12 +2,28 @@
 @config "../tailwind.config.js";
 
 @layer base {
+  * {
+    font-family: 'Inter', sans-serif !important;
+  }
+
   html, body {
     background-color: var(--color-brand-dark, #050505);
     color: #ffffff;
-    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
     margin: 0;
     padding: 0;
     min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Global Uppercase Rules for Tech-Luxo aesthetic */
+  h1, h2, h3, h4, h5, h6, 
+  button, a, span, label, 
+  input, textarea, select {
+    text-transform: uppercase;
+  }
+
+  /* Keep body copy and summaries in normal case for readability */
+  p, code, pre {
+    text-transform: none !important;
   }
 }
