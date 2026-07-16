@@ -15,7 +15,8 @@ Os Requisitos Funcionais descrevem as funcionalidades que o portal e o painel de
 *   **RF-004**: O sistema deve possuir uma área de autenticação (Login e Cadastro de clientes).
 *   **RF-012**: O sistema deve possuir navegação global persistente e responsiva através de um cabeçalho fixo.
 *   **RF-013**: O sistema deve expor uma vitrine dinâmica de produtos estruturados com 7 itens catalogados (Sites, Landing Pages, Lojas Virtuais, Agendamentos, Automações e Agentes de IA).
-
+*   **RF-014**: O sistema deve apresentar um portfólio de projetos em destaque, exibindo os estudos de caso ou links diretos das soluções já desenvolvidas.
+*   **RF-015**: O sistema deve possuir uma seção de chamada para ação (CTA) final acima do rodapé, facilitando a abertura de contato direto ou redirecionando para a área logada.
 
 ### 1.2. Painel do Cliente (Dashboard)
 *   **RF-005**: O cliente autenticado deve ter acesso a um dashboard contendo o resumo dos serviços contratados.
