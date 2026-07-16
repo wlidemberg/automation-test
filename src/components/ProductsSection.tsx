@@ -103,15 +103,11 @@ export default function ProductsSection() {
         >
           {products.map((product, index) => {
             const Icon = product.icon
-            // Let the 7th item span 2 columns on large screens for a Bento Grid balance
-            const isLast = index === products.length - 1
             return (
               <motion.div
                 key={index}
                 variants={cardVariants}
-                className={`group bg-zinc-900/40 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:border-brand-neon/30 hover:bg-zinc-900/60 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden backdrop-blur-sm ${
-                  isLast ? 'md:col-span-2 lg:col-span-3' : ''
-                }`}
+                className="group bg-zinc-900/40 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:border-brand-neon/30 hover:bg-zinc-900/60 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden backdrop-blur-sm"
               >
                 {/* Visual card hover light effect */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-brand-neon/[0.015] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -138,13 +134,20 @@ export default function ProductsSection() {
                   </div>
                 </div>
 
-                <div className="pt-8 mt-auto">
+                <div className="pt-8 mt-auto flex flex-wrap gap-x-6 gap-y-2 items-center">
                   <a
                     href="#contato"
-                    className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300"
+                    className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300"
                   >
                     Adquirir Produto
-                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href={`/produtos/${product.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-500 hover:text-white transition-colors duration-300"
+                  >
+                    Saber Mais
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </motion.div>
