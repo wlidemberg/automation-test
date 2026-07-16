@@ -1,3 +1,4 @@
+import Layout from '../components/Layout'
 import HeroSection from '../components/HeroSection'
 import AboutSection from '../components/AboutSection'
 import ProductsSection from '../components/ProductsSection'
@@ -6,7 +7,7 @@ import CtaSection from '../components/CtaSection'
 
 export default function Home() {
   return (
-    <div className="w-full bg-brand-dark overflow-hidden pt-20">
+    <Layout>
       {/* Hero Entrance Section */}
       <HeroSection />
 
@@ -21,6 +22,6 @@ export default function Home() {
 
       {/* Conversion Call-to-action Section */}
       <CtaSection />
-    </div>
+    </Layout>
   )
 }

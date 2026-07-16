@@ -3,7 +3,11 @@ import { ArrowRight, UserCheck } from 'lucide-react'
 
 export default function CtaSection() {
   return (
-    <section id="contato" className="relative py-28 px-6 bg-brand-dark overflow-hidden border-t border-brand-gray/60 flex flex-col items-center justify-center">
+    <section 
+      id="contato" 
+      className="relative py-28 px-6 bg-brand-dark bg-cover bg-center bg-no-repeat overflow-hidden border-t border-brand-gray/60 flex flex-col items-center justify-center"
+      style={{ backgroundImage: `linear-gradient(to bottom, rgba(5, 5, 5, 0.92), rgba(5, 5, 5, 0.95)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop')` }}
+    >
       
       {/* Decorative background visual elements */}
       <div className="absolute inset-0 bg-[radial-gradient(var(--color-brand-gray)_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-30 -z-10" />

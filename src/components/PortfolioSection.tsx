@@ -48,7 +48,11 @@ export default function PortfolioSection() {
   }
 
   return (
-    <section id="portfolio" className="relative py-32 px-6 bg-brand-dark overflow-hidden border-t border-brand-gray/60">
+    <section 
+      id="portfolio" 
+      className="relative py-32 px-6 bg-brand-dark bg-cover bg-center bg-no-repeat overflow-hidden border-t border-brand-gray/60"
+      style={{ backgroundImage: `linear-gradient(to bottom, rgba(5, 5, 5, 0.93), rgba(5, 5, 5, 0.95)), url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop')` }}
+    >
       
       {/* Background ambient grids */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-brand-gray)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-gray)_1px,transparent_1px)] bg-[size:6rem_6rem] opacity-[0.15] pointer-events-none -z-10" />

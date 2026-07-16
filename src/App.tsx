@@ -1,11 +1,15 @@
-import Layout from './components/Layout'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
+import ProductPage from './pages/ProductPage'
 
 function App() {
   return (
-    <Layout>
-      <Home />
-    </Layout>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/produtos/:slug" element={<ProductPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

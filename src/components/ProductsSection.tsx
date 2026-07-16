@@ -1,52 +1,11 @@
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
-import { Globe, Rocket, ShoppingBag, Calendar, Cpu, MessageSquare, Terminal, ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { productsData } from '../data/productsData'
 
 export default function ProductsSection() {
-  const products = [
-    {
-      title: 'Sites Institucionais',
-      badge: 'Autoridade digital',
-      description: 'Desenvolvimento de portais corporativos sob medida para consolidar a presença online da sua empresa com velocidade e otimização avançada de SEO.',
-      icon: Globe
-    },
-    {
-      title: 'Landing Pages',
-      badge: 'Foco extremo em conversão',
-      description: 'Páginas otimizadas de alta performance criadas para capturar leads qualificados e acelerar o retorno de campanhas de tráfego pago.',
-      icon: Rocket
-    },
-    {
-      title: 'Lojas Virtuais',
-      badge: 'E-commerce completo',
-      description: 'Sistemas de comércio eletrônico robustos, painéis de gestão integrados e checkout fluido para impulsionar suas vendas de ponta a ponta.',
-      icon: ShoppingBag
-    },
-    {
-      title: 'Agendamentos',
-      badge: 'Sistemas de reserva/marcação',
-      description: 'Plataformas intuitivas de reserva e controle de horários com notificações automáticas para otimizar o fluxo de atendimento da sua equipe.',
-      icon: Calendar
-    },
-    {
-      title: 'Automações',
-      badge: 'Integrações e WhatsApp',
-      description: 'Fluxos automatizados que conectam suas ferramentas, bancos de dados e canais do WhatsApp para eliminar tarefas manuais repetitivas.',
-      icon: Cpu
-    },
-    {
-      title: 'Agentes de IA para Atendimento',
-      badge: 'Chatbots inteligentes',
-      description: 'Robôs inteligentes integrados capazes de responder dúvidas frequentes, qualificar contatos e direcionar leads em tempo integral.',
-      icon: MessageSquare
-    },
-    {
-      title: 'Agentes de IA Específicos',
-      badge: 'Soluções IA sob medida',
-      description: 'Desenvolvimento de inteligência artificial personalizada para processamento interno de documentos, análise de relatórios e tomada de decisão.',
-      icon: Terminal
-    }
-  ]
+  const products = productsData
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -72,7 +31,11 @@ export default function ProductsSection() {
   }
 
   return (
-    <section id="servicos" className="relative py-32 px-6 bg-brand-dark overflow-hidden border-t border-brand-gray/60">
+    <section 
+      id="servicos" 
+      className="relative py-32 px-6 bg-brand-dark bg-cover bg-center bg-no-repeat overflow-hidden border-t border-brand-gray/60"
+      style={{ backgroundImage: `linear-gradient(to bottom, rgba(5, 5, 5, 0.95), rgba(5, 5, 5, 0.97)), url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1200&auto=format&fit=crop')` }}
+    >
       
       {/* Background ambient light */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-neon/[0.015] blur-[150px] rounded-full pointer-events-none -z-10" />
@@ -136,19 +99,19 @@ export default function ProductsSection() {
 
                 <div className="pt-8 mt-auto flex flex-wrap gap-x-6 gap-y-2 items-center">
                   <a
-                    href="#contato"
+                    href="/#contato"
                     className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300"
                   >
                     Adquirir Produto
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </a>
-                  <a
-                    href={`/produtos/${product.title.toLowerCase().replace(/\s+/g, '-')}`}
+                  <Link
+                    to={`/produtos/${product.slug}`}
                     className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-500 hover:text-white transition-colors duration-300"
                   >
                     Saber Mais
                     <ArrowUpRight className="w-3.5 h-3.5" />
-                  </a>
+                  </Link>
                 </div>
               </motion.div>
             )

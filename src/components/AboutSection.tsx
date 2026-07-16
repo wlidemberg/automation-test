@@ -46,7 +46,11 @@ await automation.optimize({
 });`
 
   return (
-    <section id="sobre" className="relative py-32 px-6 bg-brand-dark overflow-hidden border-t border-brand-gray/60">
+    <section 
+      id="sobre" 
+      className="relative py-32 px-6 bg-brand-dark bg-cover bg-center bg-no-repeat overflow-hidden border-t border-brand-gray/60"
+      style={{ backgroundImage: `linear-gradient(to bottom, rgba(5, 5, 5, 0.94), rgba(5, 5, 5, 0.96)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop')` }}
+    >
       
       {/* Background radial glow */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[350px] h-[350px] bg-brand-neon/[0.02] blur-[120px] rounded-full pointer-events-none -z-10" />
