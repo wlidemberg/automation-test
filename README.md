@@ -20,8 +20,8 @@ O **Automation Test** é uma plataforma digital corporativa estruturada sob a id
 ### 🔒 Backstage (Área do Cliente)
 - **Tela de Login Premium**: Interface dedicada com efeito glassmorphism e inputs de estilo Tech-Luxo, sem Cabeçalhos/Rodapés públicos.
 - **Dashboard Layout**: Painel interno exclusivo dotado de barra lateral de navegação minimalista e totalmente responsiva.
-- **Overview de Negócio**: Acesso rápido a dados do projeto (Fase atual, Próxima entrega, Status do pagamento) sem jargões de desenvolvimento.
-- **Tickets & Central de Ajuda**: Módulo integrado para envio direto de chamados ao Tech Lead do projeto.
+- **Overview de Negócio & Licenciamento**: Central de entrega de projetos sob medida e controle de licenças de sistemas ERP White-Label corporativos, focando em métricas de negócio e recorrência (faturamento e mensalidades).
+- **Gerenciamento de Projetos e Solicitações**: Subpágina dedicada para visualizar o cronograma detalhado de cada serviço e Central de Solicitações para envio direto de novos requisitos ao time.
 
 ---
 

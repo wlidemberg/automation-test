@@ -38,14 +38,14 @@ export default function Overview() {
       glow: 'shadow-[0_0_15px_rgba(204,255,0,0.1)]'
     },
     {
-      title: 'Faturas em Aberto',
-      value: '0',
-      description: 'Sem pendências financeiras',
+      title: 'Mensalidades e Faturas',
+      value: 'Em Dia',
+      description: 'PRÓXIMO VENCIMENTO: 10/08/2026',
       status: 'clean',
       progress: null,
       icon: Clock,
-      color: 'text-gray-400',
-      glow: ''
+      color: 'text-brand-neon',
+      glow: 'shadow-[0_0_15px_rgba(204,255,0,0.05)]'
     },
     {
       title: 'Tickets Ativos',
@@ -230,11 +230,11 @@ export default function Overview() {
             </div>
           </div>
 
-          {/* Seus Projetos Contratados */}
+          {/* Seus Sistemas e Projetos */}
           <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 sm:p-8 backdrop-blur-sm space-y-6">
             <div className="border-b border-white/5 pb-4">
               <h3 className="font-space font-bold text-white text-sm uppercase tracking-wider">
-                SEUS PROJETOS CONTRATADOS
+                SEUS SISTEMAS E PROJETOS
               </h3>
               <p className="text-[10px] text-gray-500 font-mono mt-1">
                 Acompanhe e gerencie outros serviços ativos na plataforma
@@ -246,14 +246,18 @@ export default function Overview() {
                 {
                   id: 'portal-assescor',
                   name: 'PORTAL ASSESCOR',
-                  description: 'Desenvolvimento de ecossistema digital para automação de fluxos corporativos.',
-                  url: 'https://www.assescor.com.br'
+                  description: 'Plataforma corporativa para automação de fluxos e captação de leads.',
+                  url: 'https://www.assescor.com.br',
+                  btn1Label: 'Ver Projeto Online',
+                  btn2Label: 'Gerenciar'
                 },
                 {
-                  id: 'landing-page-vekant',
-                  name: 'LANDING PAGE VEKANT',
-                  description: 'Landing Page de alta conversão para lançamento de empreendimento imobiliário.',
-                  url: 'https://www.vekant.com.br'
+                  id: 'erp-comercial',
+                  name: 'SISTEMA ERP COMERCIAL',
+                  description: 'Módulos ativos: Frente de Caixa, Gestão de Retaguarda e Emissão de Notas (NF-e / NFC-e).',
+                  url: 'https://erp.automationtest.com',
+                  btn1Label: 'Acessar Retaguarda',
+                  btn2Label: 'Gerenciar Licença'
                 }
               ].map((proj) => (
                 <div 
@@ -276,14 +280,14 @@ export default function Overview() {
                       rel="noopener noreferrer"
                       className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-white/10 text-[10px] tracking-wider font-semibold rounded hover:bg-white/5 transition-all text-gray-400 hover:text-white font-mono uppercase"
                     >
-                      Ver Projeto Online
+                      {proj.btn1Label}
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                     <Link
                       to={`/dashboard/projeto/${proj.id}`}
                       className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-brand-neon text-black text-[10px] tracking-wider font-bold rounded hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all uppercase"
                     >
-                      Gerenciar
+                      {proj.btn2Label}
                       <Sliders className="w-3.5 h-3.5" />
                     </Link>
                   </div>
@@ -331,18 +335,18 @@ export default function Overview() {
                 Recomendado Para Seu Negócio
               </span>
               <h3 className="font-space font-bold text-white text-base uppercase leading-snug">
-                AGENTES DE IA PARA ATENDIMENTO
+                AUTOMAÇÃO DE MARKETING DIGITAL
               </h3>
               <p className="font-sans text-xs text-gray-400 font-light leading-relaxed">
-                Automatize seu suporte 24/7 e triplique a conversão de leads no seu site com agentes inteligentes baseados em IA generativa.
+                Recupere carrinhos abandonados, envie cupons automáticos via WhatsApp e multiplique a retenção dos seus clientes.
               </p>
             </div>
 
             <Link
-              to="/produtos/agentes-de-ia-para-atendimento"
+              to="/produtos/automacoes"
               className="w-full py-3 bg-brand-neon text-black font-bold rounded text-xs tracking-wider uppercase hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300 flex items-center justify-center gap-2"
             >
-              Conhecer Produto
+              Conhecer Solução
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>

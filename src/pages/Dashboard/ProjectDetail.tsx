@@ -20,7 +20,7 @@ export default function ProjectDetail() {
   const projectDetails = {
     'portal-assescor': {
       name: 'PORTAL ASSESCOR',
-      description: 'Desenvolvimento de ecossistema digital para automação de fluxos corporativos.',
+      description: 'Plataforma corporativa para automação de fluxos e captação de leads.',
       inicio: '12 Out 2025',
       entrega: '25 Fev 2026',
       status: 'Concluído & Entregue',
@@ -32,18 +32,18 @@ export default function ProjectDetail() {
         { name: 'Lançamento', status: 'done', desc: 'Deploy final e transferência de DNS' }
       ]
     },
-    'landing-page-vekant': {
-      name: 'LANDING PAGE VEKANT',
-      description: 'Landing Page de alta conversão para lançamento de empreendimento imobiliário.',
-      inicio: '10 Jan 2026',
-      entrega: '15 Fev 2026',
-      status: 'Concluído & Entregue',
+    'erp-comercial': {
+      name: 'SISTEMA ERP COMERCIAL',
+      description: 'Módulos ativos: Frente de Caixa, Gestão de Retaguarda e Emissão de Notas (NF-e / NFC-e).',
+      inicio: '01 Mar 2026',
+      entrega: 'Recorrência Mensal',
+      status: 'Licença Ativa',
       fases: [
-        { name: 'Wireframes & Cópia', status: 'done', desc: 'Estruturação de blocos e copy focado em conversão' },
-        { name: 'Design Visual UI', status: 'done', desc: 'Criação do layout estético no Figma' },
-        { name: 'Codificação Estática', status: 'done', desc: 'Programação otimizada em Tailwind CSS' },
-        { name: 'Otimização Lighthouse', status: 'done', desc: 'Configuração de SEO e carregamento menor que 1s' },
-        { name: 'Lançamento', status: 'done', desc: 'Deploy em CDN global e vinculação de domínio' }
+        { name: 'Ativação da Infraestrutura', status: 'done', desc: 'Provisionamento de servidores e banco de dados isolado' },
+        { name: 'Configuração Fiscal & Notas', status: 'done', desc: 'Parametrização de alíquotas de impostos e certificados fiscais (NF-e / NFC-e)' },
+        { name: 'Importação de Cadastros', status: 'done', desc: 'Migração de clientes, fornecedores e produtos para a nova base' },
+        { name: 'Treinamento da Equipe', status: 'done', desc: 'Capacitação prática para operadores de caixa e faturamento' },
+        { name: 'Operação em Produção', status: 'done', desc: 'Sistemas ativos 24/7 com suporte dedicado de retaguarda' }
       ]
     }
   }

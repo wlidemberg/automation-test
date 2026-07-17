@@ -19,7 +19,7 @@ Os Requisitos Funcionais descrevem as funcionalidades que o portal e o painel de
 *   **RF-015**: O sistema deve possuir uma seção de chamada para ação (CTA) final acima do rodapé, facilitando a abertura de contato direto ou redirecionando para a área logada.
 
 ### 1.2. Painel do Cliente (Dashboard)
-*   **RF-005**: O cliente autenticado deve ter acesso a um dashboard contendo o resumo dos serviços contratados.
+*   **RF-005**: O cliente autenticado deve ter acesso a um dashboard contendo o resumo dos serviços contratados (projetos sob medida e licenças de sistemas ERP White-Label corporativos, controlados por modelo de mensalidade recorrente).
 *   **RF-006**: O painel deve exibir métricas de uso em tempo real dos serviços (ex: chamadas de API consumidas, status de servidores, relatórios de execução).
 *   **RF-007**: O cliente deve poder abrir chamados de suporte técnico diretamente pelo painel.
 *   **RF-008**: O cliente deve poder atualizar seus dados cadastrais e de faturamento.
@@ -61,7 +61,7 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
 *   **RN-002 (Criação de Conta)**: O e-mail informado no cadastro deve ser verificado antes de liberar o acesso a qualquer serviço ou painel da plataforma.
 *   **RN-003 (Limites de Consumo)**: Cada plano de serviço de automação possui um limite mensal de requisições. Caso o cliente atinja **90%** do seu limite, uma notificação visual em destaque no dashboard e um alerta por e-mail devem ser gerados. Ao atingir **100%**, o serviço é pausado até o próximo ciclo ou upgrade de plano.
 *   **RN-004 (Níveis de Acesso)**: Um usuário do tipo "Cliente" não pode, sob qualquer circunstância, visualizar ou manipular dados de outros clientes ou acessar painéis de administração global.
-*   **RN-005 (Foco de Negócio no Dashboard)**: O Dashboard voltado ao cliente deve omitir jargões puramente técnicos (tais como infraestrutura de servidores, linguagens de programação base ou links para repositórios internos) e focar estritamente em dados e métricas de negócio de alto valor para o cliente final (por exemplo: fase atual de entrega, próximas etapas, status de pagamento, etc.).
+*   **RN-005 (Foco de Negócio no Dashboard)**: O Dashboard voltado ao cliente deve omitir jargões puramente técnicos (tais como infraestrutura de servidores, linguagens de programação base ou links para repositórios internos) e focar estritamente em dados e métricas de negócio e de recorrência de alto valor para o cliente final (por exemplo: fase atual de entrega, próximas etapas, status de pagamento, controle de mensalidades de ERP e licenças ativas).
 
 ---
 
