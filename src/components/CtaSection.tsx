@@ -1,5 +1,8 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, UserCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
+
+const MotionLink = motion(Link)
 
 export default function CtaSection() {
   return (
@@ -56,15 +59,15 @@ export default function CtaSection() {
             <ArrowRight className="w-4 h-4" />
           </motion.a>
 
-          <motion.a
+          <MotionLink
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
-            href="#dashboard"
+            to="/login"
             className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/10 text-white font-semibold rounded text-sm tracking-wider uppercase hover:bg-brand-gray/40 hover:border-gray-700 transition-all duration-300 flex items-center justify-center gap-2"
           >
             Acessar Área do Cliente
             <UserCheck className="w-4 h-4 text-brand-neon" />
-          </motion.a>
+          </MotionLink>
         </div>
 
       </motion.div>

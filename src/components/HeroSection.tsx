@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { ArrowRight, Sparkles, ChevronDown } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import ParticlesBackground from './ParticlesBackground'
 
 export default function HeroSection() {
@@ -105,6 +106,17 @@ export default function HeroSection() {
             Falar com Especialista
             <ArrowRight className="w-4 h-4 text-brand-neon" />
           </motion.a>
+        </motion.div>
+
+        {/* Client Area Access Link */}
+        <motion.div variants={itemVariants} className="pt-2">
+          <Link
+            to="/login"
+            className="text-xs uppercase tracking-[0.2em] text-gray-400 hover:text-brand-neon transition-colors duration-300 flex items-center justify-center gap-1.5 font-mono group"
+          >
+            Acessar Área do Cliente
+            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-200 text-brand-neon" />
+          </Link>
         </motion.div>
       </motion.div>
 

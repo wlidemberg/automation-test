@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 
 
 // Custom SVG Brand Icons since Lucide v0.400+ removed them
@@ -48,6 +49,16 @@ export default function Footer() {
         <p className="text-xs text-gray-500 text-center md:text-left">
           © {currentYear} Automation Test. Todos os direitos reservados.
         </p>
+
+        {/* Center: Client Area Access */}
+        <div>
+          <Link
+            to="/login"
+            className="text-xs text-gray-500 hover:text-brand-neon transition-colors duration-200 uppercase tracking-widest font-mono py-1"
+          >
+            Área do Cliente
+          </Link>
+        </div>
 
         {/* Right Side: Social Media Links */}
         <div className="flex items-center gap-6">
