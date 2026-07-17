@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import DashboardLayout from './layouts/DashboardLayout'
 import Overview from './pages/Dashboard/Overview'
 import ProjectDetail from './pages/Dashboard/ProjectDetail'
+import AdminOverview from './pages/Admin/AdminOverview'
 
 // Premium placeholder component for dashboard sections in development
 function DashboardPlaceholder({ title }: { title: string }) {
@@ -42,6 +43,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/produtos/:slug" element={<ProductPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<AdminOverview />} />
         
         {/* Logged Customer Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>
