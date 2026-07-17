@@ -4,11 +4,14 @@ import {
   AlertCircle, 
   Check,
   Cpu,
-  Layers,
-  ArrowUpRight
+  ArrowUpRight,
+  ExternalLink,
+  Sliders,
+  Sparkles
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
+import { Link } from 'react-router-dom'
 
 export default function Overview() {
   // Dynamically format today's date in Portuguese
@@ -56,12 +59,7 @@ export default function Overview() {
     }
   ]
 
-  const recentActivities = [
-    { time: '10:42', event: 'Deploy em produção concluído com sucesso (v2.1.0)', type: 'success' },
-    { time: 'Ontem', event: 'Solicitação de backup do banco de dados finalizada', type: 'info' },
-    { time: '15 Jul', event: 'Fatura de Julho/2026 quitada automaticamente', type: 'info' },
-    { time: '14 Jul', event: 'Suporte Técnico: Ticket #4910 respondido pelo desenvolvedor', type: 'warning' }
-  ]
+
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -232,22 +230,62 @@ export default function Overview() {
             </div>
           </div>
 
-          {/* Activities list */}
-          <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 backdrop-blur-sm">
-            <h3 className="font-space font-bold text-white text-sm uppercase mb-4 tracking-wider">
-              ATIVIDADES RECENTES DO SISTEMA
-            </h3>
-            
+          {/* Seus Projetos Contratados */}
+          <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 sm:p-8 backdrop-blur-sm space-y-6">
+            <div className="border-b border-white/5 pb-4">
+              <h3 className="font-space font-bold text-white text-sm uppercase tracking-wider">
+                SEUS PROJETOS CONTRATADOS
+              </h3>
+              <p className="text-[10px] text-gray-500 font-mono mt-1">
+                Acompanhe e gerencie outros serviços ativos na plataforma
+              </p>
+            </div>
+
             <div className="space-y-4">
-              {recentActivities.map((act, index) => (
-                <div key={index} className="flex gap-4 items-start text-xs border-b border-white/[0.03] pb-3 last:border-0 last:pb-0">
-                  <span className="text-[10px] font-mono text-gray-500 w-12 shrink-0">{act.time}</span>
-                  <div className="flex gap-2 items-start">
-                    <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                      act.type === 'success' ? 'bg-emerald-400' :
-                      act.type === 'warning' ? 'bg-yellow-400' : 'bg-brand-neon'
-                    }`} />
-                    <p className="font-sans text-gray-300 font-light leading-relaxed">{act.event}</p>
+              {[
+                {
+                  id: 'portal-assescor',
+                  name: 'PORTAL ASSESCOR',
+                  description: 'Desenvolvimento de ecossistema digital para automação de fluxos corporativos.',
+                  url: 'https://www.assescor.com.br'
+                },
+                {
+                  id: 'landing-page-vekant',
+                  name: 'LANDING PAGE VEKANT',
+                  description: 'Landing Page de alta conversão para lançamento de empreendimento imobiliário.',
+                  url: 'https://www.vekant.com.br'
+                }
+              ].map((proj) => (
+                <div 
+                  key={proj.id} 
+                  className="p-4 bg-black/30 border border-white/5 rounded-lg hover:border-brand-neon/20 transition-all duration-300 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group"
+                >
+                  <div className="space-y-1">
+                    <h4 className="font-space font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-neon transition-colors duration-300">
+                      {proj.name}
+                    </h4>
+                    <p className="font-sans text-[11px] text-gray-400 font-light leading-relaxed">
+                      {proj.description}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3 shrink-0 w-full sm:w-auto">
+                    <a
+                      href={proj.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-white/10 text-[10px] tracking-wider font-semibold rounded hover:bg-white/5 transition-all text-gray-400 hover:text-white font-mono uppercase"
+                    >
+                      Ver Projeto Online
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                    <Link
+                      to={`/dashboard/projeto/${proj.id}`}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-brand-neon text-black text-[10px] tracking-wider font-bold rounded hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all uppercase"
+                    >
+                      Gerenciar
+                      <Sliders className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -281,41 +319,32 @@ export default function Overview() {
             </button>
           </div>
 
-          {/* Infrastructure Metrics Skeleton */}
-          <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 backdrop-blur-sm space-y-4">
-            <h3 className="font-space font-bold text-white text-sm uppercase tracking-wider">
-              INTEGRIDADE DA INFRA
-            </h3>
+          {/* Card Lateral de Recomendação Inteligente (Upsell) */}
+          <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 backdrop-blur-sm space-y-6 relative overflow-hidden group">
+            {/* Ambient neon gradient backglow */}
+            <div className="absolute top-0 right-0 w-24 h-24 bg-brand-neon/[0.04] blur-xl rounded-full group-hover:bg-brand-neon/[0.08] transition-all duration-500" />
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand-neon/40 to-transparent" />
             
-            <div className="space-y-3.5">
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-mono text-gray-400">
-                  <span>DISPONIBILIDADE DA API</span>
-                  <span className="text-brand-neon">99.98%</span>
-                </div>
-                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-neon rounded-full" style={{ width: '99.98%' }} />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-mono text-gray-400">
-                  <span>PROCESSAMENTO DE DADOS</span>
-                  <span className="text-emerald-400">OTIMIZADO</span>
-                </div>
-                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-400 rounded-full" style={{ width: '92%' }} />
-                </div>
-              </div>
-            </div>
-            
-            <div className="pt-2 flex justify-between text-[9px] font-mono text-gray-500 uppercase">
-              <span>SLA ACORDADO: 99.9%</span>
-              <span className="flex items-center gap-1">
-                <Layers className="w-3.5 h-3.5 text-brand-neon" />
-                Vercel Enterprise
+            <div className="space-y-2">
+              <span className="inline-flex items-center gap-1.5 bg-brand-neon/10 border border-brand-neon/20 text-[9px] text-brand-neon px-2.5 py-1 rounded font-mono tracking-widest uppercase font-semibold">
+                <Sparkles className="w-3 h-3 text-brand-neon animate-pulse" />
+                Recomendado Para Seu Negócio
               </span>
+              <h3 className="font-space font-bold text-white text-base uppercase leading-snug">
+                AGENTES DE IA PARA ATENDIMENTO
+              </h3>
+              <p className="font-sans text-xs text-gray-400 font-light leading-relaxed">
+                Automatize seu suporte 24/7 e triplique a conversão de leads no seu site com agentes inteligentes baseados em IA generativa.
+              </p>
             </div>
+
+            <Link
+              to="/produtos/agentes-de-ia-para-atendimento"
+              className="w-full py-3 bg-brand-neon text-black font-bold rounded text-xs tracking-wider uppercase hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              Conhecer Produto
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
         </div>

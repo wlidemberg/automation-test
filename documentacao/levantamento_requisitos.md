@@ -61,3 +61,11 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
 *   **RN-002 (Criação de Conta)**: O e-mail informado no cadastro deve ser verificado antes de liberar o acesso a qualquer serviço ou painel da plataforma.
 *   **RN-003 (Limites de Consumo)**: Cada plano de serviço de automação possui um limite mensal de requisições. Caso o cliente atinja **90%** do seu limite, uma notificação visual em destaque no dashboard e um alerta por e-mail devem ser gerados. Ao atingir **100%**, o serviço é pausado até o próximo ciclo ou upgrade de plano.
 *   **RN-004 (Níveis de Acesso)**: Um usuário do tipo "Cliente" não pode, sob qualquer circunstância, visualizar ou manipular dados de outros clientes ou acessar painéis de administração global.
+*   **RN-005 (Foco de Negócio no Dashboard)**: O Dashboard voltado ao cliente deve omitir jargões puramente técnicos (tais como infraestrutura de servidores, linguagens de programação base ou links para repositórios internos) e focar estritamente em dados e métricas de negócio de alto valor para o cliente final (por exemplo: fase atual de entrega, próximas etapas, status de pagamento, etc.).
+
+---
+
+## 4. Decisões Arquiteturais
+
+*   **DA-001 (Navegação SPA)**: Adoção do **React Router** (`react-router-dom`) para roteamento do lado do cliente (Single Page Application). Isso viabiliza a transição suave entre a Landing Page pública, páginas de detalhamento de produto, tela de login dedicada e o ecossistema do Dashboard, otimizando os tempos de carregamento e melhorando a experiência do usuário (UX).
+*   **DA-002 (Divisão de Layouts)**: Criação de rotas aninhadas no roteador para separar layouts específicos. O site público e as páginas de produtos compartilham o layout com Header e Footer corporativos (`Layout.tsx`), enquanto a área administrativa do cliente possui um layout minimalista próprio (`DashboardLayout.tsx`), sem interferências visuais do site institucional.
