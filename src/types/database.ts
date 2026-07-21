@@ -4,6 +4,7 @@ export interface Product {
   slug: string;
   descricao: string;
   valor_implementacao: number;
+  valor_setup: number;
   valor_mensalidade: number;
   ativo: boolean;
   created_at?: string;

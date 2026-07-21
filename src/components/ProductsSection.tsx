@@ -154,9 +154,11 @@ export default function ProductsSection() {
                       <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded p-2.5 backdrop-blur-sm text-center">
                         <span className="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Setup</span>
                         <span className="text-sm font-bold text-white">
-                          {product.valor_implementacao > 0 
-                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_implementacao)
-                            : 'Gratuito'}
+                          {product.valor_setup > 0 ? (
+                            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_setup)}</span>
+                          ) : (
+                            <span>GRATUITO</span>
+                          )}
                         </span>
                       </div>
                       <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded p-2.5 backdrop-blur-sm text-center">
