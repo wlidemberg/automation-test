@@ -1,19 +1,66 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Check, ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { Check, ArrowLeft, ArrowUpRight, Terminal, Loader2 } from 'lucide-react'
 import Layout from '../components/Layout'
 import { productsData } from '../data/productsData'
+import { fetchProducts, fetchProductBySlug } from '../services/productService'
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>()
+  const [product, setProduct] = useState<any | null>(null)
+  const [allProducts, setAllProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [slug])
 
-  // Find product by slug
-  const product = productsData.find(p => p.slug === slug)
+  useEffect(() => {
+    async function loadProductAndNav() {
+      try {
+        setLoading(true)
+        const [dbProducts, dbProduct] = await Promise.all([
+          fetchProducts(),
+          slug ? fetchProductBySlug(slug) : Promise.resolve(null)
+        ])
+
+        setAllProducts(dbProducts)
+
+        if (dbProduct) {
+          const localMeta = productsData.find(p => p.slug === dbProduct.slug)
+          setProduct({
+            ...dbProduct,
+            icon: localMeta?.icon || Terminal,
+            badge: localMeta?.badge || 'Solução Digital',
+            bgImage: localMeta?.bgImage || 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+            beneficios: localMeta?.beneficios || [],
+            tecnologias: localMeta?.tecnologias || [],
+            descricaoLonga: localMeta?.descricaoLonga || dbProduct.descricao
+          })
+        } else {
+          setProduct(null)
+        }
+      } catch (err) {
+        console.error(err)
+        setProduct(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProductAndNav()
+  }, [slug])
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex-grow flex flex-col items-center justify-center py-32 space-y-4">
+          <Loader2 className="w-10 h-10 text-brand-neon animate-spin animate-duration-1000" />
+          <p className="font-mono text-xs uppercase tracking-widest text-gray-500">Buscando detalhes do produto...</p>
+        </div>
+      </Layout>
+    )
+  }
 
   if (!product) {
     return (
@@ -37,7 +84,7 @@ export default function ProductPage() {
             className="inline-flex items-center gap-2 px-6 py-3 bg-brand-neon text-black font-semibold rounded text-xs tracking-wider uppercase hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar para Home
+            VOLTAR PARA HOME
           </Link>
         </div>
       </Layout>
@@ -58,8 +105,7 @@ export default function ProductPage() {
 
         {/* Products Quick Navigation */}
         <div className="max-w-7xl w-full mx-auto text-left mb-6 flex flex-wrap gap-x-6 gap-y-2 items-center text-xs font-mono border-b border-white/10 pb-4">
-
-          {productsData.map((p) => {
+          {allProducts.map((p) => {
             const isActive = p.slug === slug;
             return (
               <Link
@@ -70,7 +116,7 @@ export default function ProductPage() {
                     : 'text-gray-400'
                   }`}
               >
-                {p.title}
+                {p.nome}
               </Link>
             )
           })}
@@ -83,7 +129,7 @@ export default function ProductPage() {
             className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-gray-400 hover:text-white transition-colors duration-200"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Voltar ao Início
+            VOLTAR AO INÍCIO
           </Link>
         </div>
 
@@ -98,12 +144,12 @@ export default function ProductPage() {
 
           {/* Title */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-sans font-extrabold tracking-tight leading-[1.1] uppercase text-white">
-            {product.title}
+            {product.nome}
           </h1>
 
           {/* Summary */}
           <p className="font-sans text-gray-400 text-base sm:text-xl max-w-2xl mx-auto font-light leading-relaxed">
-            {product.description}
+            {product.descricao}
           </p>
 
           {/* Hero CTA */}
@@ -117,7 +163,7 @@ export default function ProductPage() {
               href="/#contato"
               className="inline-flex items-center justify-center px-8 py-4 bg-brand-neon text-black font-semibold rounded text-xs tracking-wider uppercase transition-all duration-300"
             >
-              Solicitar Orçamento Deste Produto
+              SOLICITAR ORÇAMENTO DESTE PRODUTO
             </motion.a>
           </div>
         </div>
@@ -134,7 +180,7 @@ export default function ProductPage() {
                 Visão Geral e Diferenciais
               </span>
               <h2 className="text-2xl sm:text-4xl font-space font-bold tracking-tight text-white">
-                Por que escolher nossa arquitetura de engenharia para {product.title}?
+                Por que escolher nossa arquitetura de engenharia para {product.nome}?
               </h2>
             </div>
 
@@ -169,7 +215,7 @@ export default function ProductPage() {
                 </h3>
 
                 <ul className="space-y-4">
-                  {product.beneficios.map((beneficio, i) => (
+                  {product.beneficios.map((beneficio: string, i: number) => (
                     <li key={i} className="flex items-start gap-3">
                       <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-neon/10 flex items-center justify-center border border-brand-neon/20 shrink-0">
                         <Check className="w-3 h-3 text-brand-neon" />
@@ -190,7 +236,7 @@ export default function ProductPage() {
                 </h3>
 
                 <div className="flex flex-wrap gap-2">
-                  {product.tecnologias.map((tech, i) => (
+                  {product.tecnologias.map((tech: string, i: number) => (
                     <span
                       key={i}
                       className="text-xs font-mono font-medium text-gray-300 bg-brand-gray border border-white/5 px-3 py-1.5 rounded hover:border-brand-neon/30 hover:text-brand-neon transition-colors duration-300"
@@ -198,6 +244,33 @@ export default function ProductPage() {
                       {tech}
                     </span>
                   ))}
+                </div>
+              </div>
+
+              {/* Investment Details */}
+              <div className="space-y-6 pt-6 border-t border-white/5">
+                <h3 className="font-space font-bold text-sm uppercase tracking-wider text-white flex items-center gap-2">
+                  <span>Investimento Oficial</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-neon" />
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4 font-mono">
+                  <div className="bg-brand-gray/60 border border-white/5 rounded p-3 backdrop-blur-sm text-center">
+                    <span className="text-[9px] uppercase tracking-wider text-gray-500 block mb-1">Setup</span>
+                    <span className="text-sm font-bold text-white">
+                      {product.valor_implementacao > 0 
+                        ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_implementacao)
+                        : 'Gratuito'}
+                    </span>
+                  </div>
+                  <div className="bg-brand-gray/60 border border-white/5 rounded p-3 backdrop-blur-sm text-center">
+                    <span className="text-[9px] uppercase tracking-wider text-gray-500 block mb-1">Mensalidade</span>
+                    <span className="text-sm font-bold text-brand-neon">
+                      {product.valor_mensalidade > 0 
+                        ? `${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_mensalidade)}/mês`
+                        : 'Isento'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -210,7 +283,7 @@ export default function ProductPage() {
                   href="/#contato"
                   className="w-full py-3.5 bg-transparent border border-brand-neon text-brand-neon font-semibold rounded text-xs tracking-wider uppercase hover:bg-brand-neon hover:text-black transition-all duration-300 flex items-center justify-center gap-2 shadow-inner"
                 >
-                  Fale com o Tech Lead
+                  FALE COM O TECH LEAD
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
               </div>

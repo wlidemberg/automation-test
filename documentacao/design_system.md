@@ -74,7 +74,21 @@ A tipografia deve evocar modernidade, sofisticação e precisão técnica.
 *   **Classe Tailwind configurada**: `shadow-glow-neon` (mapeada no `tailwind.config.js` com sombra baseada em `#CCFF00`).
 
 
+### Badges de Preços Compostos (Setup vs. Recorrência)
+Para expressar as propostas comerciais de maneira elegante, a interface divide os custos em duas dimensões (Implementação Única vs. Assinatura Mensal). Cada dimensão deve ser apresentada em blocos lado a lado, utilizando contrastes cirúrgicos sob a estrutura Tech-Luxo:
+
+*   **Setup (Valor Único)**:
+    *   **Estilo**: Fundo em `brand-gray` semi-transparente (`bg-brand-gray/60`), borda sutil de 1px (`border-white/5`), desfoque de fundo (`backdrop-blur-sm`).
+    *   **Texto**: Título da dimensão ("SETUP") em caixa alta, fonte mono pequena (`text-[9px]`), espaçamento expandido e cor cinza de suporte (`text-gray-500`). O valor é exibido em branco puro (`text-white`) com peso negrito (`font-bold`).
+*   **Mensalidade (Recorrência)**:
+    *   **Estilo**: Mesma estrutura física (fundo glassmorphism, borda de 1px).
+    *   **Texto**: Título da dimensão ("MENSALIDADE") em caixa alta e cinza. O valor é destacado com a cor neon oficial (`text-brand-neon`) com peso negrito (`font-bold`) e o sufixo `/mês` para indicar claramente a recorrência.
+*   **Padrão de Exibição Gratuito/Isento**:
+    *   Quando `valor_implementacao` for `0` ou nulo, o badge deve indicar textualmente **"Gratuito"**.
+    *   Quando `valor_mensalidade` for `0` ou nulo, o badge deve indicar textualmente **"Isento"**.
+
 ---
+
 
 ## 5. Diretrizes de Animação (Framer Motion)
 

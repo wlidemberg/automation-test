@@ -74,3 +74,32 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
 
 *   **DA-001 (Navegação SPA)**: Adoção do **React Router** (`react-router-dom`) para roteamento do lado do cliente (Single Page Application). Isso viabiliza a transição suave entre a Landing Page pública, páginas de detalhamento de produto, tela de login dedicada e o ecossistema do Dashboard, otimizando os tempos de carregamento e melhorando a experiência do usuário (UX).
 *   **DA-002 (Divisão de Layouts)**: Criação de rotas aninhadas no roteador para separar layouts específicos. O site público e as páginas de produtos compartilham o layout com Header e Footer corporativos (`Layout.tsx`), enquanto a área administrativa do cliente possui um layout minimalista próprio (`DashboardLayout.tsx`), sem interferências visuais do site institucional.
+*   **DA-003 (Modelagem de Dados e Integração do Supabase)**: Definição da arquitetura de dados no banco relacional PostgreSQL do Supabase para suportar o Catálogo de Produtos oficial e os Perfis de Clientes (com suporte nativo a PF/PJ). A estrutura está desenhada conforme as tabelas descritas a seguir:
+
+    ### Tabela `products`
+    Armazena os produtos e serviços comercializados no portal, suportando preços compostos (Setup vs. Recorrência):
+    *   `id` (uuid, primary key): Identificador único do produto.
+    *   `nome` (text, not null): Nome do produto (ex: "Agentes de IA para Atendimento").
+    *   `slug` (text, unique, not null): Slug amigável para URLs e mapeamento de assets estáticos (ex: "agentes-de-ia-para-atendimento").
+    *   `descricao` (text, not null): Descrição resumida do produto exibida nos cards da Landing Page.
+    *   `valor_implementacao` (numeric, default 0): Custo único de setup e implementação do serviço.
+    *   `valor_mensalidade` (numeric, default 0): Custo mensal recorrente da assinatura.
+    *   `ativo` (boolean, default true): Controle de exibição do produto no catálogo público.
+    *   `created_at` (timestamptz): Registro da data de criação do produto.
+
+    ### Tabela `profiles`
+    Armazena as informações de cadastro e perfil de clientes ou administradores, acomodando de maneira unificada e otimizada os dados específicos para Pessoas Físicas (PF) e Pessoas Jurídicas (PJ):
+    *   `id` (uuid, primary key, references auth.users): Identificador único vinculado ao mecanismo de autenticação do Supabase.
+    *   `email` (text, unique, not null): Endereço de email do usuário.
+    *   `role` (text, default 'client'): Função de acesso no sistema, podendo ser `'admin'` ou `'client'`.
+    *   `tipo_pessoa` (text, default 'PF'): Classificação jurídica do perfil, aceitando os valores `'PF'` (Pessoa Física) ou `'PJ'` (Pessoa Jurídica).
+    *   `razao_social` (text): Razão social da empresa (relevante apenas para PJ).
+    *   `cnpj` (text): Cadastro Nacional da Pessoa Jurídica (relevante apenas para PJ).
+    *   `nome_completo` (text): Nome completo do cliente (relevante para PF ou representante PJ).
+    *   `cpf` (text): Cadastro de Pessoas Físicas (relevante para PF).
+    *   `data_nascimento` (date): Data de nascimento.
+    *   `telefone` (text): Telefone de contato.
+    *   `endereco` (jsonb): Objeto estruturado contendo dados de CEP, logradouro, número, complemento, bairro, cidade e estado.
+    *   `dados_adicionais` (jsonb): Campo flexível para armazenamento de metadados operacionais e notas administrativas.
+    *   `created_at` (timestamptz): Registro da data de criação do perfil.
+
