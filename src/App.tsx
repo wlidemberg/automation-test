@@ -6,6 +6,7 @@ import DashboardLayout from './layouts/DashboardLayout'
 import Overview from './pages/Dashboard/Overview'
 import ProjectDetail from './pages/Dashboard/ProjectDetail'
 import AdminOverview from './pages/Admin/AdminOverview'
+import { AuthProvider } from './contexts/AuthContext'
 
 // Premium placeholder component for dashboard sections in development
 function DashboardPlaceholder({ title }: { title: string }) {
@@ -37,25 +38,27 @@ function DashboardPlaceholder({ title }: { title: string }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/produtos/:slug" element={<ProductPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminOverview />} />
-        
-        {/* Logged Customer Dashboard Routes */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Overview />} />
-          <Route path="projeto/:id" element={<ProjectDetail />} />
-          <Route path="documentos" element={<DashboardPlaceholder title="Documentos" />} />
-          <Route path="suporte" element={<DashboardPlaceholder title="Tickets & Suporte" />} />
-          <Route path="faturas" element={<DashboardPlaceholder title="Faturas & Cobranças" />} />
-          <Route path="servicos" element={<DashboardPlaceholder title="Novos Serviços" />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/produtos/:slug" element={<ProductPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminOverview />} />
+          
+          {/* Logged Customer Dashboard Routes */}
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Overview />} />
+            <Route path="projeto/:id" element={<ProjectDetail />} />
+            <Route path="documentos" element={<DashboardPlaceholder title="Documentos" />} />
+            <Route path="suporte" element={<DashboardPlaceholder title="Tickets & Suporte" />} />
+            <Route path="faturas" element={<DashboardPlaceholder title="Faturas & Cobranças" />} />
+            <Route path="servicos" element={<DashboardPlaceholder title="Novos Serviços" />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

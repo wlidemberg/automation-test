@@ -154,3 +154,41 @@ Animações devem ser rápidas, orgânicas e imperceptíveis na velocidade, mas 
         };
         ```
 
+
+### Componente de Resumo Financeiro no Checkout
+Para manter a total transparência comercial e guiar a tomada de decisão no momento da contratação, o formulário de checkout adota um componente de detalhamento de valores estruturado:
+
+*   **Contêiner Principal (Cartão do Checkout)**:
+    *   **Estilo**: Fundo em preto sólido fosco (`bg-black/40`), borda de 1px na cor de separação (`border-white/5`), cantos levemente arredondados (`rounded-lg`), desfoque de fundo de vidro (`backdrop-blur-sm`).
+    *   **Efeito Estético**: No topo do contêiner, uma linha fina gradiente transparente-neon-transparente (`bg-gradient-to-r from-transparent via-brand-neon/20 to-transparent`) atrai sutilmente o olhar do cliente.
+*   **Destaque Financeiro da Entrada (Entrada de 50%)**:
+    *   Como a ativação do serviço está vinculada ao pagamento da entrada, este elemento possui a maior hierarquia visual no resumo de faturamento.
+    *   **Estilo**: Fundo em Verde Neon com baixa opacidade (`bg-brand-neon/5`), borda fina destacada em Verde Neon translúcido (`border-brand-neon/20`), cantos arredondados (`rounded`).
+    *   **Tipografia**:
+        *   Título ("ENTRADA OBRIGATÓRIA (50%)") e observação em cinza médio no formato micro-mono (`text-[9px] font-mono tracking-wider uppercase`).
+        *   Valor em destaque total Verde Neon (`text-brand-neon`) utilizando fonte negrito de grande escala (`text-sm font-extrabold tracking-tight`).
+*   **Setup e Mensalidades de Suporte**:
+    *   Exibidos em fonte mono de tamanho padrão (`text-xs font-mono`) e cor cinza de suporte (`text-gray-500`) para não concorrer visualmente com a entrada obrigatória.
+    *   Os valores associados usam o branco puro (`text-white`) com peso médio.
+
+
+### Padrão Estrito de Modais de Alta Complexidade (Responsivos)
+Para assegurar a legibilidade e usabilidade de modais volumosos (como o checkout e formulários de cadastro) em múltiplos tamanhos de tela, adota-se o padrão estrito de bloqueio de viewport e rolagem interna independente:
+
+*   **Isolamento DOM com React Portal**: Para evitar efeitos colaterais de layout, estouro de Z-Index de elementos adjacentes ou rolagem dupla de janelas (Double Scrollbars), todo modal de alta complexidade deve ser renderizado fora do fluxo da árvore de componentes, utilizando a API `createPortal` do React para montagem direta na raiz (`document.body`).
+*   **Overlay e Lock de Fundo (Backdrop & Lock)**:
+    *   O overlay de fundo deve travar o scroll da página principal (`overflow-hidden`) e cobrir a viewport inteira (`fixed inset-0 z-[9999]`), centralizando o conteúdo (`flex items-center justify-center p-4`) com fundo escuro denso (`bg-black/80`) e desfoque sutil (`backdrop-blur-md`).
+*   **Contêiner Principal (Card do Modal)**:
+    *   **Limitação de Viewport**: Altura restrita a 90% da viewport (`max-h-[90vh]`) para garantir que o modal caiba em qualquer dispositivo.
+    *   **Estrutura de Linha**: Flexível por largura (`flex flex-col lg:flex-row`), cantos arredondados de alta curvatura (`rounded-2xl`), bordas finas com contraste cinza (`border border-zinc-800`), transbordo ocultado (`overflow-hidden`) e sombra projetada suave de fundo (`shadow-2xl`).
+*   **Rolagem Interna nas Colunas**:
+    *   **Coluna Informativa/Financeira (Lado Esquerdo)**: Ocupa `w-full lg:w-5/12` com fundo cinza opaco (`bg-zinc-900/50`), divisória física (`border-zinc-800`) e rolagem vertical autônoma se os dados excederem a altura (`overflow-y-auto max-h-[90vh]`).
+    *   **Coluna do Formulário (Lado Direito)**: Ocupa `w-full lg:w-7/12` com espaçamento interno confortável (`p-6 sm:p-8`), rolagem vertical interna dedicada (`overflow-y-auto max-h-[90vh]`) e barra de rolagem estilizada discreta (`scrollbar-thin scrollbar-thumb-zinc-700`) para não quebrar a estética premium.
+*   **Botão de Fechar Absoluto (Fixo e Não-Rolável)**:
+    *   Declarado como o primeiro filho direto do Card do modal (fora das colunas) para que nunca suma da viewport ao realizar scroll.
+    *   **Estilo**: Círculo de alto contraste (`bg-zinc-900/90 hover:bg-zinc-800`), borda cinza proeminente (`border border-zinc-700/60`), preenchimento confortável (`p-2`) e ícone `X` (`w-5 h-5`) com transição suave (`text-zinc-400 hover:text-white transition-all`).
+
+
+
+
+

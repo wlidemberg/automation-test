@@ -133,3 +133,8 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
     *   `created_at` (timestamptz): Registro da data de criação da etapa.
 
 
+*   **DA-004 (Segurança e Ativação de Contas - Status Pendente)**: Implementação de regra de segurança integrada no processo de cadastro para mitigar a criação de contas spam e robôs. Toda nova conta cadastrada nasce automaticamente com o status `'pendente'` (inserido via trigger no banco de dados no momento da autenticação). O acesso às áreas internas do Dashboard do Cliente é estritamente bloqueado enquanto a conta estiver em estado pendente, sendo o usuário direcionado de forma restrita para a tela de faturamento/pagamento da entrada obrigatória.
+*   **DA-005 (Modelo Financeiro de Contratação - Entrada de 50% do Setup)**: A contratação de soluções digitais corporativas no portal segue o modelo financeiro de divisão de risco. É exigido o pagamento de uma **Entrada Obrigatória equivalente a 50% do valor de implementação (Setup)** do produto selecionado. A compensação dessa entrada é o gatilho financeiro obrigatório para que a conta mude de status de `'pendente'` para `'ativo'`, liberando o painel de desenvolvimento e iniciando a fase de engenharia. Os demais 50% do setup são faturados em fases posteriores e a mensalidade recorrente (mensalidade) é faturada nos ciclos subsequentes.
+
+
+

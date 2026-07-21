@@ -5,12 +5,16 @@ import { Check, ArrowLeft, ArrowUpRight, Terminal, Loader2 } from 'lucide-react'
 import Layout from '../components/Layout'
 import { productsData } from '../data/productsData'
 import { fetchProducts, fetchProductBySlug } from '../services/productService'
+import AuthModal from './Auth/AuthModal'
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>()
   const [product, setProduct] = useState<any | null>(null)
   const [allProducts, setAllProducts] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  
+  // Controle do modal de contratação
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -94,7 +98,8 @@ export default function ProductPage() {
   const Icon = product.icon
 
   return (
-    <Layout>
+    <>
+      <Layout>
       {/* Product Hero Section with Dark Themed Background Image */}
       <section
         className="relative py-24 sm:py-32 px-6 border-b border-brand-gray/60 overflow-hidden flex flex-col items-center justify-center text-center bg-cover bg-center bg-no-repeat"
@@ -154,17 +159,17 @@ export default function ProductPage() {
 
           {/* Hero CTA */}
           <div className="pt-4">
-            <motion.a
+            <motion.button
               whileHover={{
                 scale: 1.03,
                 boxShadow: "0 0 25px rgba(204, 255, 0, 0.4)"
               }}
               whileTap={{ scale: 0.98 }}
-              href="/#contato"
-              className="inline-flex items-center justify-center px-8 py-4 bg-brand-neon text-black font-semibold rounded text-xs tracking-wider uppercase transition-all duration-300"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="inline-flex items-center justify-center px-8 py-4 bg-brand-neon text-black font-semibold rounded text-xs tracking-wider uppercase transition-all duration-300 cursor-pointer animate-pulse"
             >
-              SOLICITAR ORÇAMENTO DESTE PRODUTO
-            </motion.a>
+              CONTRATAR SOLUÇÃO AGORA
+            </motion.button>
           </div>
         </div>
       </section>
@@ -274,18 +279,17 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Call-to-action Card */}
               <div className="pt-6 border-t border-white/5 space-y-4">
                 <p className="font-sans text-[11px] text-gray-500 font-light uppercase tracking-wider text-center">
                   Pronto para acelerar seu negócio?
                 </p>
-                <a
-                  href="/#contato"
-                  className="w-full py-3.5 bg-transparent border border-brand-neon text-brand-neon font-semibold rounded text-xs tracking-wider uppercase hover:bg-brand-neon hover:text-black transition-all duration-300 flex items-center justify-center gap-2 shadow-inner"
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="w-full py-3.5 bg-transparent border border-brand-neon text-brand-neon font-semibold rounded text-xs tracking-wider uppercase hover:bg-brand-neon hover:text-black transition-all duration-300 flex items-center justify-center gap-2 shadow-inner cursor-pointer"
                 >
                   FALE COM O TECH LEAD
                   <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -293,5 +297,15 @@ export default function ProductPage() {
         </div>
       </section>
     </Layout>
+
+    {/* Modal de checkout de produto */}
+    {product && (
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        initialProductSlug={product.slug} 
+      />
+    )}
+  </>
   )
 }

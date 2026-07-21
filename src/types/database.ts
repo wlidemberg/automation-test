@@ -22,6 +22,7 @@ export interface Profile {
   telefone: string | null;
   endereco: Record<string, any> | null;
   dados_adicionais: Record<string, any> | null;
+  status: 'pendente' | 'ativo';
   created_at?: string;
 }
 

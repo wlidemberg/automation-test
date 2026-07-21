@@ -5,11 +5,16 @@ import { ArrowUpRight, Terminal, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { fetchProducts } from '../services/productService'
 import { productsData } from '../data/productsData'
+import AuthModal from '../pages/Auth/AuthModal'
 
 export default function ProductsSection() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Controle do modal de contratação
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [selectedProductSlug, setSelectedProductSlug] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     async function loadProducts() {
@@ -166,13 +171,16 @@ export default function ProductsSection() {
                   </div>
 
                   <div className="pt-8 mt-auto flex flex-wrap gap-x-6 gap-y-2 items-center">
-                    <a
-                      href="/#contato"
-                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300"
+                    <button
+                      onClick={() => {
+                        setSelectedProductSlug(product.slug)
+                        setIsAuthModalOpen(true)
+                      }}
+                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300 cursor-pointer"
                     >
                       ADQUIRIR PRODUTO
                       <ArrowUpRight className="w-3.5 h-3.5" />
-                    </a>
+                    </button>
                     <Link
                       to={`/produtos/${product.slug}`}
                       className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-500 hover:text-white transition-colors duration-300"
@@ -188,6 +196,13 @@ export default function ProductsSection() {
         )}
 
       </div>
+
+      {/* Modal de checkout de produto */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        initialProductSlug={selectedProductSlug} 
+      />
     </section>
   )
 }
