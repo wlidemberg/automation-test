@@ -87,7 +87,21 @@ Para expressar as propostas comerciais de maneira elegante, a interface divide o
     *   Quando `valor_implementacao` for `0` ou nulo, o badge deve indicar textualmente **"Gratuito"**.
     *   Quando `valor_mensalidade` for `0` ou nulo, o badge deve indicar textualmente **"Isento"**.
 
+### Progresso Percentual e Checklist de Roadmap (Dashboard)
+Para manter o alinhamento de alta fidelidade visual com os dados de engenharia, o painel do cliente adota padrões de design específicos para o progresso de entrega de projetos:
+
+*   **Indicador de Progresso Percentual**:
+    *   **Estrutura**: Barra horizontal com trilha de fundo na cor escura semi-transparente (`bg-white/5`), altura ultra-fina de 4px (`h-1`), cantos totalmente arredondados (`rounded-full`). A barra de preenchimento ativo deve ser renderizada na cor sólida Verde Neon (`bg-brand-neon`).
+    *   **Metadados de Apoio**: Abaixo da barra de progresso, um grid flexível exibe o rótulo "PROGRESSO" à esquerda e o percentual textual à direita (ex: "60%"), ambos utilizando a fonte mono, tamanho micro (`text-[9px]`) e cor cinza média (`text-gray-500`) em caixa alta.
+*   **Checklist de Cronograma (Timeline Roadmap)**:
+    *   **Estrutura de Linha**: Uma linha vertical ultrafina (`border-l border-white/10`) guia o olhar do usuário ao longo das etapas. Cada etapa possui um recuo lateral de 24px (`pl-6`).
+    *   **Marcador Visual de Etapa (Timeline Points)**:
+        *   **Concluído (`status: 'done'`)**: Um círculo de 16px (`w-4 h-4`) preenchido com Verde Neon (`bg-brand-neon`) contendo um ícone de check-circle preto. O título da fase é renderizado em branco puro (`text-white`) com peso negrito (`font-bold`).
+        *   **Em Andamento (`status: 'current'`)**: Um círculo de 16px com fundo escuro e borda Verde Neon (`border-brand-neon`) animado com um pulso suave (`animate-pulse`). O título da fase é destacado na cor Verde Neon (`text-brand-neon`) com peso negrito.
+        *   **Pendente (`status: 'pending'`)**: Um círculo de 16px com fundo cinza escuro (`bg-zinc-900`) e borda sutil (`border-white/10`). O título da fase é exibido em cinza opaco (`text-gray-600`).
+
 ---
+
 
 
 ## 5. Diretrizes de Animação (Framer Motion)

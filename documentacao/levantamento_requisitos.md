@@ -103,3 +103,33 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
     *   `dados_adicionais` (jsonb): Campo flexível para armazenamento de metadados operacionais e notas administrativas.
     *   `created_at` (timestamptz): Registro da data de criação do perfil.
 
+    ### Tabela `projects`
+    Armazena os projetos e sistemas corporativos contratados pelos clientes:
+    *   `id` (text, primary key): Identificador único do projeto.
+    *   `client_id` (uuid, references profiles.id): Chave estrangeira que vincula o projeto ao perfil do cliente proprietário.
+    *   `nome` (text, not null): Nome do projeto ou sistema (ex: "PORTAL ASSESCOR").
+    *   `descricao` (text): Descrição curta ou resumo da fase atual do projeto.
+    *   `data_inicio` (text): Data formatada de início do projeto.
+    *   `previsao_entrega` (text): Previsão ou data de entrega acordada.
+    *   `fase_atual` (text): Nome da fase atual do desenvolvimento (ex: "Homologação Visual").
+    *   `proxima_entrega` (text): Descrição da próxima entrega programada.
+    *   `status_pagamento` (text): Status financeiro (ex: "Em Dia", "Pago", "Ação Requerida").
+    *   `status_geral` (text): Situação geral do projeto (ex: "Em Homologação", "Licença Ativa", "Concluído & Entregue").
+    *   `url_projeto` (text): Link para o ambiente online ou de homologação.
+    *   `btn_online_label` (text): Rótulo amigável para o link do projeto.
+    *   `btn_gerenciar_label` (text): Rótulo para o botão de gerenciamento.
+    *   `progresso` (integer): Percentual de conclusão do projeto (0 a 100). Pode ser nulo para serviços contínuos/ERP.
+    *   `ativo` (boolean, default true): Controle de exclusão lógica do registro.
+    *   `created_at` (timestamptz): Registro da data de criação do projeto.
+
+    ### Tabela `project_roadmaps`
+    Armazena o cronograma e as etapas estruturadas de cada projeto, permitindo o acompanhamento de progresso:
+    *   `id` (uuid, primary key): Identificador único da etapa.
+    *   `project_id` (text, references projects.id): Chave estrangeira ligando a etapa ao respectivo projeto.
+    *   `nome_fase` (text, not null): Título da etapa de desenvolvimento (ex: "Desenvolvimento Core").
+    *   `status` (text, not null): Status de conclusão, aceitando `'done'` (concluído), `'current'` (em andamento) ou `'pending'` (pendente).
+    *   `descricao_fase` (text): Detalhamento técnico do que é entregue ou auditado nesta etapa.
+    *   `ordem` (integer, not null): Sequenciamento lógico das etapas no cronograma.
+    *   `created_at` (timestamptz): Registro da data de criação da etapa.
+
+

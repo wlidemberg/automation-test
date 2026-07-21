@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { 
   TrendingUp, 
   Clock, 
@@ -7,13 +8,20 @@ import {
   ArrowUpRight,
   ExternalLink,
   Sliders,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { fetchClientProjects } from '../../services/projectService'
+import type { Project } from '../../types/database'
 
 export default function Overview() {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
   // Dynamically format today's date in Portuguese
   const today = new Date()
   const dateOptions: Intl.DateTimeFormatOptions = { 
@@ -25,23 +33,74 @@ export default function Overview() {
   const dateString = today.toLocaleDateString('pt-BR', dateOptions)
   const formattedDate = dateString.charAt(0).toUpperCase() + dateString.slice(1)
 
-  // Card items config
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        setLoading(true)
+        // Usamos um ID de cliente fictício para o fallback ou busca
+        const data = await fetchClientProjects('cliente-corp-id')
+        setProjects(data)
+      } catch (err) {
+        console.error(err)
+        setError('Não foi possível carregar as informações do seu dashboard.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProjects()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-10 h-10 text-brand-neon animate-spin animate-duration-1000" />
+        <span className="font-mono text-xs uppercase tracking-[0.2em] text-gray-500">
+          Sincronizando com o Backstage...
+        </span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4 text-center max-w-md mx-auto px-6">
+        <AlertCircle className="w-12 h-12 text-red-500 animate-pulse" />
+        <h2 className="font-space font-bold text-white text-lg uppercase tracking-wider">Falha na Sincronização</h2>
+        <p className="font-sans text-xs text-gray-400 font-light leading-relaxed">
+          {error}
+        </p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-6 py-3 bg-brand-neon text-black font-semibold rounded text-xs tracking-wider uppercase hover:shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all duration-300 cursor-pointer"
+        >
+          TENTAR NOVAMENTE
+        </button>
+      </div>
+    )
+  }
+
+  // Identifica o projeto ativo principal (com progresso incompleto)
+  const activeProject = projects.find(p => p.progresso !== null && p.progresso < 100) || projects[0]
+  // Os demais projetos vão para a seção de sistemas e licenças
+  const otherProjects = projects.filter(p => p.id !== activeProject?.id)
+
+  // Card items config baseados no projeto ativo
   const summaryCards = [
     {
       title: 'Andamento do Projeto',
-      value: '60%',
-      description: 'Fase de Integração de API',
+      value: activeProject?.progresso !== null ? `${activeProject.progresso}%` : 'N/A',
+      description: activeProject ? `FASE: ${activeProject.fase_atual?.toUpperCase()}` : 'SEM PROJETO ATIVO',
       status: 'active',
-      progress: 60,
+      progress: activeProject ? activeProject.progresso : null,
       icon: TrendingUp,
       color: 'text-brand-neon',
       glow: 'shadow-[0_0_15px_rgba(204,255,0,0.1)]'
     },
     {
       title: 'Mensalidades e Faturas',
-      value: 'Em Dia',
-      description: 'PRÓXIMO VENCIMENTO: 10/08/2026',
-      status: 'clean',
+      value: activeProject?.status_pagamento === 'Em Dia' || activeProject?.status_pagamento === 'Pago' ? 'Em Dia' : 'Ação Requerida',
+      description: activeProject?.status_pagamento === 'Pago' ? 'CONTRATO INTEGRALIZADO' : `STATUS: ${activeProject?.status_pagamento?.toUpperCase() || 'SOB CONSULTA'}`,
+      status: activeProject?.status_pagamento === 'Em Dia' || activeProject?.status_pagamento === 'Pago' ? 'clean' : 'warning',
       progress: null,
       icon: Clock,
       color: 'text-brand-neon',
@@ -50,7 +109,7 @@ export default function Overview() {
     {
       title: 'Tickets Ativos',
       value: '1',
-      description: '1 aguardando sua resposta',
+      description: '1 AGUARDANDO SUA RESPOSTA',
       status: 'warning',
       progress: null,
       icon: AlertCircle,
@@ -58,8 +117,6 @@ export default function Overview() {
       glow: 'shadow-[0_0_15px_rgba(204,255,0,0.05)]'
     }
   ]
-
-
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -166,69 +223,75 @@ export default function Overview() {
         <div className="lg:col-span-8 space-y-8">
           
           {/* Main active project monitor */}
-          <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 sm:p-8 relative overflow-hidden backdrop-blur-sm">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-neon/[0.01] blur-xl rounded-full pointer-events-none" />
-            
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-brand-neon/10 border border-brand-neon/20 rounded">
-                  <Cpu className="w-5 h-5 text-brand-neon" />
+          {activeProject && (
+            <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 sm:p-8 relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-neon/[0.01] blur-xl rounded-full pointer-events-none" />
+              
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-brand-neon/10 border border-brand-neon/20 rounded">
+                    <Cpu className="w-5 h-5 text-brand-neon" />
+                  </div>
+                  <div>
+                    <h3 className="font-space font-bold text-white text-sm uppercase">{activeProject.nome}</h3>
+                    <p className="text-[10px] text-gray-500 font-mono">ID DO PROJETO: #AT-{activeProject.id.toUpperCase().substring(0, 8)}</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono bg-brand-neon/10 text-brand-neon px-2.5 py-1 rounded border border-brand-neon/20 uppercase">
+                  {activeProject.status_geral}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-6 mb-6">
+                <div>
+                  <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Data de Início</span>
+                  <span className="text-xs font-mono text-gray-300">{activeProject.data_inicio}</span>
                 </div>
                 <div>
-                  <h3 className="font-space font-bold text-white text-sm uppercase">SISTEMA INTEGRADO DE AGENDAMENTOS E IA</h3>
-                  <p className="text-[10px] text-gray-500 font-mono">ID DO PROJETO: #AT-PROJ-7729</p>
+                  <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Previsão</span>
+                  <span className="text-xs font-mono text-gray-300">{activeProject.previsao_entrega}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Fase Atual</span>
+                  <span className="text-xs font-mono text-brand-neon">{activeProject.fase_atual}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Próxima Entrega</span>
+                  <span className="text-xs font-mono text-gray-300">{activeProject.proxima_entrega}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Status do Pagamento</span>
+                  <span className="text-xs font-mono text-gray-300">{activeProject.status_pagamento}</span>
                 </div>
               </div>
-              <span className="text-[10px] font-mono bg-brand-neon/10 text-brand-neon px-2.5 py-1 rounded border border-brand-neon/20 uppercase">
-                Em Homologação
-              </span>
-            </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-6 mb-6">
-              <div>
-                <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Data de Início</span>
-                <span className="text-xs font-mono text-gray-300">01 Jun 2026</span>
-              </div>
-              <div>
-                <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Previsão</span>
-                <span className="text-xs font-mono text-gray-300">10 Ago 2026</span>
-              </div>
-              <div>
-                <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Fase Atual</span>
-                <span className="text-xs font-mono text-brand-neon">Homologação Visual</span>
-              </div>
-              <div>
-                <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Próxima Entrega</span>
-                <span className="text-xs font-mono text-gray-300">Integração WhatsApp</span>
-              </div>
-              <div>
-                <span className="text-[9px] uppercase tracking-widest text-gray-500 font-mono block">Status do Pagamento</span>
-                <span className="text-xs font-mono text-gray-300">2/3 Parcelas Pagas</span>
+              <p className="font-sans text-xs text-gray-400 font-light leading-relaxed mb-6">
+                {activeProject.descricao}
+              </p>
+
+              <div className="flex flex-wrap gap-4 items-center">
+                {activeProject.url_projeto && (
+                  <>
+                    <a 
+                      href={activeProject.url_projeto} 
+                      className="inline-flex items-center gap-1.5 text-xs text-brand-neon hover:underline transition-colors duration-200 uppercase font-mono font-bold"
+                    >
+                      {activeProject.btn_online_label?.toUpperCase() || 'AMBIENTE DE TESTES'}
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </a>
+                    <span className="text-gray-700">|</span>
+                  </>
+                )}
+                <button 
+                  onClick={() => alert('Ações administrativas ou aprovação registradas para este projeto!')}
+                  className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors duration-200 uppercase font-mono font-bold cursor-pointer"
+                >
+                  {activeProject.btn_gerenciar_label?.toUpperCase() || 'GERENCIAR PROJETO'}
+                  <Check className="w-3.5 h-3.5 text-brand-neon" />
+                </button>
               </div>
             </div>
-
-            <p className="font-sans text-xs text-gray-400 font-light leading-relaxed mb-6">
-              Seu ecossistema digital está na fase final de testes. Nossa equipe está validando os fluxos de agendamento para garantir que seus clientes tenham uma experiência perfeita antes do lançamento oficial.
-            </p>
-
-            <div className="flex flex-wrap gap-4 items-center">
-              <a 
-                href="#homologacao" 
-                className="inline-flex items-center gap-1.5 text-xs text-brand-neon hover:underline transition-colors duration-200 uppercase font-mono font-bold"
-              >
-                Ambiente de Testes
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </a>
-              <span className="text-gray-700">|</span>
-              <button 
-                onClick={() => alert('Layout aprovado com sucesso!')}
-                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors duration-200 uppercase font-mono font-bold cursor-pointer"
-              >
-                Aprovar Layout Atual
-                <Check className="w-3.5 h-3.5 text-brand-neon" />
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Seus Sistemas e Projetos */}
           <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 sm:p-8 backdrop-blur-sm space-y-6">
@@ -242,57 +305,46 @@ export default function Overview() {
             </div>
 
             <div className="space-y-4">
-              {[
-                {
-                  id: 'portal-assescor',
-                  name: 'PORTAL ASSESCOR',
-                  description: 'Plataforma corporativa para automação de fluxos e captação de leads.',
-                  url: 'https://www.assescor.com.br',
-                  btn1Label: 'Ver Projeto Online',
-                  btn2Label: 'Gerenciar'
-                },
-                {
-                  id: 'erp-comercial',
-                  name: 'SISTEMA ERP COMERCIAL',
-                  description: 'Módulos ativos: Frente de Caixa, Gestão de Retaguarda e Emissão de Notas (NF-e / NFC-e).',
-                  url: 'https://erp.automationtest.com',
-                  btn1Label: 'Acessar Retaguarda',
-                  btn2Label: 'Gerenciar Licença'
-                }
-              ].map((proj) => (
-                <div 
-                  key={proj.id} 
-                  className="p-4 bg-black/30 border border-white/5 rounded-lg hover:border-brand-neon/20 transition-all duration-300 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group"
-                >
-                  <div className="space-y-1">
-                    <h4 className="font-space font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-neon transition-colors duration-300">
-                      {proj.name}
-                    </h4>
-                    <p className="font-sans text-[11px] text-gray-400 font-light leading-relaxed">
-                      {proj.description}
-                    </p>
-                  </div>
+              {otherProjects.length === 0 ? (
+                <p className="text-xs text-gray-500 font-mono">Nenhum outro projeto ou licença ativa encontrada.</p>
+              ) : (
+                otherProjects.map((proj) => (
+                  <div 
+                    key={proj.id} 
+                    className="p-4 bg-black/30 border border-white/5 rounded-lg hover:border-brand-neon/20 transition-all duration-300 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group"
+                  >
+                    <div className="space-y-1">
+                      <h4 className="font-space font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-neon transition-colors duration-300">
+                        {proj.nome}
+                      </h4>
+                      <p className="font-sans text-[11px] text-gray-400 font-light leading-relaxed">
+                        {proj.descricao}
+                      </p>
+                    </div>
 
-                  <div className="flex gap-3 shrink-0 w-full sm:w-auto">
-                    <a
-                      href={proj.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-white/10 text-[10px] tracking-wider font-semibold rounded hover:bg-white/5 transition-all text-gray-400 hover:text-white font-mono uppercase"
-                    >
-                      {proj.btn1Label}
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                    <Link
-                      to={`/dashboard/projeto/${proj.id}`}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-brand-neon text-black text-[10px] tracking-wider font-bold rounded hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all uppercase"
-                    >
-                      {proj.btn2Label}
-                      <Sliders className="w-3.5 h-3.5" />
-                    </Link>
+                    <div className="flex gap-3 shrink-0 w-full sm:w-auto">
+                      {proj.url_projeto && (
+                        <a
+                          href={proj.url_projeto}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-white/10 text-[10px] tracking-wider font-semibold rounded hover:bg-white/5 transition-all text-gray-400 hover:text-white font-mono uppercase"
+                        >
+                          {proj.btn_online_label?.toUpperCase() || 'ACESSAR'}
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      <Link
+                        to={`/dashboard/projeto/${proj.id}`}
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-brand-neon text-black text-[10px] tracking-wider font-bold rounded hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all uppercase"
+                      >
+                        {proj.btn_gerenciar_label?.toUpperCase() || 'GERENCIAR'}
+                        <Sliders className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -318,7 +370,7 @@ export default function Overview() {
             />
 
             <button className="w-full py-3 bg-transparent border border-brand-neon text-brand-neon font-semibold rounded text-xs tracking-wider uppercase hover:bg-brand-neon hover:text-black transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer">
-              Enviar Solicitação
+              ENVIAR SOLICITAÇÃO
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -346,7 +398,7 @@ export default function Overview() {
               to="/produtos/automacoes"
               className="w-full py-3 bg-brand-neon text-black font-bold rounded text-xs tracking-wider uppercase hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300 flex items-center justify-center gap-2"
             >
-              Conhecer Solução
+              CONHECER SOLUÇÃO
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
