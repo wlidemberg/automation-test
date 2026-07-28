@@ -5,6 +5,10 @@ export type TipoPessoa = 'PF' | 'PJ';
 export type ProductCategory = 'design_web' | 'desenvolvimento' | 'erp_saas' | 'automacao' | 'ia';
 export type PricingType = 'unico' | 'recorrente' | 'hibrido';
 
+export type ProjectPhase = 'proposta_pendente' | 'proposta_enviada' | 'aguardando_pagamento' | 'em_desenvolvimento' | 'homologacao' | 'concluido' | 'recusado';
+export type InvoiceStatus = 'pendente' | 'pago' | 'cancelado';
+export type InvoiceType = 'entrada' | 'mensalidade' | 'avulso';
+
 export interface Address {
   cep?: string;
   logradouro?: string;
@@ -68,7 +72,7 @@ export interface Project {
   descricao: string | null;
   data_inicio: string | null;
   previsao_entrega: string | null;
-  fase_atual: string | null;
+  fase_atual: ProjectPhase;
   proxima_entrega: string | null;
   status_pagamento: string | null;
   status_geral: string | null;
@@ -77,6 +81,19 @@ export interface Project {
   btn_gerenciar_label: string | null;
   progresso: number | null;
   ativo: boolean;
+  valor_setup?: number | null;
+  valor_mensalidade?: number | null;
+  created_at?: string;
+}
+
+export interface Invoice {
+  id: string;
+  project_id: string;
+  client_id: string;
+  valor: number;
+  vencimento: string;
+  tipo: InvoiceType;
+  status: InvoiceStatus;
   created_at?: string;
 }
 

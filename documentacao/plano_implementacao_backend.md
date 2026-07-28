@@ -27,8 +27,10 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Configuração de políticas RLS na tabela `profiles`.
   - Fluxo de login e cadastro na landing page com Supabase Auth.
 
-- [ ] **Etapa 5: Gestão de Projetos e Faturas Recorrentes (MRR)**
-  - Migração dos dados operacionais e faturamento de clientes para tabelas relacionais do Supabase.
+- [x] **Etapa 5: Gestão de Projetos e Faturas Recorrentes (MRR)**
+  - Criação das tabelas `projects` e `invoices` no Supabase PostgreSQL.
+  - Suporte a propostas personalizadas, precificação de setup/mensalidade e geração automática de faturas de entrada (50%).
+  - Aceite de propostas integrado com simulação de pagamento e ativação automática do cliente.
 
 ---
 

@@ -24,6 +24,7 @@ import type { Profile, UserStatus } from '../../types/database'
 import AdminSidebar from '../../components/Admin/AdminSidebar'
 import AdminHeader from '../../components/Admin/AdminHeader'
 import ClientModal from '../../components/Admin/ClientModal'
+import ProposalModal from '../../components/Admin/ProposalModal'
 
 export default function AdminClients() {
   // Sidebar State
@@ -40,6 +41,7 @@ export default function AdminClients() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [editingClient, setEditingClient] = useState<Profile | null>(null)
   const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState<boolean>(false)
 
   // Load profiles from Supabase
   const loadProfiles = async () => {
@@ -216,14 +218,22 @@ export default function AdminClients() {
             </p>
           </div>
 
-          {/* Action Button: + NOVO CLIENTE */}
-          <button
-            onClick={handleOpenCreateModal}
-            className="px-5 py-3 bg-brand-neon text-black rounded text-xs font-mono font-extrabold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4" />
-            + NOVO CLIENTE
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setIsProposalModalOpen(true)}
+              className="px-5 py-3 border border-[#CCFF00] text-[#CCFF00] hover:bg-[#CCFF00]/10 rounded text-xs font-mono font-extrabold tracking-wider transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4" />
+              + NOVA PROPOSTA
+            </button>
+            <button
+              onClick={handleOpenCreateModal}
+              className="px-5 py-3 bg-brand-neon text-black rounded text-xs font-mono font-extrabold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4" />
+              + NOVO CLIENTE
+            </button>
+          </div>
         </div>
 
         {/* Search Bar Input (Glassmorphism) */}
@@ -456,6 +466,12 @@ export default function AdminClients() {
         onSave={handleSaveClient}
         initialData={editingClient}
         isSaving={isSaving}
+      />
+
+      {/* Proposal Modal component */}
+      <ProposalModal
+        isOpen={isProposalModalOpen}
+        onClose={() => setIsProposalModalOpen(false)}
       />
     </div>
   )

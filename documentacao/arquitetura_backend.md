@@ -75,7 +75,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Camada de Serviços (`src/services/profileServices.ts`)
+## 5. Camada de Serviços de Perfis (`src/services/profileServices.ts`)
 
 * `fetchAllProfiles()`: Busca todos os perfis ordenados pela data de criação.
 * `getPendingProfiles()`: Retorna exclusivamente cadastros com `status === 'pendente'`.
@@ -85,7 +85,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Esquema da Tabela `products` (Catálogo de Soluções)
+## 6. Esquema da Tabela `products` (Catálogo de Soluções)
 
 A tabela `products` armazena as soluções tecnológicas oferecidas pela plataforma e seus respectivos modelos de precificação.
 
@@ -117,7 +117,7 @@ CREATE TABLE public.products (
 
 ---
 
-## 6. Camada de Serviços de Produtos (`src/services/productServices.ts`)
+## 7. Camada de Serviços de Produtos (`src/services/productServices.ts`)
 
 * `fetchAllProducts()`: Lista todos os produtos da tabela `products` ordenados por data.
 * `createProduct(data)`: Inserção de novos produtos no catálogo.
@@ -127,7 +127,7 @@ CREATE TABLE public.products (
 
 ---
 
-## 7. Ciclo de Atualização Reativa das Métricas do Painel Admin
+## 8. Ciclo de Atualização Reativa das Métricas do Painel Admin
 
 No componente `AdminOverview.tsx`, as métricas operacionais superiores são calculadas dinamicamente sobre o estado local `profiles`, sincronizado com a consulta direta ao Supabase:
 
@@ -139,3 +139,73 @@ No componente `AdminOverview.tsx`, as métricas operacionais superiores são cal
 3. **Ciclo de Atualização Reativa (`handleStatusChange`)**:
    - Ao acionar os botões `APROVAR`, `RECUSAR`, `INATIVAR` ou `ATIVAR`, a função `updateProfileStatus(userId, newStatus)` executa a alteração atômica no banco de dados.
    - Em caso de sucesso, `loadProfiles()` é invocado novamente para recarregar o estado `profiles`, recomputando instantaneamente os contadores e atualizando a interface gráfica com feedback visual (Toast).
+
+---
+
+## 9. Tabelas de Projetos e Faturas (`projects` e `invoices`)
+
+### Tabela `projects`
+```sql
+CREATE TYPE project_phase AS ENUM (
+  'proposta_pendente', 'proposta_enviada', 'aguardando_pagamento',
+  'em_desenvolvimento', 'homologacao', 'concluido', 'recusado'
+);
+
+CREATE TABLE public.projects (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  nome TEXT NOT NULL,
+  descricao TEXT,
+  data_inicio TEXT,
+  previsao_entrega TEXT,
+  fase_atual project_phase DEFAULT 'proposta_pendente'::project_phase NOT NULL,
+  proxima_entrega TEXT,
+  status_pagamento TEXT,
+  status_geral TEXT,
+  url_projeto TEXT,
+  btn_online_label TEXT,
+  btn_gerenciar_label TEXT,
+  progresso INTEGER,
+  ativo BOOLEAN DEFAULT true NOT NULL,
+  valor_setup DECIMAL(10,2) DEFAULT 0.00,
+  valor_mensalidade DECIMAL(10,2) DEFAULT 0.00,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+```
+
+### Tabela `invoices`
+```sql
+CREATE TYPE invoice_status AS ENUM ('pendente', 'pago', 'cancelado');
+CREATE TYPE invoice_type AS ENUM ('entrada', 'mensalidade', 'avulso');
+
+CREATE TABLE public.invoices (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  valor DECIMAL(10,2) NOT NULL,
+  vencimento DATE NOT NULL,
+  tipo invoice_type NOT NULL,
+  status invoice_status DEFAULT 'pendente'::invoice_status NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+```
+
+---
+
+## 10. Fluxo Comercial Completo da Proposta
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant A as Admin (Painel)
+    participant DB as Supabase DB
+
+    A->>DB: Criar proposta/projeto ('proposta_pendente')
+    A->>DB: sendProposalToClient(projectId, valorSetup, valorMensal, escopo)
+    Note over DB: Atualiza fase_atual para 'proposta_enviada'<br/>Gera fatura de entrada (50% do setup)
+    C->>A: Visualiza proposta e fatura pendente
+    C->>A: Realiza pagamento (simulado/real)
+    A->>DB: acceptProposalAndPayEntry(projectId, invoiceId)
+    Note over DB: Atualiza fatura para 'pago'<br/>Altera fase_atual para 'em_desenvolvimento'<br/>Altera status do cliente para 'ativo'
+    DB-->>A: Dashboard recarrega em tempo real
+```

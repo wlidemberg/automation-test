@@ -82,6 +82,7 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
 *   **RN-010 (Estados do Perfil de Usuário)**: Cada perfil pode assumir quatro estados: `pendente` (cadastro pelo próprio cliente via site), `ativo` (acesso liberado), `recusado` (solicitação negada) ou `inativo` (desativado operacionalmente pelo administrador).
 *   **RN-011 (Proibição de Deleção de Produtos)**: É proibida a remoção física (`DELETE`) de soluções do catálogo de produtos. A descontinuação deve ocorrer exclusivamente via desativação (`active = false`).
 *   **RN-012 (Modelos de Precificação)**: Cada produto pode ter cobrança `única` (setup/projeto), `recorrente` (licença mensal/MRR) ou `híbrida` (setup inicial + mensalidade).
+*   **RN-013 (Fluxo Híbrido de Proposta e Entrada)**: O fluxo comercial de propostas sob medida exige o faturamento de uma fatura de entrada equivalente a **50% do valor de setup/implementação** acordado. O início do desenvolvimento (fase `em_desenvolvimento`) e a ativação do perfil do cliente (`status = 'ativo'`) estão estritamente vinculados à compensação (pagamento) desta fatura.
 
 ---
 

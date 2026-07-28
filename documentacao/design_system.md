@@ -232,3 +232,17 @@ Para assegurar a legibilidade e usabilidade de modais volumosos (como o checkout
     *   Declarado como o primeiro filho direto do Card do modal (fora das colunas) para que nunca suma da viewport ao realizar scroll.
     *   **Estilo**: Círculo de alto contraste (`bg-zinc-900/90 hover:bg-zinc-800`), borda cinza proeminente (`border border-zinc-700/60`), preenchimento confortável (`p-2`) e ícone `X` (`w-5 h-5`) com transição suave (`text-zinc-400 hover:text-white transition-all`).
 
+---
+
+## 11. Modal de Propostas Comerciais (`ProposalModal.tsx`) e Badges de Status de Projetos
+
+### Modal de Proposta Comercial (`ProposalModal.tsx`)
+- **Estilo Geral**: Construído seguindo o padrão de Glassmorphism com fundo `bg-zinc-900/90 backdrop-blur-lg` e linha superior fina gradiente neon (`bg-gradient-to-r from-transparent via-[#CCFF00]/60 to-transparent`).
+- **Campos e Seletores**: Dropdowns e campos de input integrados de forma limpa, com bordas finas contrastantes `border border-white/10` e foco interativo em verde neon `focus:border-[#CCFF00]`.
+- **Botão de Envio**: Em destaque total e em caixa alta (`ENVIAR PROPOSTA AO CLIENTE`) estilizado com cor verde neon pura (`bg-[#CCFF00] text-black font-bold`).
+
+### Badges de Fases e Status de Projetos (`ProjectPhase`)
+- **`proposta_pendente`**: `bg-amber-500/10 text-amber-400 border border-amber-500/20` (Amarelo Alerta).
+- **`proposta_enviada`**: `bg-cyan-500/10 text-cyan-400 border border-cyan-500/20` (Azul Tech).
+- **`em_desenvolvimento`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30` (Verde Neon).
+
