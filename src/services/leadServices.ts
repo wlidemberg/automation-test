@@ -51,20 +51,15 @@ export async function submitProposalRequest(payload: ProposalPayload) {
       clientId = newProfile.id;
     }
 
-    // 3. Cadastra a solicitação na tabela projects vinculada ao cliente (com suporte resiliente a campos)
+    // 3. Cadastra a solicitação na tabela projects vinculada ao cliente
     const { error: projectError } = await supabase
       .from('projects')
       .insert({
         client_id: clientId,
         nome: `Solicitação: ${payload.produtoSlug.toUpperCase()}`,
         status_projeto: 'briefing',
-        status_geral: 'briefing',
-        fase_atual: 'proposta_pendente',
         descricao: payload.resumoNecessidade,
         valor_total: 0,
-        valor_setup: 0,
-        valor_mensalidade: 0,
-        ativo: true
       });
 
     if (projectError) {

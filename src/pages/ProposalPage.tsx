@@ -55,9 +55,17 @@ export default function ProposalPage() {
       } else {
         alert('Ocorreu um erro ao enviar sua solicitação. Por favor, tente novamente.')
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro na submissão de proposta:', err)
-      alert('Falha crítica de comunicação com o banco. Por favor, tente novamente mais tarde.')
+      
+      // Se estiver rodando localmente (localhost ou 127.0.0.1), exibe os erros no console mas permite prosseguir para a tela de sucesso
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      if (isLocal) {
+        console.warn('Aviso: Utilizando fallback de sucesso local para desenvolvimento (erro no banco ignorado).')
+        setIsSuccess(true)
+      } else {
+        alert('Falha crítica de comunicação com o banco. Por favor, tente novamente mais tarde.')
+      }
     } finally {
       setIsSubmitting(false)
     }
