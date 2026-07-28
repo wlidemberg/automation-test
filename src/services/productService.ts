@@ -9,7 +9,7 @@ export async function fetchProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .eq('ativo', true)
+    .eq('status', true)
     .order('nome', { ascending: true });
 
   if (error) {
@@ -30,7 +30,7 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
     .from('products')
     .select('*')
     .eq('slug', slug)
-    .eq('ativo', true)
+    .eq('status', true)
     .maybeSingle();
 
   if (error) {

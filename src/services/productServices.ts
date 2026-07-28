@@ -185,8 +185,7 @@ export async function fetchActiveProducts(): Promise<Partial<Product>[]> {
       .order('nome', { ascending: true });
 
     if (error) {
-      console.warn('Erro ao buscar produtos do Supabase (usando fallback local):', error.message);
-      // Fallback para dados locais caso o banco retorne erro
+      console.warn('Aviso: Erro ao buscar produtos do Supabase (usando fallback local):', error.message);
       return productsData as unknown as Partial<Product>[];
     }
 
@@ -196,7 +195,7 @@ export async function fetchActiveProducts(): Promise<Partial<Product>[]> {
 
     return data;
   } catch (err) {
-    console.error('Falha inesperada na busca de produtos:', err);
+    console.error('Falha na busca de produtos:', err);
     return productsData as unknown as Partial<Product>[];
   }
 }
