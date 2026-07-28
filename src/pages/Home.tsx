@@ -7,6 +7,7 @@ import ProductsSection from '../components/ProductsSection'
 import PortfolioSection from '../components/PortfolioSection'
 import CtaSection from '../components/CtaSection'
 
+
 export default function Home() {
   const location = useLocation()
 
@@ -30,6 +31,8 @@ export default function Home() {
     <Layout>
       {/* Hero Entrance Section */}
       <HeroSection />
+
+
 
       {/* About Section */}
       <AboutSection />

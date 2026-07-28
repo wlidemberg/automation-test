@@ -74,7 +74,35 @@ A tipografia deve evocar modernidade, sofisticação e precisão técnica.
 *   **Classe Tailwind configurada**: `shadow-glow-neon` (mapeada no `tailwind.config.js` com sombra baseada em `#CCFF00`).
 
 
+### Badges de Preços Compostos (Setup vs. Recorrência)
+Para expressar as propostas comerciais de maneira elegante, a interface divide os custos em duas dimensões (Implementação Única vs. Assinatura Mensal). Cada dimensão deve ser apresentada em blocos lado a lado, utilizando contrastes cirúrgicos sob a estrutura Tech-Luxo:
+
+*   **Setup (Valor Único)**:
+    *   **Estilo**: Fundo em `brand-gray` semi-transparente (`bg-brand-gray/60`), borda sutil de 1px (`border-white/5`), desfoque de fundo (`backdrop-blur-sm`).
+    *   **Texto**: Título da dimensão ("SETUP") em caixa alta, fonte mono pequena (`text-[9px]`), espaçamento expandido e cor cinza de suporte (`text-gray-500`). O valor é exibido em branco puro (`text-white`) com peso negrito (`font-bold`).
+*   **Mensalidade (Recorrência)**:
+    *   **Estilo**: Mesma estrutura física (fundo glassmorphism, borda de 1px).
+    *   **Texto**: Título da dimensão ("MENSALIDADE") em caixa alta e cinza. O valor é destacado com a cor neon oficial (`text-brand-neon`) com peso negrito (`font-bold`) e o sufixo `/mês` para indicar claramente a recorrência.
+*   **Padrão de Exibição Gratuito/Isento**:
+    *   Quando `valor_implementacao` for `0` ou nulo, o badge deve indicar textualmente **"Gratuito"**.
+    *   Quando `valor_mensalidade` for `0` ou nulo, o badge deve indicar textualmente **"Isento"**.
+
+### Progresso Percentual e Checklist de Roadmap (Dashboard)
+Para manter o alinhamento de alta fidelidade visual com os dados de engenharia, o painel do cliente adota padrões de design específicos para o progresso de entrega de projetos:
+
+*   **Indicador de Progresso Percentual**:
+    *   **Estrutura**: Barra horizontal com trilha de fundo na cor escura semi-transparente (`bg-white/5`), altura ultra-fina de 4px (`h-1`), cantos totalmente arredondados (`rounded-full`). A barra de preenchimento ativo deve ser renderizada na cor sólida Verde Neon (`bg-brand-neon`).
+    *   **Metadados de Apoio**: Abaixo da barra de progresso, um grid flexível exibe o rótulo "PROGRESSO" à esquerda e o percentual textual à direita (ex: "60%"), ambos utilizando a fonte mono, tamanho micro (`text-[9px]`) e cor cinza média (`text-gray-500`) em caixa alta.
+*   **Checklist de Cronograma (Timeline Roadmap)**:
+    *   **Estrutura de Linha**: Uma linha vertical ultrafina (`border-l border-white/10`) guia o olhar do usuário ao longo das etapas. Cada etapa possui um recuo lateral de 24px (`pl-6`).
+    *   **Marcador Visual de Etapa (Timeline Points)**:
+        *   **Concluído (`status: 'done'`)**: Um círculo de 16px (`w-4 h-4`) preenchido com Verde Neon (`bg-brand-neon`) contendo um ícone de check-circle preto. O título da fase é renderizado em branco puro (`text-white`) com peso negrito (`font-bold`).
+        *   **Em Andamento (`status: 'current'`)**: Um círculo de 16px com fundo escuro e borda Verde Neon (`border-brand-neon`) animado com um pulso suave (`animate-pulse`). O título da fase é destacado na cor Verde Neon (`text-brand-neon`) com peso negrito.
+        *   **Pendente (`status: 'pending'`)**: Um círculo de 16px com fundo cinza escuro (`bg-zinc-900`) e borda sutil (`border-white/10`). O título da fase é exibido em cinza opaco (`text-gray-600`).
+
 ---
+
+
 
 ## 5. Diretrizes de Animação (Framer Motion)
 
@@ -126,8 +154,6 @@ Animações devem ser rápidas, orgânicas e imperceptíveis na velocidade, mas 
         };
         ```
 
----
-
 ## 6. Componente de Navegação: Sidebar Retrátil (Collapsible Navigation)
 
 O Painel Administrativo adota uma navegação por **Sidebar Retrátil** estruturada no padrão Tech-Luxo:
@@ -169,4 +195,40 @@ O Painel Administrativo adota uma navegação por **Sidebar Retrátil** estrutur
 - **`Híbrido`**: `bg-purple-500/10 text-purple-400 border border-purple-500/30`
 - **`Ativo`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30`
 - **`Inativo`**: `bg-zinc-800 text-gray-400 border border-zinc-700`
+
+---
+
+## 9. Componente de Resumo Financeiro no Checkout
+Para manter a total transparência comercial e guiar a tomada de decisão no momento da contratação, o formulário de checkout adota um componente de detalhamento de valores estruturado:
+
+*   **Contêiner Principal (Cartão do Checkout)**:
+    *   **Estilo**: Fundo em preto sólido fosco (`bg-black/40`), borda de 1px na cor de separação (`border-white/5`), cantos levemente arredondados (`rounded-lg`), desfoque de fundo de vidro (`backdrop-blur-sm`).
+    *   **Efeito Estético**: No topo do contêiner, uma linha fina gradiente transparente-neon-transparente (`bg-gradient-to-r from-transparent via-brand-neon/20 to-transparent`) atrai sutilmente o olhar do cliente.
+*   **Destaque Financeiro da Entrada (Entrada de 50%)**:
+    *   Como a ativação do serviço está vinculada ao pagamento da entrada, este elemento possui a maior hierarquia visual no resumo de faturamento.
+    *   **Estilo**: Fundo em Verde Neon com baixa opacidade (`bg-brand-neon/5`), borda fina destacada em Verde Neon translúcido (`border-brand-neon/20`), cantos arredondados (`rounded`).
+    *   **Tipografia**:
+        *   Título ("ENTRADA OBRIGATÓRIA (50%)") e observação em cinza médio no formato micro-mono (`text-[9px] font-mono tracking-wider uppercase`).
+        *   Valor em destaque total Verde Neon (`text-brand-neon`) utilizando fonte negrito de grande escala (`text-sm font-extrabold tracking-tight`).
+*   **Setup e Mensalidades de Suporte**:
+    *   Exibidos em fonte mono de tamanho padrão (`text-xs font-mono`) e cor cinza de suporte (`text-gray-500`) para não concorrer visualmente com a entrada obrigatória.
+    *   Os valores associados usam o branco puro (`text-white`) com peso médio.
+
+---
+
+## 10. Padrão Estrito de Modais de Alta Complexidade (Responsivos)
+Para assegurar a legibilidade e usabilidade de modais volumosos (como o checkout e formulários de cadastro) em múltiplos tamanhos de tela, adota-se o padrão estrito de bloqueio de viewport e rolagem interna independente:
+
+*   **Isolamento DOM com React Portal**: Para evitar efeitos colaterais de layout, estouro de Z-Index de elementos adjacentes ou rolagem dupla de janelas (Double Scrollbars), todo modal de alta complexidade deve ser renderizado fora do fluxo da árvore de componentes, utilizando a API `createPortal` do React para montagem direta na raiz (`document.body`).
+*   **Overlay e Lock de Fundo (Backdrop & Lock)**:
+    *   O overlay de fundo deve travar o scroll da página principal (`overflow-hidden`) e cobrir a viewport inteira (`fixed inset-0 z-[9999]`), centralizando o conteúdo (`flex items-center justify-center p-4`) com fundo escuro denso (`bg-black/80`) e desfoque sutil (`backdrop-blur-md`).
+*   **Contêiner Principal (Card do Modal)**:
+    *   **Limitação de Viewport**: Altura restrita a 90% da viewport (`max-h-[90vh]`) para garantir que o modal caiba em qualquer dispositivo.
+    *   **Estrutura de Linha**: Flexível por largura (`flex flex-col lg:flex-row`), cantos arredondados de alta curvatura (`rounded-2xl`), bordas finas com contraste cinza (`border border-zinc-800`), transbordo ocultado (`overflow-hidden`) e sombra projetada suave de fundo (`shadow-2xl`).
+*   **Rolagem Interna nas Colunas**:
+    *   **Coluna Informativa/Financeira (Lado Esquerdo)**: Ocupa `w-full lg:w-5/12` com fundo cinza opaco (`bg-zinc-900/50`), divisória física (`border-zinc-800`) e rolagem vertical autônoma se os dados excederem a altura (`overflow-y-auto max-h-[90vh]`).
+    *   **Coluna do Formulário (Lado Direito)**: Ocupa `w-full lg:w-7/12` com espaçamento interno confortável (`p-6 sm:p-8`), rolagem vertical interna dedicada (`overflow-y-auto max-h-[90vh]`) e barra de rolagem estilizada discreta (`scrollbar-thin scrollbar-thumb-zinc-700`) para não quebrar a estética premium.
+*   **Botão de Fechar Absoluto (Fixo e Não-Rolável)**:
+    *   Declarado como o primeiro filho direto do Card do modal (fora das colunas) para que nunca suma da viewport ao realizar scroll.
+    *   **Estilo**: Círculo de alto contraste (`bg-zinc-900/90 hover:bg-zinc-800`), borda cinza proeminente (`border border-zinc-700/60`), preenchimento confortável (`p-2`) e ícone `X` (`w-5 h-5`) com transição suave (`text-zinc-400 hover:text-white transition-all`).
 

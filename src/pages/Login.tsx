@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Terminal, Shield, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { signInUser } from '../services/authService'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -10,7 +11,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     
@@ -21,12 +22,15 @@ export default function Login() {
 
     setIsLoading(true)
     
-    // Simulate API loading
-    setTimeout(() => {
-      setIsLoading(false)
-      // Redirect to dashboard
+    try {
+      await signInUser(email, password)
       navigate('/dashboard')
-    }, 1200)
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'Credenciais inválidas. Verifique seus dados e tente novamente.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -125,11 +129,11 @@ export default function Login() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Conectando...
+                CONECTANDO...
               </span>
             ) : (
               <>
-                Entrar no Painel
+                ENTRAR NO PAINEL
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

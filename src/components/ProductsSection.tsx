@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { 
@@ -14,33 +14,22 @@ import {
   Cpu, 
   Rocket, 
   MessageSquare, 
-  Terminal,
-  Loader2
+  Terminal, 
+  Loader2 
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { fetchAllProducts } from '../services/productServices'
-import type { Product } from '../types/database'
+import { fetchProducts } from '../services/productService'
+import { productsData } from '../data/productsData'
+import AuthModal from '../pages/Auth/AuthModal'
 
 export default function ProductsSection() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
-
-  useEffect(() => {
-    const loadProductsData = async () => {
-      try {
-        const data = await fetchAllProducts()
-        // Exibe apenas produtos com status ativo (status = true)
-        const activeProducts = data.filter(p => p.status)
-        setProducts(activeProducts)
-      } catch (err) {
-        console.error('Erro ao carregar produtos na landing page:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadProductsData()
-  }, [])
+  const [error, setError] = useState<string | null>(null)
+  
+  // Controle do modal de contratação
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [selectedProductSlug, setSelectedProductSlug] = useState<string | undefined>(undefined)
 
   // Mapeador dinâmico de ícones da biblioteca lucide-react
   const getIconComponent = (iconName?: string | null) => {
@@ -59,6 +48,40 @@ export default function ProductsSection() {
     if (lower.includes('terminal')) return Terminal
     return Package
   }
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true)
+        const dbProducts = await fetchProducts()
+        
+        // Mapeia os produtos do Supabase agregando os assets locais do productsData
+        const mapped = dbProducts.map(dbProd => {
+          const localMeta = productsData.find(p => p.slug === dbProd.slug)
+          const setupVal = dbProd.valor_setup !== undefined ? dbProd.valor_setup : (dbProd.preco_setup !== undefined ? dbProd.preco_setup : 0)
+          const mensalVal = dbProd.valor_mensalidade !== undefined ? dbProd.valor_mensalidade : (dbProd.preco_mensal !== undefined ? dbProd.preco_mensal : 0)
+          
+          return {
+            ...dbProd,
+            icon: localMeta?.icon || getIconComponent(dbProd.icone) || Terminal,
+            badge: dbProd.rotulo || localMeta?.badge || 'Solução Digital',
+            bgImage: localMeta?.bgImage || 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+            descricao: dbProd.descricao || dbProd.descricao_curta || localMeta?.description || '',
+            valor_setup: setupVal,
+            valor_mensalidade: mensalVal
+          }
+        })
+        setProducts(mapped)
+      } catch (err) {
+        console.error(err)
+        setError('Não foi possível carregar o catálogo de produtos.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -104,21 +127,29 @@ export default function ProductsSection() {
             Soluções estruturadas para o seu crescimento
           </h2>
           <p className="font-sans text-gray-400 text-sm sm:text-base font-light leading-relaxed">
-            Acelere a operação da sua empresa com ecossistemas digitais pré-formatados. Da captação de leads à automação do atendimento, nossos produtos são estruturados para escalar suas vendas e reduzir o esforço manual da sua equipe.
+            Acelere a operação da sua empresa com ecossistemas digitais pré-formatados. Da captação de leads à automação do atendimento, nossos produtos são estruturados para escalar suas vendas e reduzir o effort manual da sua equipe.
           </p>
           <div className="w-12 h-[1px] bg-brand-neon mx-auto mt-4" />
         </div>
 
-        {/* Loading State */}
+        {/* Loading / Error States */}
         {loading ? (
-          <div className="py-20 text-center space-y-3">
-            <Loader2 className="w-8 h-8 text-brand-neon animate-spin mx-auto" />
-            <p className="text-xs font-mono text-gray-400 uppercase tracking-widest">
-              CARREGANDO PRODUTOS DO BANCO DE DADOS...
-            </p>
+          <div className="flex flex-col items-center justify-center py-20 space-y-4">
+            <Loader2 className="w-8 h-8 text-brand-neon animate-spin animate-duration-1000" />
+            <p className="font-mono text-xs uppercase tracking-widest text-gray-500">Carregando catálogo oficial...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 bg-brand-gray/30 border border-red-500/20 rounded-lg max-w-md mx-auto space-y-4">
+            <p className="font-mono text-xs uppercase tracking-widest text-red-500">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-6 py-3 bg-brand-neon text-black font-semibold rounded text-xs tracking-wider uppercase hover:shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all duration-300"
+            >
+              TENTAR NOVAMENTE
+            </button>
           </div>
         ) : (
-          /* Bento Grid com Dados do Supabase */
+          /* Bento Grid */
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -126,20 +157,11 @@ export default function ProductsSection() {
             viewport={{ once: true, margin: "-100px" }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {products.map((product) => {
-              const IconComponent = getIconComponent(product.icone)
-              
-              // Define o rótulo (badge superior direito)
-              const rotuloBadge = product.rotulo || (
-                product.categoria === 'design_web' ? 'AUTORIDADE DIGITAL' :
-                product.categoria === 'desenvolvimento' ? 'SOLUÇÃO SOB MEDIDA' :
-                product.categoria === 'erp_saas' ? 'GESTÃO CORPORATIVA' :
-                product.categoria === 'automacao' ? 'EFICIÊNCIA OPERACIONAL' : 'IA AVANÇADA'
-              )
-
+            {products.map((product, index) => {
+              const Icon = product.icon
               return (
                 <motion.div
-                  key={product.id}
+                  key={product.id || index}
                   variants={cardVariants}
                   className="group bg-zinc-900/40 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:border-brand-neon/30 hover:bg-zinc-900/60 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden backdrop-blur-sm"
                 >
@@ -147,41 +169,63 @@ export default function ProductsSection() {
                   <div className="absolute inset-0 bg-gradient-to-tr from-brand-neon/[0.015] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   <div className="space-y-6">
-                    {/* Top Row: Icon and [rotulo] Badge */}
+                    {/* Icon and badge */}
                     <div className="flex justify-between items-start">
                       <div className="w-12 h-12 rounded bg-brand-gray flex items-center justify-center border border-white/10 group-hover:border-brand-neon/40 transition-colors duration-300">
-                        <IconComponent className="w-6 h-6 text-white group-hover:text-brand-neon transition-colors duration-300" />
+                        <Icon className="w-6 h-6 text-white group-hover:text-brand-neon transition-colors duration-300" />
                       </div>
-                      
-                      {/* [rotulo] Badge em destaque no canto superior direito */}
-                      <span className="text-[10px] uppercase font-mono tracking-wider bg-brand-gray border border-white/5 px-2.5 py-1 rounded text-gray-400 group-hover:text-brand-neon group-hover:border-brand-neon/20 transition-all duration-300">
-                        {rotuloBadge}
+                      <span className="text-[10px] uppercase font-mono tracking-wider bg-brand-gray border border-white/5 px-2.5 py-1 rounded text-gray-500 group-hover:text-brand-neon group-hover:border-brand-neon/20 transition-all duration-300">
+                        {product.badge}
                       </span>
                     </div>
 
-                    {/* [Nome] and [Descrição] */}
+                    {/* Title and summary */}
                     <div className="space-y-3">
-                      <h3 className="text-xl font-space font-extrabold text-white uppercase group-hover:text-brand-neon transition-colors duration-300">
+                      <h3 className="text-xl font-space font-bold text-white group-hover:text-brand-neon transition-colors duration-300">
                         {product.nome}
                       </h3>
                       <p className="font-sans text-sm text-gray-400 font-light leading-relaxed">
-                        {product.descricao_curta}
+                        {product.descricao}
                       </p>
+                    </div>
+
+                    {/* Preços Setup & Recorrência */}
+                    <div className="flex gap-4 pt-4 border-t border-white/5 font-mono">
+                      <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded p-2.5 backdrop-blur-sm text-center">
+                        <span className="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Setup</span>
+                        <span className="text-sm font-bold text-white">
+                          {product.valor_setup > 0 ? (
+                            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_setup)}</span>
+                          ) : (
+                            <span>GRATUITO</span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded p-2.5 backdrop-blur-sm text-center">
+                        <span className="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Mensalidade</span>
+                        <span className="text-sm font-bold text-brand-neon">
+                          {product.valor_mensalidade > 0 
+                            ? `${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_mensalidade)}/mês`
+                            : 'Isento'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Action Links */}
                   <div className="pt-8 mt-auto flex flex-wrap gap-x-6 gap-y-2 items-center">
-                    <a
-                      href="/#contato"
-                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-bold text-gray-400 group-hover:text-brand-neon transition-colors duration-300 font-mono"
+                    <button
+                      onClick={() => {
+                        setSelectedProductSlug(product.slug)
+                        setIsAuthModalOpen(true)
+                      }}
+                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300 cursor-pointer"
                     >
                       ADQUIRIR PRODUTO
                       <ArrowUpRight className="w-3.5 h-3.5" />
-                    </a>
+                    </button>
                     <Link
                       to={`/produtos/${product.slug}`}
-                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-500 hover:text-white transition-colors duration-300 font-mono"
+                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-500 hover:text-white transition-colors duration-300"
                     >
                       SABER MAIS
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -194,6 +238,13 @@ export default function ProductsSection() {
         )}
 
       </div>
+
+      {/* Modal de checkout de produto */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        initialProductSlug={selectedProductSlug} 
+      />
     </section>
   )
 }
