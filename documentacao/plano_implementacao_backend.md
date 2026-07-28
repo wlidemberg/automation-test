@@ -32,6 +32,11 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Suporte a propostas personalizadas, precificação de setup/mensalidade e geração automática de faturas de entrada (50%).
   - Aceite de propostas integrado com simulação de pagamento e ativação automática do cliente.
 
+- [x] **Etapa 6: Substituição do Checkout Direto por Solicitação de Proposta/Diagnóstico (Briefing)**
+  - Remoção do antigo checkout comercial direto da landing page.
+  - Implementação do novo formulário de briefing/proposta técnica (`ProposalModal.tsx` público) para captação de leads.
+  - Fluxo integrado com Supabase (`leadServices.ts`) para criação automática de perfis com `status: 'pendente'` e novos projetos em fase `briefing` (com valor zerado).
+
 ---
 
 ## 2. Cronograma de Entregas

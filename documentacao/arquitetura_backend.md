@@ -210,3 +210,16 @@ sequenceDiagram
     Note over DB: Atualiza fatura para 'pago'<br/>Altera fase_atual para 'em_desenvolvimento'<br/>Altera status do cliente para 'ativo'
     DB-->>A: Dashboard recarrega em tempo real
 ```
+
+---
+
+## 11. Captação de Leads e Solicitação de Proposta (Briefing)
+
+O fluxo público de captação de leads substitui a compra direta e integra o cadastro de briefing ao banco de dados:
+
+1. **Entrada do Lead (`leadServices.ts` ➔ `submitProposalRequest`)**:
+   - Cria ou atualiza um registro na tabela `profiles` com `status = 'pendente'`.
+   - Cria um registro associado na tabela `projects` com a fase inicial `fase_atual = 'briefing'` (ou `'proposta_pendente'` como fallback) e valores comerciais zerados (`valor_setup = 0`, `valor_mensalidade = 0`).
+2. **Ciclo de Conversão**:
+   - O projeto entra na fila de análise da administração.
+   - O Administrador revisa as necessidades e precifica o projeto enviando a proposta, migrando a fase do projeto para `'proposta_enviada'` e gerando a fatura de 50% de entrada.
