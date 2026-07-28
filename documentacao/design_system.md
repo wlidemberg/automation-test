@@ -244,11 +244,11 @@ Para assegurar a legibilidade e usabilidade de modais volumosos (como o checkout
 - **Campos e Seletores**: Dropdowns e campos de input integrados de forma limpa, com bordas finas contrastantes `border border-white/10` e foco interativo em verde neon `focus:border-[#CCFF00]`.
 - **Botão de Envio**: Em destaque total e em caixa alta (`ENVIAR PROPOSTA AO CLIENTE`) estilizado com cor verde neon pura (`bg-[#CCFF00] text-black font-bold`).
 
-### Modal de Solicitação de Proposta Técnica/Briefing Público (`components/ProposalModal.tsx`)
-- **Substituição do Checkout**: Substitui por completo o antigo modal de checkout direto (`AuthModal` público) da landing page.
-- **Visual**: Glassmorphism premium (`bg-brand-gray/95 backdrop-blur-lg border border-brand-gray`) com decoração neon no topo e botão de fechar flutuante.
+### Página Dedicada de Solicitação de Proposta Técnica/Briefing Público (`pages/ProposalPage.tsx`)
+- **Substituição do Checkout**: Substitui por completo o antigo modal de checkout direto (`AuthModal` público) da landing page por uma rota dedicada (`/solicitar-proposta`).
+- **Visual**: Grid responsiva com painel esquerdo informativo sobre a Automation Test e painel direito em Glassmorphism contendo o formulário de captação de briefing.
 - **Campos**: Alternador dinâmico de tipo de pessoa (PF/PJ), nome/razão social, e-mail corporativo, telefone/WhatsApp, seletor de solução e campo de descrição das necessidades.
-- **Botão**: Caixa alta (`ENVIAR SOLICITAÇÃO`) em verde neon com brilho no hover.
+- **Botão**: Caixa alta (`ENVIAR BRIEFING DE PROPOSTA`) em verde neon com brilho no hover.
 
 ### Badges de Fases e Status de Projetos (`ProjectPhase`)
 - **`briefing`**: `bg-zinc-800 text-gray-400 border border-zinc-700` (Cinza Briefing).

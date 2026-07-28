@@ -220,6 +220,7 @@ O fluxo público de captação de leads substitui a compra direta e integra o ca
 1. **Entrada do Lead (`leadServices.ts` ➔ `submitProposalRequest`)**:
    - Cria ou atualiza um registro na tabela `profiles` com `status = 'pendente'`.
    - Cria um registro associado na tabela `projects` com a fase inicial `fase_atual = 'briefing'` (ou `'proposta_pendente'` como fallback) e valores comerciais zerados (`valor_setup = 0`, `valor_mensalidade = 0`).
+   - **Mecanismo de Resiliência Local**: O fluxo é desenhado para capturar erros de RLS ou ausência de tabelas no Supabase, logando o aviso no console e retornando um estado de sucesso (`success: true, isFallback: true`) para assegurar o funcionamento da navegação do usuário localmente.
 2. **Ciclo de Conversão**:
    - O projeto entra na fila de análise da administração.
    - O Administrador revisa as necessidades e precifica o projeto enviando a proposta, migrando a fase do projeto para `'proposta_enviada'` e gerando a fatura de 50% de entrada.

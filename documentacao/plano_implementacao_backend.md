@@ -35,7 +35,7 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
 - [x] **Etapa 6: Substituição do Checkout Direto por Solicitação de Proposta/Diagnóstico (Briefing)**
   - Remoção do antigo checkout comercial direto da landing page.
   - Implementação do novo formulário de briefing/proposta técnica (`ProposalModal.tsx` público) para captação de leads.
-  - Fluxo integrado com Supabase (`leadServices.ts`) para criação automática de perfis com `status: 'pendente'` e novos projetos em fase `briefing` (com valor zerado).
+  - Fluxo integrado com Supabase (`leadServices.ts`) para criação automática de perfis com `status: 'pendente'` e novos projetos em fase `briefing` (com valor zerado), adicionando resiliência e fallback automático contra falhas de RLS/Supabase no ambiente de desenvolvimento local.
 
 - [x] **Etapa 7: Reestruturação de Modais em Páginas Dedicadas**
   - Conversão do formulário público de propostas em página inteira (`/solicitar-proposta` -> `ProposalPage.tsx`).

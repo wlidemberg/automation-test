@@ -41,20 +41,18 @@ export default function ProposalPage() {
     }
 
     setIsSubmitting(true)
-    const product = productsData.find(p => p.slug === selectedProductSlug)
 
-    const success = await submitProposalRequest({
-      tipo_pessoa: tipoPessoa,
-      nome_completo: nomeCompleto,
+    const result = await submitProposalRequest({
+      tipoPessoa: tipoPessoa,
+      nomeRazao: nomeCompleto,
       email,
       telefone,
-      produtoId: product?.id || '',
-      produtoNome: product?.title || 'Personalizado',
-      needs
+      produtoSlug: selectedProductSlug,
+      resumoNecessidade: needs
     })
 
     setIsSubmitting(false)
-    if (success) {
+    if (result.success) {
       setIsSuccess(true)
     } else {
       alert('Ocorreu um erro ao enviar sua solicitação. Por favor, tente novamente.')
