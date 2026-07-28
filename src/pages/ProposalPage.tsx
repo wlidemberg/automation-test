@@ -36,6 +36,7 @@ export default function ProposalPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting) return
     if (!nomeCompleto || !email || !telefone || !selectedProductSlug || !needs) {
       alert('Por favor, preencha todos os campos obrigatórios.')
       return

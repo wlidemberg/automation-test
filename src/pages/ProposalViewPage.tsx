@@ -111,6 +111,7 @@ export default function ProposalViewPage() {
 
   const handlePayEntry = async () => {
     if (!briefingId || !briefing) return
+    if (isPaying) return
     setIsPaying(true)
 
     try {

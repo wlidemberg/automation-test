@@ -92,3 +92,12 @@ Para validar as boas práticas de desenvolvimento no código:
 ```bash
 npm run lint
 ```
+
+---
+
+## 🤖 Esteira de Onboarding Técnico Automatizada com IA & n8n
+A plataforma possui um fluxo moderno de captação e análise técnica de leads:
+1. **Briefing Técnico (`/briefing/:projectId`)**: Questionário interativo contendo detalhes de marca, HEX cores, dores e integrações de API/CRM com validação anti-duplicidade e anti-duplo-clique.
+2. **Automação n8n & Propostas IA (`/proposta/:briefingId`)**: Integração de webhook assíncrono para o n8n gerar a proposta e orçamento recomendados por IA com upsells dinâmicos.
+3. **Painel de Acompanhamento no Admin (`/admin`)**: O Administrador acompanha as etapas reativas de onboarding através de um Stepper horizontal com controle de opacidade e cores verde neon (Briefing ➔ Proposta ➔ Pagou ➔ Senha/Ativado).
+4. **Segurança Transacional**: Todos os formulários possuem proteções `disabled` no estado durante o processamento para evitar disparos duplicados acidentais.

@@ -606,6 +606,7 @@ export default function AdminOverview() {
                     <th className="py-3.5 px-4 font-semibold">Cliente / Razão Social</th>
                     <th className="py-3.5 px-4 font-semibold">Documento & Contato</th>
                     <th className="py-3.5 px-4 font-semibold">Data Cadastro</th>
+                    <th className="py-3.5 px-4 font-semibold text-center">Etapas do Funil</th>
                     <th className="py-3.5 px-4 font-semibold">Status</th>
                     <th className="py-3.5 px-4 font-semibold text-right">Ações de Aprovação</th>
                   </tr>
@@ -622,6 +623,10 @@ export default function AdminOverview() {
                     const isUpdating = updatingId === profile.id
                     const associatedBriefing = briefings.find((b: any) => b.client_id === profile.id)
                     const hasConfirmedPayment = associatedBriefing?.status_briefing === 'proposta_aceita'
+                    const stepBriefing = associatedBriefing !== undefined
+                    const stepProposta = (associatedBriefing?.proposta_ia !== null && associatedBriefing?.proposta_ia !== undefined) || profile.status === 'ativo'
+                    const stepPagou = associatedBriefing?.status_briefing === 'proposta_aceita' || profile.status === 'ativo'
+                    const stepAtivado = profile.status === 'ativo'
 
                     return (
                       <tr key={profile.id} className="text-xs hover:bg-white/[0.02] transition-all duration-200">
@@ -658,9 +663,76 @@ export default function AdminOverview() {
                         </td>
 
                         {/* Data de Cadastro */}
-                        <td className="py-4 px-4 font-mono text-gray-400 text-[10px]">
-                          {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'N/D'}
-                        </td>
+                         <td className="py-4 px-4 font-mono text-gray-400 text-[10px]">
+                           {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'N/D'}
+                         </td>
+ 
+                         {/* Etapas do Funil */}
+                         <td className="py-4 px-4 text-center">
+                           <div className="inline-flex items-center justify-center gap-3 font-mono text-[9px]">
+                             {/* 1. Enviou Briefing */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepBriefing
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepBriefing ? 'Briefing Enviado' : 'Aguardando Briefing'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepBriefing ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Briefing</span>
+                             </div>
+ 
+                             <span className="text-zinc-800 text-[8px] select-none">/</span>
+ 
+                             {/* 2. Recebe Proposta */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepProposta
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepProposta ? 'Proposta Gerada' : 'Aguardando Proposta'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepProposta ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Proposta</span>
+                             </div>
+ 
+                             <span className="text-zinc-800 text-[8px] select-none">/</span>
+ 
+                             {/* 3. Pagou */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepPagou
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepPagou ? 'Entrada Paga' : 'Aguardando Pagamento'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepPagou ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Pagou</span>
+                             </div>
+ 
+                             <span className="text-zinc-800 text-[8px] select-none">/</span>
+ 
+                             {/* 4. Gerou senha definitiva */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepAtivado
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepAtivado ? 'Acesso Ativado (Senha Gerada)' : 'Acesso Pendente'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepAtivado ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Senha</span>
+                             </div>
+                           </div>
+                         </td>
 
                         {/* Status com Estilo Tech-Luxo */}
                         <td className="py-4 px-4 font-mono">

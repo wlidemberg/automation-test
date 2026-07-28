@@ -47,6 +47,21 @@ export default function BriefingPage() {
   const [isLoadingProject, setIsLoadingProject] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [countdown, setCountdown] = useState(60)
+
+  // Countdown timer for automatic redirection
+  useEffect(() => {
+    let timer: any
+    if (isSuccess && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(prev => prev - 1)
+      }, 1000)
+    } else if (isSuccess && countdown === 0) {
+      navigate('/')
+    }
+    return () => clearTimeout(timer)
+  }, [isSuccess, countdown, navigate])
 
   // Form states
   const [projectName, setProjectName] = useState('')
@@ -65,7 +80,10 @@ export default function BriefingPage() {
   // Load project context
   useEffect(() => {
     async function loadProjectContext() {
-      if (!projectId) return
+      if (!projectId) {
+        setIsLoadingProject(false)
+        return
+      }
       try {
         const { data: project, error: pError } = await supabase
           .from('projects')
@@ -73,31 +91,27 @@ export default function BriefingPage() {
           .eq('id', projectId)
           .maybeSingle()
 
-        if (pError || !project) {
-          console.error(pError)
-          setErrorMessage('PROJETO NÃO ENCONTRADO NO BANCO DE DADOS.')
-          setIsLoadingProject(false)
-          return
-        }
+        if (project) {
+          setClientId(project.client_id)
+          setProjectTitle(project.nome)
+          setProjectName(project.nome.replace('Solicitação: ', ''))
 
-        setClientId(project.client_id)
-        setProjectTitle(project.nome)
-        setProjectName(project.nome.replace('Solicitação: ', ''))
+          // Fetch client details
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email, cpf, cnpj')
+            .eq('id', project.client_id)
+            .maybeSingle()
 
-        // Fetch client details
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('email, cpf, cnpj')
-          .eq('id', project.client_id)
-          .maybeSingle()
-
-        if (profile) {
-          setClientEmail(profile.email || '')
-          setClientCpfCnpj(profile.cpf || profile.cnpj || '')
+          if (profile) {
+            setClientEmail(profile.email || '')
+            setClientCpfCnpj(profile.cpf || profile.cnpj || '')
+          }
+        } else {
+          console.warn('Aviso: Projeto não encontrado no banco de dados. Continuando em modo avulso/teste.')
         }
       } catch (err) {
-        console.error(err)
-        setErrorMessage('ERRO AO CONECTAR COM O SERVIDOR.')
+        console.error('Erro ao carregar projeto:', err)
       } finally {
         setIsLoadingProject(false)
       }
@@ -124,6 +138,7 @@ export default function BriefingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting) return
     setErrorMessage(null)
 
     if (!projectName || !doresPrincipais) {
@@ -139,7 +154,6 @@ export default function BriefingPage() {
         const duplicity = await checkProfileDuplicity(clientEmail, clientCpfCnpj)
         if (duplicity.exists && duplicity.field === 'cpf_cnpj') {
           console.warn('CPF/CNPJ já cadastrado em outro perfil.');
-          // Permite prosseguir localmente mas alerta no console
         }
       }
 
@@ -179,9 +193,8 @@ export default function BriefingPage() {
           .eq('id', projectId)
       }
 
-      // 5. Direciona para a página de status do briefing
-      // Para simular localmente a geração de proposta pela IA, criamos uma rota temporária ou mostramos o aguarde
-      navigate(`/proposta/${briefing.id}`)
+      // 5. Exibe a tela de sucesso diretamente nesta página
+      setIsSuccess(true)
 
     } catch (err: any) {
       console.error(err)
@@ -201,19 +214,69 @@ export default function BriefingPage() {
 
         <div className="max-w-4xl mx-auto space-y-8">
           
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-neon/10 border border-brand-neon/20 rounded-full text-brand-neon text-[10px] font-mono tracking-widest uppercase">
-              <Sparkles className="w-3.5 h-3.5" />
-              Agente de IA Integrado
+          {isSuccess ? (
+            /* Success Screen / Agradecimento */
+            <div className="bg-brand-gray/90 border border-brand-gray rounded-2xl p-8 sm:p-12 backdrop-blur-md shadow-2xl text-center space-y-6 flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#CCFF00]/50 to-transparent" />
+              
+              <div className="p-4 bg-[#CCFF00]/10 border border-[#CCFF00]/20 rounded-full text-[#CCFF00]">
+                <CheckCircle2 className="w-16 h-16" />
+              </div>
+              <div className="space-y-3 max-w-xl">
+                <h2 className="font-space font-extrabold text-2xl text-white uppercase tracking-tight">
+                  BRIEFING ENVIADO COM SUCESSO!
+                </h2>
+                <p className="text-sm text-brand-neon font-mono uppercase tracking-widest">
+                  OBRIGADO PELO SEU ENVIO
+                </p>
+                <p className="text-xs text-gray-400 font-sans font-light leading-relaxed">
+                  Sua solicitação foi registrada no banco de dados. Nosso agente de Inteligência Artificial já foi acionado e está integrando seus dados com a automação no n8n.
+                </p>
+                <div className="bg-black/30 border border-white/5 rounded p-4 text-left text-xs space-y-2 mt-4">
+                  <span className="block text-[9px] font-mono text-brand-neon uppercase font-bold tracking-wider">PRÓXIMOS PASSOS E FLUXO:</span>
+                  <p className="text-gray-300 font-sans font-light leading-relaxed">
+                    1. **Análise de IA**: Nosso assistente gera a proposta dinâmica baseada nas dores e integrações fornecidas.
+                    <br />
+                    2. **Geração de Proposta**: A proposta técnica é gerada e disponibilizada em sua Área do Cliente.
+                    <br />
+                    3. **Aprovação**: Você revisa o orçamento, seleciona adicionais e realiza o aceite comercial.
+                  </p>
+                </div>
+                <p className="text-[10px] text-gray-500 font-mono tracking-widest uppercase pt-2">
+                  Redirecionando para a tela inicial em {countdown} segundos...
+                </p>
+              </div>
+              
+              <div className="pt-4 flex flex-col sm:flex-row gap-3 w-full justify-center">
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-8 py-3 bg-[#CCFF00] text-black rounded text-xs font-mono font-bold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all cursor-pointer uppercase"
+                >
+                  VOLTAR PARA O SITE
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-8 py-3 bg-white/5 border border-white/10 rounded text-xs font-mono tracking-widest text-white uppercase hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+                >
+                  FECHAR
+                </button>
+              </div>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-space font-extrabold tracking-tight text-white uppercase">
-              Briefing de Escopo Técnico
-            </h1>
-            <p className="text-sm text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
-              Responda os detalhes abaixo para que nossa inteligência artificial analise suas necessidades, faça a precificação dinâmica e monte seu cronograma operacional personalizado.
-            </p>
-          </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="text-center space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-neon/10 border border-brand-neon/20 rounded-full text-brand-neon text-[10px] font-mono tracking-widest uppercase">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Agente de IA Integrado
+                </div>
+                <h1 className="text-3xl sm:text-5xl font-space font-extrabold tracking-tight text-white uppercase">
+                  Briefing de Escopo Técnico
+                </h1>
+                <p className="text-sm text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
+                  Responda os detalhes abaixo para que nossa inteligência artificial analise suas necessidades, faça a precificação dinâmica e monte seu cronograma operacional personalizado.
+                </p>
+              </div>
 
           {isLoadingProject ? (
             <div className="py-24 text-center space-y-4 bg-brand-gray/50 border border-white/5 rounded-lg">
@@ -465,6 +528,8 @@ export default function BriefingPage() {
               </div>
 
             </form>
+          )}
+          </>
           )}
 
         </div>
