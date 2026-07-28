@@ -20,7 +20,7 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Grid responsiva de **8 Cards de KPIs** em estilo Glassmorphism, integrando a contagem de clientes e pendências em tempo real com o banco Supabase.
   - Módulo completo de **Gestão de Clientes (`/admin/clientes`)** com busca dinâmica reativa e modal CRUD em Glassmorphism (`ClientModal.tsx`).
   - Módulo completo de **Gestão de Produtos & Soluções (`/admin/produtos`)** com suporte a categorias, precificação (Único, Recorrente, Híbrido), filtro reativo e modal CRUD (`ProductModal.tsx`).
-  - Camada de serviços de catálogo em `productServices.ts` com **proibição estrita de deleção física (DELETE)**, operando via inativação (`active: false`).
+  - Camada de serviços de catálogo em `productServices.ts` com **proibição estrita de deleção física (DELETE)**, operando via inativação (`status: false`) e suporte a fallback local resiliente contra erros RLS com a função `fetchActiveProducts()`.
   - Atribuição automática de `status: 'ativo'` para cadastros novos realizados diretamente pelo Administrador.
 
 - [ ] **Etapa 4: Autenticação & RLS (Row Level Security)**

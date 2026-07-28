@@ -196,6 +196,9 @@ O Painel Administrativo adota uma navegação por **Sidebar Retrátil** estrutur
 - **`Ativo`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30`
 - **`Inativo`**: `bg-zinc-800 text-gray-400 border border-zinc-700`
 
+### Resiliência e Fallback do Catálogo
+Em cenários de indisponibilidade do banco de dados, falha de rede ou restrições de RLS (Row Level Security), o catálogo de produtos utiliza a função `fetchActiveProducts()` para realizar uma captura suave do erro operacional, efetuando o fallback de forma transparente para a lista estática local de `productsData.ts`, mantendo a integridade visual da interface de vendas.
+
 ---
 
 ## 9. Componente de Resumo Financeiro no Checkout

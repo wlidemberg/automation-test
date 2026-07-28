@@ -120,6 +120,7 @@ CREATE TABLE public.products (
 ## 7. Camada de Serviços de Produtos (`src/services/productServices.ts`)
 
 * `fetchAllProducts()`: Lista todos os produtos da tabela `products` ordenados por data.
+* `fetchActiveProducts()`: Busca produtos ativos (`status === true`) do Supabase, aplicando tratamento de erro resiliente com fallback local para `productsData.ts` caso haja falha de RLS ou indisponibilidade.
 * `createProduct(data)`: Inserção de novos produtos no catálogo.
 * `updateProduct(id, data)`: Atualização dos dados de um produto existente (Preço, Categoria, Recursos).
 * `toggleProductStatus(id, currentStatus)`: Alterna o status `active` (`true` / `false`).
