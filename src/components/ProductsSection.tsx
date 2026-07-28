@@ -1,7 +1,22 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
-import { ArrowUpRight, Terminal, Loader2 } from 'lucide-react'
+import { 
+  ArrowUpRight, 
+  Globe, 
+  Layout, 
+  ShoppingBag, 
+  Calendar, 
+  Database, 
+  Zap, 
+  Bot, 
+  Package, 
+  Cpu, 
+  Rocket, 
+  MessageSquare, 
+  Terminal, 
+  Loader2 
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { fetchProducts } from '../services/productService'
 import { productsData } from '../data/productsData'
@@ -16,6 +31,24 @@ export default function ProductsSection() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [selectedProductSlug, setSelectedProductSlug] = useState<string | undefined>(undefined)
 
+  // Mapeador dinâmico de ícones da biblioteca lucide-react
+  const getIconComponent = (iconName?: string | null) => {
+    if (!iconName) return Package
+    const lower = iconName.toLowerCase().replace(/[^a-z0-9]/g, '')
+    if (lower.includes('globe') || lower.includes('site')) return Globe
+    if (lower.includes('layout') || lower.includes('landing')) return Layout
+    if (lower.includes('shopping') || lower.includes('loja')) return ShoppingBag
+    if (lower.includes('calendar') || lower.includes('agend')) return Calendar
+    if (lower.includes('database') || lower.includes('erp')) return Database
+    if (lower.includes('zap') || lower.includes('automac')) return Zap
+    if (lower.includes('bot') || lower.includes('ia') || lower.includes('atend')) return Bot
+    if (lower.includes('cpu')) return Cpu
+    if (lower.includes('rocket')) return Rocket
+    if (lower.includes('message')) return MessageSquare
+    if (lower.includes('terminal')) return Terminal
+    return Package
+  }
+
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -25,11 +58,17 @@ export default function ProductsSection() {
         // Mapeia os produtos do Supabase agregando os assets locais do productsData
         const mapped = dbProducts.map(dbProd => {
           const localMeta = productsData.find(p => p.slug === dbProd.slug)
+          const setupVal = dbProd.valor_setup !== undefined ? dbProd.valor_setup : (dbProd.preco_setup !== undefined ? dbProd.preco_setup : 0)
+          const mensalVal = dbProd.valor_mensalidade !== undefined ? dbProd.valor_mensalidade : (dbProd.preco_mensal !== undefined ? dbProd.preco_mensal : 0)
+          
           return {
             ...dbProd,
-            icon: localMeta?.icon || Terminal,
-            badge: localMeta?.badge || 'Solução Digital',
+            icon: localMeta?.icon || getIconComponent(dbProd.icone) || Terminal,
+            badge: dbProd.rotulo || localMeta?.badge || 'Solução Digital',
             bgImage: localMeta?.bgImage || 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+            descricao: dbProd.descricao || dbProd.descricao_curta || localMeta?.description || '',
+            valor_setup: setupVal,
+            valor_mensalidade: mensalVal
           }
         })
         setProducts(mapped)
@@ -40,6 +79,7 @@ export default function ProductsSection() {
         setLoading(false)
       }
     }
+
     loadProducts()
   }, [])
 
@@ -80,14 +120,14 @@ export default function ProductsSection() {
         
         {/* Section Header */}
         <div className="text-center space-y-6 max-w-3xl mx-auto">
-          <span className="text-xs uppercase tracking-[0.3em] font-semibold text-brand-neon block">
+          <span className="text-xs uppercase tracking-[0.3em] font-semibold text-brand-neon block font-mono">
             NOSSOS PRODUTOS
           </span>
-          <h2 className="text-3xl sm:text-5xl font-space font-bold tracking-tight text-white leading-tight">
+          <h2 className="text-3xl sm:text-5xl font-space font-bold tracking-tight text-white leading-tight uppercase">
             Soluções estruturadas para o seu crescimento
           </h2>
           <p className="font-sans text-gray-400 text-sm sm:text-base font-light leading-relaxed">
-            Acelere a operação da sua empresa com ecossistemas digitais pré-formatados. Da captação de leads à automação do atendimento, nossos produtos são estruturados para escalar suas vendas e reduzir o esforço manual da sua equipe.
+            Acelere a operação da sua empresa com ecossistemas digitais pré-formatados. Da captação de leads à automação do atendimento, nossos produtos são estruturados para escalar suas vendas e reduzir o effort manual da sua equipe.
           </p>
           <div className="w-12 h-[1px] bg-brand-neon mx-auto mt-4" />
         </div>

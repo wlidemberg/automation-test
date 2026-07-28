@@ -31,6 +31,16 @@ Os Requisitos Funcionais descrevem as funcionalidades que o portal e o painel de
 *   **RF-016**: O administrador deve possuir um painel exclusivo (/admin) para visualizar métricas globais operacionais (Total de Clientes, MRR e Alertas pendentes).
 *   **RF-017**: O administrador deve poder gerenciar o progresso do projeto (0-100%), alterar a fase ativa atual (Briefing, Desenvolvimento, Homologação Visual, Concluído) e atualizar a data de próxima entrega de forma manual para cada cliente.
 *   **RF-018**: O administrador deve poder lançar manualmente faturas recorrentes de mensalidade de ERP para cada cliente, estipulando valor e data de vencimento.
+*   **RF-019**: O painel do administrador deve possuir uma navegação por **Sidebar Retrátil (Collapsible)** expansível e recolhível, com suporte a modo minimizado (apenas ícones), tooltips descritivas e transições suaves.
+*   **RF-020**: O painel do administrador deve exibir uma grid responsiva de 8 Cards de KPIs operacionais (Clientes, Produtos, Recebimentos, Pendências, Compromissos, Chamados, Projetos e Crescimento) integrados ao Supabase.
+*   **RF-021**: O sistema deve possuir uma tela dedicada de Gestão de Clientes (`/admin/clientes`) com campo de busca dinâmica filtrando reativamente por Nome/Razão Social, Documento (CPF/CNPJ) ou E-mail.
+*   **RF-022**: O sistema deve permitir o cadastro de novos clientes (Pessoa Física ou Jurídica) diretamente pelo Administrador através do formulário modal `ClientModal.tsx`, atribuindo automaticamente o status `ativo` à conta.
+*   **RF-023**: O sistema deve permitir a edição dos dados cadastrais do cliente (Nome/Razão Social, Documento, E-mail e Telefone) via modal em Glassmorphism.
+*   **RF-024**: O Administrador deve poder alternar o status operacional do cliente entre `ativo` e `inativo`, bem como aprovar (`ativo`) ou recusar (`recusado`) solicitações pendentes.
+*   **RF-025**: O sistema deve possuir uma tela dedicada de Gestão de Produtos & Soluções (`/admin/produtos`) com busca dinâmica por texto e filtro por Categoria.
+*   **RF-026**: O sistema deve permitir o cadastro de novos produtos e planos de assinatura via formulário modal `ProductModal.tsx`, gerando o slug dinamicamente e suportando tags de recursos técnicos.
+*   **RF-027**: O sistema deve permitir a edição de todos os parâmetros comerciais do produto (Preço de Setup, Mensalidade MRR, Categoria e Tipo de Precificação).
+*   **RF-028**: O Administrador deve poder alternar a visibilidade/disponibilidade do produto no catálogo entre `Ativo` e `Inativo`.
 
 ---
 
@@ -67,6 +77,11 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
 *   **RN-005 (Foco de Negócio no Dashboard)**: O Dashboard voltado ao cliente deve omitir jargões puramente técnicos (tais como infraestrutura de servidores, linguagens de programação base ou links para repositórios internos) e focar estritamente em dados e métricas de negócio e de recorrência de alto valor para o cliente final (por exemplo: fase atual de entrega, próximas etapas, status de pagamento, controle de mensalidades de ERP e licenças ativas).
 *   **RN-006 (Atualização Manual de Status)**: O progresso e a fase dos projetos exibidos nos painéis dos clientes são atualizados manualmente pelos gerentes através do Painel Administrativo (/admin), servindo de ponte direta de auditoria de desenvolvimento.
 *   **RN-007 (Mensalidade ERP Recorrente)**: O faturamento recorrente (MRR) das licenças do ERP White-Label é lançado mensalmente pelo administrador, e as novas cobranças são imediatamente refletidas no status financeiro do respectivo cliente no dashboard.
+*   **RN-008 (Proibição Absoluta de Deleção Física)**: É estritamente proibida a exclusão física (`DELETE`) de cadastros de clientes do banco de dados. A desativação de um cliente deve ocorrer exclusivamente via alteração do status para `inativo`, preservando a integridade histórica dos dados.
+*   **RN-009 (Aprovação Automática de Clientes via Admin)**: Todo cadastro de cliente criado diretamente pelo Administrador no modulo `/admin/clientes` é registrado com status `ativo` automaticamente, pulando a etapa de solicitação pendente.
+*   **RN-010 (Estados do Perfil de Usuário)**: Cada perfil pode assumir quatro estados: `pendente` (cadastro pelo próprio cliente via site), `ativo` (acesso liberado), `recusado` (solicitação negada) ou `inativo` (desativado operacionalmente pelo administrador).
+*   **RN-011 (Proibição de Deleção de Produtos)**: É proibida a remoção física (`DELETE`) de soluções do catálogo de produtos. A descontinuação deve ocorrer exclusivamente via desativação (`active = false`).
+*   **RN-012 (Modelos de Precificação)**: Cada produto pode ter cobrança `única` (setup/projeto), `recorrente` (licença mensal/MRR) ou `híbrida` (setup inicial + mensalidade).
 
 ---
 
@@ -108,7 +123,7 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
     *   `id` (text, primary key): Identificador único do projeto.
     *   `client_id` (uuid, references profiles.id): Chave estrangeira que vincula o projeto ao perfil do cliente proprietário.
     *   `nome` (text, not null): Nome do projeto ou sistema (ex: "PORTAL ASSESCOR").
-    *   `descricao` (text): Descrição curta ou resumo da fase atual do projeto.
+    *   `descricao` (text): Descrição corta ou resumo da fase atual do projeto.
     *   `data_inicio` (text): Data formatada de início do projeto.
     *   `previsao_entrega` (text): Previsão ou data de entrega acordada.
     *   `fase_atual` (text): Nome da fase atual do desenvolvimento (ex: "Homologação Visual").
@@ -132,9 +147,8 @@ As Regras de Negócio definem as premissas operacionais e restrições de fluxo 
     *   `ordem` (integer, not null): Sequenciamento lógico das etapas no cronograma.
     *   `created_at` (timestamptz): Registro da data de criação da etapa.
 
-
-*   **DA-004 (Segurança e Ativação de Contas - Status Pendente)**: Implementação de regra de segurança integrada no processo de cadastro para mitigar a criação de contas spam e robôs. Toda nova conta cadastrada nasce automaticamente com o status `'pendente'` (inserido via trigger no banco de dados no momento da autenticação). O acesso às áreas internas do Dashboard do Cliente é estritamente bloqueado enquanto a conta estiver em estado pendente, sendo o usuário direcionado de forma restrita para a tela de faturamento/pagamento da entrada obrigatória.
-*   **DA-005 (Modelo Financeiro de Contratação - Entrada de 50% do Setup)**: A contratação de soluções digitais corporativas no portal segue o modelo financeiro de divisão de risco. É exigido o pagamento de uma **Entrada Obrigatória equivalente a 50% do valor de implementação (Setup)** do produto selecionado. A compensação dessa entrada é o gatilho financeiro obrigatório para que a conta mude de status de `'pendente'` para `'ativo'`, liberando o painel de desenvolvimento e iniciando a fase de engenharia. Os demais 50% do setup são faturados em fases posteriores e a mensalidade recorrente (mensalidade) é faturada nos ciclos subsequentes.
-
-
-
+*   **DA-004 (Layout Desacoplado do Admin com Sidebar Retrátil)**: A interface do Painel Administrativo é construída com componentes desacoplados (`AdminSidebar.tsx` e `AdminHeader.tsx`) gerenciando o estado `isCollapsed` e provendo navegação consistente e expansível por todas as sub-rotas do Admin (`/admin`, `/admin/clientes`, `/admin/produtos`).
+*   **DA-005 (Modal CRUD em Glassmorphism)**: Criação e edição de perfis de clientes no admin utilizam o componente modal unificado em Glassmorphism (`ClientModal.tsx`), acionado dinamicamente com formulários para PF/PJ, validações estáticas e feedback reativo via Toast.
+*   **DA-006 (Gerenciamento Dinâmico de Produtos)**: O módulo `/admin/produtos` utiliza o serviço `productServices.ts` com suporte a fallback gracioso para catálogo padrão em ambiente local e persistência em banco relacional Supabase.
+*   **DA-007 (Segurança e Ativação de Contas - Status Pendente)**: Implementação de regra de segurança integrada no processo de cadastro para mitigar a criação de contas spam e robôs. Toda nova conta cadastrada nasce automaticamente com o status `'pendente'` (inserido via trigger no banco de dados no momento da autenticação). O acesso às áreas internas do Dashboard do Cliente é estritamente bloqueado enquanto a conta estiver em estado pendente, sendo o usuário direcionado de forma restrita para a tela de faturamento/pagamento da entrada obrigatória.
+*   **DA-008 (Modelo Financeiro de Contratação - Entrada de 50% do Setup)**: A contratação de soluções digitais corporativas no portal segue o modelo financeiro de divisão de risco. É exigido o pagamento de uma **Entrada Obrigatória equivalente a 50% do valor de implementação (Setup)** do produto selecionado. A compensação dessa entrada é o gatilho financeiro obrigatório para que a conta mude de status de `'pendente'` para `'ativo'`, liberando o painel de desenvolvimento e iniciando a fase de engenharia. Os demais 50% do setup são faturados em fases posteriores e a mensalidade recorrente (mensalidade) é faturada nos ciclos subsequentes.

@@ -6,6 +6,8 @@ import DashboardLayout from './layouts/DashboardLayout'
 import Overview from './pages/Dashboard/Overview'
 import ProjectDetail from './pages/Dashboard/ProjectDetail'
 import AdminOverview from './pages/Admin/AdminOverview'
+import AdminClients from './pages/Admin/AdminClients'
+import AdminProducts from './pages/Admin/AdminProducts'
 import { AuthProvider } from './contexts/AuthContext'
 
 // Premium placeholder component for dashboard sections in development
@@ -46,6 +48,8 @@ function App() {
           <Route path="/produtos/:slug" element={<ProductPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<AdminOverview />} />
+          <Route path="/admin/clientes" element={<AdminClients />} />
+          <Route path="/admin/produtos" element={<AdminProducts />} />
           
           {/* Logged Customer Dashboard Routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
