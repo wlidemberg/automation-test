@@ -12,16 +12,20 @@ export interface ProposalPayload {
 
 export async function submitProposalRequest(payload: ProposalPayload) {
   try {
-    // 1. Verifica se já existe perfil com o e-mail informado
-    const { data: existingProfile } = await supabase
+    // 1. Verifica se já existe um perfil com o e-mail informado
+    const { data: existingProfile, error: searchError } = await supabase
       .from('profiles')
       .select('id')
       .eq('email', payload.email)
       .maybeSingle();
 
+    if (searchError) {
+      console.error('Erro ao buscar perfil existente:', searchError.message);
+    }
+
     let clientId = existingProfile?.id;
 
-    // 2. Se não existir, cria o perfil em estado pendente
+    // 2. Se não existir, cria o novo perfil em estado PENDENTE
     if (!clientId) {
       const newId = crypto.randomUUID();
       const { data: newProfile, error: profileError } = await supabase
@@ -40,14 +44,14 @@ export async function submitProposalRequest(payload: ProposalPayload) {
         .single();
 
       if (profileError) {
-        console.warn('Aviso no cadastro de perfil (modo local):', profileError.message);
-        clientId = newId;
-      } else {
-        clientId = newProfile.id;
+        console.error('Erro critico ao inserir em profiles:', profileError.message);
+        throw new Error(`Falha ao registrar cliente: ${profileError.message}`);
       }
+
+      clientId = newProfile.id;
     }
 
-    // 3. Cadastra o projeto na tabela projects vinculada ao cliente (com suporte resiliente a campos)
+    // 3. Cadastra a solicitação na tabela projects vinculada ao cliente (com suporte resiliente a campos)
     const { error: projectError } = await supabase
       .from('projects')
       .insert({
@@ -64,13 +68,13 @@ export async function submitProposalRequest(payload: ProposalPayload) {
       });
 
     if (projectError) {
-      console.warn('Aviso no cadastro de projeto (usando fallback local):', projectError.message);
+      console.error('Erro critico ao inserir em projects:', projectError.message);
+      throw new Error(`Falha ao registrar projeto: ${projectError.message}`);
     }
 
     return { success: true };
-  } catch (err) {
-    console.error('Erro na submissão da proposta:', err);
-    // Em ambiente local, permite fluxo de sucesso com fallback
-    return { success: true, isFallback: true };
+  } catch (err: any) {
+    console.error('Falha real na submissao da proposta:', err.message || err);
+    throw err;
   }
 }

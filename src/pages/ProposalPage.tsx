@@ -40,22 +40,26 @@ export default function ProposalPage() {
       return
     }
 
-    setIsSubmitting(true)
+    try {
+      const result = await submitProposalRequest({
+        tipoPessoa: tipoPessoa,
+        nomeRazao: nomeCompleto,
+        email,
+        telefone,
+        produtoSlug: selectedProductSlug,
+        resumoNecessidade: needs
+      })
 
-    const result = await submitProposalRequest({
-      tipoPessoa: tipoPessoa,
-      nomeRazao: nomeCompleto,
-      email,
-      telefone,
-      produtoSlug: selectedProductSlug,
-      resumoNecessidade: needs
-    })
-
-    setIsSubmitting(false)
-    if (result.success) {
-      setIsSuccess(true)
-    } else {
-      alert('Ocorreu um erro ao enviar sua solicitação. Por favor, tente novamente.')
+      if (result && result.success) {
+        setIsSuccess(true)
+      } else {
+        alert('Ocorreu um erro ao enviar sua solicitação. Por favor, tente novamente.')
+      }
+    } catch (err) {
+      console.error('Erro na submissão de proposta:', err)
+      alert('Falha crítica de comunicação com o banco. Por favor, tente novamente mais tarde.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
