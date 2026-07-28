@@ -8,6 +8,9 @@ import ProjectDetail from './pages/Dashboard/ProjectDetail'
 import AdminOverview from './pages/Admin/AdminOverview'
 import AdminClients from './pages/Admin/AdminClients'
 import AdminProducts from './pages/Admin/AdminProducts'
+import ProposalPage from './pages/ProposalPage'
+import ClientFormPage from './pages/Admin/ClientFormPage'
+import ProductFormPage from './pages/Admin/ProductFormPage'
 import { AuthProvider } from './contexts/AuthContext'
 
 // Premium placeholder component for dashboard sections in development
@@ -46,10 +49,17 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/produtos/:slug" element={<ProductPage />} />
+          <Route path="/solicitar-proposta" element={<ProposalPage />} />
           <Route path="/login" element={<Login />} />
+          
+          {/* Admin Routes */}
           <Route path="/admin" element={<AdminOverview />} />
           <Route path="/admin/clientes" element={<AdminClients />} />
+          <Route path="/admin/clientes/novo" element={<ClientFormPage />} />
+          <Route path="/admin/clientes/editar/:id" element={<ClientFormPage />} />
           <Route path="/admin/produtos" element={<AdminProducts />} />
+          <Route path="/admin/produtos/novo" element={<ProductFormPage />} />
+          <Route path="/admin/produtos/editar/:id" element={<ProductFormPage />} />
           
           {/* Logged Customer Dashboard Routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>

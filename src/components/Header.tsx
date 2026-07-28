@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Terminal, Menu, X, ArrowUpRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import ProposalModal from './ProposalModal'
+import { Link, useNavigate } from 'react-router-dom'
 
 // Custom SVG Brand Icons since Lucide v0.400+ removed them
 const GithubIcon = () => (
@@ -29,8 +28,8 @@ const InstagramIcon = () => (
 )
 
 export default function Header() {
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
-  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false)
 
   const navLinks = [
     { name: 'Início', href: '/#inicio' },
@@ -74,7 +73,7 @@ export default function Header() {
               boxShadow: "0 0 15px rgba(204, 255, 0, 0.4)" 
             }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setIsProposalModalOpen(true)}
+            onClick={() => navigate('/solicitar-proposta')}
             className="px-5 py-2.5 bg-transparent border border-brand-neon text-brand-neon font-medium rounded text-sm flex items-center gap-2 transition-shadow duration-300 cursor-pointer"
           >
             Solicitar Orçamento
@@ -119,7 +118,7 @@ export default function Header() {
                 <button
                   onClick={() => {
                     setIsOpen(false)
-                    setIsProposalModalOpen(true)
+                    navigate('/solicitar-proposta')
                   }}
                   className="w-full text-center py-3 bg-brand-neon text-black font-semibold rounded text-sm hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-shadow duration-300 cursor-pointer"
                 >
@@ -143,11 +142,6 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Modal de solicitação de proposta */}
-      <ProposalModal 
-        isOpen={isProposalModalOpen} 
-        onClose={() => setIsProposalModalOpen(false)} 
-      />
     </header>
   )
 }

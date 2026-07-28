@@ -223,3 +223,18 @@ O fluxo público de captação de leads substitui a compra direta e integra o ca
 2. **Ciclo de Conversão**:
    - O projeto entra na fila de análise da administração.
    - O Administrador revisa as necessidades e precifica o projeto enviando a proposta, migrando a fase do projeto para `'proposta_enviada'` e gerando a fatura de 50% de entrada.
+
+---
+
+## 12. Rotas de Navegação Dedicadas (React Router)
+
+A reestruturação arquitetural substitui o fluxo de modais por páginas e rotas dedicadas no React Router:
+
+### Rotas Públicas
+- `/solicitar-proposta`: Página inteira para recepção de briefing de leads. Oferece suporte opcional ao parâmetro `?produto=slug` na query-string para carregar a intenção inicial de compra.
+
+### Rotas do Painel Administrativo
+- `/admin/clientes/novo`: Tela exclusiva para cadastrar e ativar perfis de clientes diretamente pelo administrador.
+- `/admin/clientes/editar/:id`: Tela para alteração de dados cadastrais de um cliente selecionado, incluindo a estruturação do endereço de faturamento (`endereco` JSONB).
+- `/admin/produtos/novo`: Tela exclusiva para cadastrar novas soluções tecnológicas no catálogo de produtos.
+- `/admin/produtos/editar/:id`: Tela para alteração de parâmetros comerciais (Setup, MRR, recursos e tags) de uma solução já existente.

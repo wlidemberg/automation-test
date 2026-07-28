@@ -37,6 +37,12 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Implementação do novo formulário de briefing/proposta técnica (`ProposalModal.tsx` público) para captação de leads.
   - Fluxo integrado com Supabase (`leadServices.ts`) para criação automática de perfis com `status: 'pendente'` e novos projetos em fase `briefing` (com valor zerado).
 
+- [x] **Etapa 7: Reestruturação de Modais em Páginas Dedicadas**
+  - Conversão do formulário público de propostas em página inteira (`/solicitar-proposta` -> `ProposalPage.tsx`).
+  - Conversão do CRUD de Clientes do Admin em páginas dedicadas (`/admin/clientes/novo` e `/admin/clientes/editar/:id` -> `ClientFormPage.tsx`).
+  - Conversão do CRUD de Produtos do Admin em páginas dedicadas (`/admin/produtos/novo` e `/admin/produtos/editar/:id` -> `ProductFormPage.tsx`).
+  - Remoção de todos os modais obsoletos do catálogo e de cadastros.
+
 ---
 
 ## 2. Cronograma de Entregas

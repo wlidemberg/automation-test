@@ -17,19 +17,16 @@ import {
   Terminal, 
   Loader2 
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { fetchProducts } from '../services/productService'
 import { productsData } from '../data/productsData'
-import ProposalModal from './ProposalModal'
 
 export default function ProductsSection() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   
-  // Controle do modal de contratação
-  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false)
-  const [selectedProductSlug, setSelectedProductSlug] = useState<string | undefined>(undefined)
+  const navigate = useNavigate()
 
   // Mapeador dinâmico de ícones da biblioteca lucide-react
   const getIconComponent = (iconName?: string | null) => {
@@ -202,10 +199,7 @@ export default function ProductsSection() {
 
                   <div className="pt-8 mt-auto flex flex-wrap gap-x-6 gap-y-2 items-center">
                     <button
-                      onClick={() => {
-                        setSelectedProductSlug(product.slug)
-                        setIsProposalModalOpen(true)
-                      }}
+                      onClick={() => navigate(`/solicitar-proposta?produto=${product.slug}`)}
                       className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300 cursor-pointer"
                     >
                       SOLICITAR PROPOSTA
@@ -227,12 +221,6 @@ export default function ProductsSection() {
 
       </div>
 
-      {/* Modal de solicitação de proposta */}
-      <ProposalModal 
-        isOpen={isProposalModalOpen} 
-        onClose={() => setIsProposalModalOpen(false)} 
-        initialProductSlug={selectedProductSlug} 
-      />
     </section>
   )
 }

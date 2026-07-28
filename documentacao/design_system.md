@@ -256,3 +256,14 @@ Para assegurar a legibilidade e usabilidade de modais volumosos (como o checkout
 - **`proposta_enviada`**: `bg-cyan-500/10 text-cyan-400 border border-cyan-500/20` (Azul Tech).
 - **`em_desenvolvimento`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30` (Verde Neon).
 
+---
+
+## 12. Padrão de Formulários de Página Inteira (Tech-Luxo)
+
+Com a substituição de modais por páginas dedicadas, os formulários do Admin e Públicos seguem os seguintes padrões visuais de alta fidelidade:
+
+- **Breadcrumbs Discretos**: No topo de cada página administrativa, exibe-se a trilha de navegação em fonte mono em escala micro (`text-[10px] font-mono tracking-widest text-gray-500 uppercase`) para orientar a navegação e a hierarquia espacial.
+- **Estruturação em Seções/Blocos**: Os formulários volumosos são divididos em cartões de Glassmorphism independentes (`bg-brand-gray/90 border border-brand-gray shadow-xl rounded-lg p-6 sm:p-8`), com uma linha de destaque superior em gradiente neon.
+- **Grids Responsivas**: Agrupamento lógico de campos em layouts flexíveis (`grid grid-cols-1 sm:grid-cols-12` ou `sm:grid-cols-3 gap-5`) que se adaptam perfeitamente a dispositivos móveis e desktops de alta resolução.
+- **Ações de Formulário**: Botões de ação em UPPERCASE (`SALVAR CLIENTE`, `SALVAR PRODUTO`, `CANCELAR`) que usam fonte mono e sombra de brilho (glow) em verde neon (`bg-brand-neon`) sob foco/hover.
+

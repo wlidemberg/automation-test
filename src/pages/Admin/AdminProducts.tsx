@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { 
   Package, 
   Search, 
@@ -22,7 +23,6 @@ import {
 import type { Product, ProductCategory } from '../../types/database'
 import AdminSidebar from '../../components/Admin/AdminSidebar'
 import AdminHeader from '../../components/Admin/AdminHeader'
-import ProductModal from '../../components/Admin/ProductModal'
 
 export default function AdminProducts() {
   // Sidebar state
@@ -36,9 +36,9 @@ export default function AdminProducts() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
+  const navigate = useNavigate()
+
   // Modal state
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isSaving, setIsSaving] = useState<boolean>(false)
 
   // Load products from Supabase/Service
@@ -104,49 +104,13 @@ export default function AdminProducts() {
     }
   }
 
-  // Handle Save (Create / Update)
-  const handleSaveProduct = async (productData: Partial<Product>) => {
-    setIsSaving(true)
-    try {
-      if (editingProduct?.id) {
-        // Edit existing product
-        const updated = await updateProduct(editingProduct.id, productData)
-        if (updated) {
-          showToast('PRODUTO ATUALIZADO COM SUCESSO!', 'success')
-          setIsModalOpen(false)
-          setEditingProduct(null)
-          await loadProducts()
-        } else {
-          showToast('ERRO AO ATUALIZAR PRODUTO.', 'error')
-        }
-      } else {
-        // Create new product
-        const created = await createProduct(productData)
-        if (created) {
-          showToast('NOVO PRODUTO CADASTRADO NO CATÁLOGO COM SUCESSO!', 'success')
-          setIsModalOpen(false)
-          setEditingProduct(null)
-          await loadProducts()
-        } else {
-          showToast('ERRO AO CADASTRAR NOVO PRODUTO.', 'error')
-        }
-      }
-    } catch (err) {
-      console.error(err)
-      showToast('FALHA AO PROCESSAR OPERAÇÃO DE SALVAMENTO.', 'error')
-    } finally {
-      setIsSaving(false)
-    }
+  // Redirect to Dedicated Pages
+  const handleOpenCreatePage = () => {
+    navigate('/admin/produtos/novo')
   }
 
-  const handleOpenCreateModal = () => {
-    setEditingProduct(null)
-    setIsModalOpen(true)
-  }
-
-  const handleOpenEditModal = (product: Product) => {
-    setEditingProduct(product)
-    setIsModalOpen(true)
+  const handleOpenEditPage = (prod: Product) => {
+    navigate(`/admin/produtos/editar/${prod.id}`)
   }
 
   // Formatting helpers
@@ -224,7 +188,7 @@ export default function AdminProducts() {
 
           {/* Action Button: + NOVO PRODUTO */}
           <button
-            onClick={handleOpenCreateModal}
+            onClick={handleOpenCreatePage}
             className="px-5 py-3 bg-brand-neon text-black rounded text-xs font-mono font-extrabold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
@@ -400,7 +364,7 @@ export default function AdminProducts() {
                             
                             {/* Botão EDITAR */}
                             <button
-                              onClick={() => handleOpenEditModal(product)}
+                              onClick={() => handleOpenEditPage(product)}
                               disabled={isUpdating}
                               className="px-2.5 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1"
                               title="Editar produto"
@@ -435,14 +399,6 @@ export default function AdminProducts() {
         </div>
       </main>
 
-      {/* Product Modal CRUD */}
-      <ProductModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveProduct}
-        initialData={editingProduct}
-        isSaving={isSaving}
-      />
     </div>
   )
 }
