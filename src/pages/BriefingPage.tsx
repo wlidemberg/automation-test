@@ -49,6 +49,7 @@ export default function BriefingPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
   const [countdown, setCountdown] = useState(60)
+  const [isProjectFound, setIsProjectFound] = useState(false)
 
   // Countdown timer for automatic redirection
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function BriefingPage() {
           .maybeSingle()
 
         if (project) {
+          setIsProjectFound(true)
           setClientId(project.client_id)
           setProjectTitle(project.nome)
           setProjectName(project.nome.replace('Solicitação: ', ''))
@@ -160,7 +162,7 @@ export default function BriefingPage() {
       // 2. Salva o briefing na tabela briefings
       const briefing = await createBriefing({
         client_id: clientId || '6f1f8a1e-855d-4cc0-ab49-8e6884265ec8', // fallback seguro
-        project_id: projectId || null,
+        project_id: isProjectFound ? (projectId || null) : null,
         nome_projeto: projectName,
         cor_primaria: colorPrimaria,
         cor_secundaria: colorSecundaria,

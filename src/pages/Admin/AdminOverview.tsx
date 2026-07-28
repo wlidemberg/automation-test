@@ -240,10 +240,10 @@ export default function AdminOverview() {
           .eq('tipo', 'entrada')
       }
 
-      // 3. Atualiza o status do briefing
+      // 3. Atualiza o status do briefing para 'aprovado'
       await supabase
         .from('briefings')
-        .update({ status_briefing: 'proposta_aceita' })
+        .update({ status_briefing: 'aprovado' })
         .eq('id', briefingId)
 
       // 4. Simula o disparo de e-mail de primeiro acesso
@@ -622,10 +622,10 @@ export default function AdminOverview() {
                       : (profile.cpf || 'CPF não informado')
                     const isUpdating = updatingId === profile.id
                     const associatedBriefing = briefings.find((b: any) => b.client_id === profile.id)
-                    const hasConfirmedPayment = associatedBriefing?.status_briefing === 'proposta_aceita'
+                    const hasConfirmedPayment = associatedBriefing?.status_briefing === 'pago' || associatedBriefing?.status_briefing === 'aprovado'
                     const stepBriefing = associatedBriefing !== undefined
-                    const stepProposta = (associatedBriefing?.proposta_ia !== null && associatedBriefing?.proposta_ia !== undefined) || profile.status === 'ativo'
-                    const stepPagou = associatedBriefing?.status_briefing === 'proposta_aceita' || profile.status === 'ativo'
+                    const stepProposta = (associatedBriefing?.proposta_ia !== null && associatedBriefing?.proposta_ia !== undefined) || associatedBriefing?.status_briefing === 'proposta_enviada' || associatedBriefing?.status_briefing === 'pago' || associatedBriefing?.status_briefing === 'aprovado' || profile.status === 'ativo'
+                    const stepPagou = associatedBriefing?.status_briefing === 'pago' || associatedBriefing?.status_briefing === 'aprovado' || profile.status === 'ativo'
                     const stepAtivado = profile.status === 'ativo'
 
                     return (

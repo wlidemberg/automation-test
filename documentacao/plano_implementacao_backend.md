@@ -60,4 +60,12 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
 | **Fase 2** | Conexão Real Painel Admin & Aprovações | **Concluído** |
 | **Fase 3** | Supabase Auth & RLS Policies | **Concluído** |
 | **Fase 4** | Fluxo Completo de Briefing & Propostas IA | **Concluído** |
-| **Fase 5** | Sincronização em Tempo Real (Realtime) | Planejado |
+| **Fase 5** | Unificação de Briefing e Wizard Form | **Concluído** |
+| **Fase 6** | Sincronização em Tempo Real (Realtime) | Planejado |
+
+---
+
+## 3. Notas de Ajustes de Banco & Wizard
+- **Wizard 4 Etapas**: Unificação da captação em `/solicitar-proposta` (Identificação, Marca, Métricas, Escopo).
+- **Restrição de Chave Estrangeira (FK)**: Corrigido o envio em `BriefingPage.tsx` com `project_id: null` para evitar violações de FK em IDs de projetos inválidos/teste.
+- **CHECK Constraint no Supabase**: Alinhado o status do briefing para persistir `'pago'` / `'aprovado'` e `'proposta_enviada'` conforme restrições nativas da tabela `briefings`.

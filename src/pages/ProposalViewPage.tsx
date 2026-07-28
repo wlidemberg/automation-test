@@ -78,7 +78,7 @@ export default function ProposalViewPage() {
     setIsSimulating(true)
     try {
       const updated = await updateBriefing(briefingId, {
-        status_briefing: 'proposta_gerada',
+        status_briefing: 'proposta_enviada',
         proposta_ia: MOCK_AI_PROPOSAL
       })
       if (updated) {
@@ -162,8 +162,8 @@ export default function ProposalViewPage() {
           })
       }
 
-      // 3. Set briefing status to proposal accepted
-      await updateBriefing(briefingId, { status_briefing: 'proposta_aceita' })
+      // 3. Set briefing status to paid
+      await updateBriefing(briefingId, { status_briefing: 'pago' })
 
       setPaySuccess(true)
     } catch (err) {

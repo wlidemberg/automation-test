@@ -83,7 +83,8 @@ O **Automation Test** é um ecossistema digital corporativo estruturado sob a id
 
 ## 6. Fluxo de Onboarding Técnico com IA & Funil Admin
 A plataforma agora conta com a esteira automatizada completa de onboarding:
-1. ** Briefing Público (`/briefing/:projectId`)**: O lead responde a dados de marca (HEX cores, slogan) e métricas de faturamento/equipe/dores, com validação anti-duplicidade e anti-duplo-clique.
-2. ** Integração n8n/IA**: Envio automatizado para análise e precificação com retorno do escopo dinâmico e upsells no portal (`/proposta/:briefingId`).
-3. ** Linha de Acompanhamento Reativa (Funil)**: O Administrador visualiza o andamento do lead reativamente em tempo real no painel `/admin` através de um Stepper horizontal com ícones com controle de opacidade e cores em destaque (Briefing ➔ Proposta ➔ Pagou ➔ Senha).
-4. ** Proteção Operacional**: Double-click guards aplicados nas submissões e gateways de pagamento simulados para mitigar concorrência.
+1. **Formulário Wizard Unificado (`/solicitar-proposta`)**: Captação do lead estruturada em 4 passos (Identificação, Marca, Métricas, Requisitos de Escopo) salvando perfil, projeto e briefing em uma única submissão, com carregamento dinâmico de produtos ativos.
+2. **Briefing Público Resiliente (`/briefing/:projectId`)**: Preenchimento complementar com verificação contra IDs de projetos inválidos e tratamento de fallback `project_id: null` para evitar violações da restrição `FK briefings_project_id_fkey` no Supabase.
+3. **Integração n8n/IA**: Envio automatizado para o webhook do n8n para precificação com retorno do escopo dinâmico e upsells no portal (`/proposta/:briefingId`).
+4. **Linha de Acompanhamento Reativa (Funil) & Alinhamento CHECK**: O Administrador monitora o onboarding reativamente em `/admin` através de um Stepper horizontal com ícones. Os status foram alinhados às restrições estritas `CHECK` da tabela `briefings` (`'pendente'`, `'em_analise_ia'`, `'proposta_enviada'`, `'pago'`, `'aprovado'`).
+5. **Proteção Operacional**: Double-click guards em nível de estado bloqueiam submissões simultâneas acidentais.

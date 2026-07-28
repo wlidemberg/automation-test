@@ -97,7 +97,8 @@ npm run lint
 
 ## 🤖 Esteira de Onboarding Técnico Automatizada com IA & n8n
 A plataforma possui um fluxo moderno de captação e análise técnica de leads:
-1. **Briefing Técnico (`/briefing/:projectId`)**: Questionário interativo contendo detalhes de marca, HEX cores, dores e integrações de API/CRM com validação anti-duplicidade e anti-duplo-clique.
-2. **Automação n8n & Propostas IA (`/proposta/:briefingId`)**: Integração de webhook assíncrono para o n8n gerar a proposta e orçamento recomendados por IA com upsells dinâmicos.
-3. **Painel de Acompanhamento no Admin (`/admin`)**: O Administrador acompanha as etapas reativas de onboarding através de um Stepper horizontal com controle de opacidade e cores verde neon (Briefing ➔ Proposta ➔ Pagou ➔ Senha/Ativado).
-4. **Segurança Transacional**: Todos os formulários possuem proteções `disabled` no estado durante o processamento para evitar disparos duplicados acidentais.
+1. **Formulário Wizard Unificado (`/solicitar-proposta`)**: Questionário interativo contendo dados cadastrais, marca, faturamento, dores e requisitos funcionais/integrações em 4 etapas responsivas.
+2. **Resiliência de Briefing (`/briefing/:projectId`)**: Validação anti-violação da chave estrangeira `FK briefings_project_id_fkey` ativando fallback automático em caso de IDs inválidos/teste.
+3. **Automação n8n & Propostas IA (`/proposta/:briefingId`)**: Integração de webhook assíncrono para o n8n gerar a proposta e orçamento recomendados por IA.
+4. **Painel de Acompanhamento no Admin (`/admin`)**: Acompanhamento em tempo real através de um Stepper horizontal com controle de opacidade e cores verde neon (Briefing ➔ Proposta ➔ Pagou ➔ Senha) alinhado ao check constraint do banco.
+5. **Segurança Transacional**: Todos os formulários possuem proteções `disabled` no estado durante o processamento para evitar disparos duplicados acidentais.

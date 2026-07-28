@@ -109,7 +109,7 @@ export interface ProjectRoadmap {
   created_at?: string;
 }
 
-export type BriefingStatus = 'pendente' | 'em_analise_ia' | 'proposta_gerada' | 'proposta_aceita' | 'recusado';
+export type BriefingStatus = 'pendente' | 'em_analise_ia' | 'proposta_enviada' | 'pago' | 'aprovado';
 
 export interface Briefing {
   id: string;
