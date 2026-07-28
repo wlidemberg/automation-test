@@ -1,0 +1,42 @@
+# Plano de Implementação Backend & Supabase - Automation Test
+
+Este documento especifica o plano de execução e o status atual da infraestrutura backend, banco de dados PostgreSQL relacional no Supabase e integrações com o Painel Administrativo e Área do Cliente.
+
+---
+
+## 1. Status das Etapas de Implementação
+
+- [x] **Etapa 1: Configuração Base da Infraestrutura Supabase**
+  - Cliente oficial Supabase em `src/lib/supabase.ts`.
+  - Variáveis de ambiente `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` integradas.
+
+- [x] **Etapa 2: Serviço de Perfis de Usuários (`profileServices.ts`)**
+  - CRUD e métodos de consulta (`getProfileById`, `getAllProfiles`, `getPendingProfiles`, `updateProfile`, `updateProfileStatus`).
+  - Suporte a tipos de pessoa (`PF` e `PJ`) e status de conta (`pendente`, `ativo`, `recusado`).
+
+- [x] **Etapa 3: Integração do Painel Administrativo com Supabase & Reestruturação do Layout**
+  - Reestruturação da interface do Admin com componentes desacoplados (`AdminSidebar.tsx` e `AdminHeader.tsx`).
+  - Navegação por **Sidebar Retrátil (Collapsible)** com animação fluida, tooltips e alternância de estado `isCollapsed`.
+  - Grid responsiva de **8 Cards de KPIs** em estilo Glassmorphism, integrando a contagem de clientes e pendências em tempo real com o banco Supabase.
+  - Módulo completo de **Gestão de Clientes (`/admin/clientes`)** com busca dinâmica reativa e modal CRUD em Glassmorphism (`ClientModal.tsx`).
+  - Módulo completo de **Gestão de Produtos & Soluções (`/admin/produtos`)** com suporte a categorias, precificação (Único, Recorrente, Híbrido), filtro reativo e modal CRUD (`ProductModal.tsx`).
+  - Camada de serviços de catálogo em `productServices.ts` com **proibição estrita de deleção física (DELETE)**, operando via inativação (`active: false`).
+  - Atribuição automática de `status: 'ativo'` para cadastros novos realizados diretamente pelo Administrador.
+
+- [ ] **Etapa 4: Autenticação & RLS (Row Level Security)**
+  - Configuração de políticas RLS na tabela `profiles`.
+  - Fluxo de login e cadastro na landing page com Supabase Auth.
+
+- [ ] **Etapa 5: Gestão de Projetos e Faturas Recorrentes (MRR)**
+  - Migração dos dados operacionais e faturamento de clientes para tabelas relacionais do Supabase.
+
+---
+
+## 2. Cronograma de Entregas
+
+| Ciclo | Funcionalidade | Status |
+| :--- | :--- | :--- |
+| **Fase 1** | Supabase Base Client & Profile Service | **Concluído** |
+| **Fase 2** | Conexão Real Painel Admin & Aprovações | **Concluído** |
+| **Fase 3** | Supabase Auth & RLS Policies | Em Andamento |
+| **Fase 4** | Sincronização em Tempo Real (Realtime) | Planejado |

@@ -126,3 +126,47 @@ Animações devem ser rápidas, orgânicas e imperceptíveis na velocidade, mas 
         };
         ```
 
+---
+
+## 6. Componente de Navegação: Sidebar Retrátil (Collapsible Navigation)
+
+O Painel Administrativo adota uma navegação por **Sidebar Retrátil** estruturada no padrão Tech-Luxo:
+
+* **Dimensões e Animação**:
+  - **Estado Expandido**: Largura de `w-64` (16rem/256px). Exibe o logo "AUTOMATION TEST", o badge "ADMIN PANEL", rótulo "MENU" e texto completo de cada rota.
+  - **Estado Recolhido**: Largura de `w-20` (5rem/80px). Oculta rótulos e textos, mantendo ícones centralizados com brilho neon (`#CCFF00`), pip indicador de rota ativa e tooltips flutuantes no hover (`z-50`).
+  - **Transição**: Animação fluida de largura via Tailwind CSS (`transition-all duration-300`).
+* **Estilização de Vidro**: Fundo `bg-brand-dark/95` com `backdrop-blur-md` e borda lateral semi-transparente `border-r border-white/10`.
+* **Botão de Alternância**: Posicionado no header da sidebar (`ChevronLeft`/`ChevronRight`) e replicado no `AdminHeader` (`PanelLeft`/`PanelLeftClose`).
+
+---
+
+## 7. Componentes de Gestão de Clientes & Modais (Glassmorphism)
+
+### Modal de Cadastro e Edição (`ClientModal.tsx`)
+- **Container**: Estilizado em `bg-brand-gray/95 backdrop-blur-lg border border-white/10` com linha superior em gradiente neon.
+- **Alternador de Tipo de Pessoa**: Seletores tabulares para Pessoa Física (PF) e Pessoa Jurídica (PJ) com transição de cor ativa (`bg-brand-neon` para PF e `bg-cyan-400` para PJ).
+- **Botões de Ação**: Botões de confirmação em UPPERCASE (`CADASTRAR CLIENTE` / `SALVAR CLIENTE`) com brilho fluorescente no hover (`hover:shadow-[0_0_15px_rgba(204,255,0,0.4)]`).
+
+### Badges de Status de Usuário (`UserStatus`)
+- **`ativo`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30` (Verde Neon).
+- **`pendente`**: `bg-amber-500/10 text-amber-400 border border-amber-500/20` (Amarelo Alerta).
+- **`inativo`**: `bg-zinc-800 text-gray-400 border border-zinc-700` (Cinza Muted Desativado).
+- **`recusado`**: `bg-rose-500/10 text-rose-400 border border-rose-500/20` (Vermelho Rosé).
+
+---
+
+## 8. Componentes de Gestão de Produtos & Precificação
+
+### Modal de Produtos (`ProductModal.tsx`)
+- **Container**: Fundo `bg-brand-gray/95 backdrop-blur-lg border border-white/10` com linha superior em gradiente neon.
+- **Formulários Dinâmicos**: Campos para Nome, Slug automático em verde neon, Categoria, Tipo de Cobrança (Único, Recorrente, Híbrido), Preço Setup/Mensal, Descrição, Ícone Lucide e Tags de Recursos.
+- **Gerenciador de Tags**: Adição/remoção interativa de especificações técnicas com badges `bg-brand-neon/10 border-brand-neon/30 text-brand-neon`.
+
+### Badges de Precificação e Status (`PricingType` & `ProductStatus`)
+- **`Único (Projeto)`**: `bg-indigo-500/10 text-indigo-400 border border-indigo-500/30`
+- **`Recorrente (MRR)`**: `bg-emerald-500/10 text-emerald-400 border border-emerald-500/30`
+- **`Híbrido`**: `bg-purple-500/10 text-purple-400 border border-purple-500/30`
+- **`Ativo`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30`
+- **`Inativo`**: `bg-zinc-800 text-gray-400 border border-zinc-700`
+

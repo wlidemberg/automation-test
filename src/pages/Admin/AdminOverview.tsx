@@ -1,18 +1,28 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
 import { 
   Users, 
-  DollarSign, 
-  AlertTriangle, 
-  Terminal, 
-  ArrowLeft, 
-  X, 
+  Package, 
+  Wallet, 
+  AlertCircle, 
+  Calendar, 
+  LifeBuoy, 
+  FolderKanban, 
+  TrendingUp, 
+  CheckCircle2, 
+  XCircle, 
+  Clock, 
+  Loader2, 
+  Building2, 
   Save, 
   Plus, 
-  Settings,
-  ShieldAlert
+  X
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { fetchAllProfiles, updateProfileStatus } from '../../services/profileServices'
+import { fetchAllProducts } from '../../services/productServices'
+import type { Profile, Product } from '../../types/database'
+import AdminSidebar from '../../components/Admin/AdminSidebar'
+import AdminHeader from '../../components/Admin/AdminHeader'
 
 interface ClienteInfo {
   id: string
@@ -27,6 +37,18 @@ interface ClienteInfo {
 }
 
 export default function AdminOverview() {
+  // Sidebar State
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<string>('dashboard')
+
+  // Supabase Profiles & Products State
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  // Legacy/Mock Projects State for operational view
   const [clientes, setClientes] = useState<ClienteInfo[]>([
     {
       id: '1',
@@ -75,6 +97,55 @@ export default function AdminOverview() {
   const [isLancarFaturaOpen, setIsLancarFaturaOpen] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
 
+  // Carregar perfis e produtos do Supabase
+  const loadDashboardData = async () => {
+    setLoading(true)
+    try {
+      const [profilesData, productsData] = await Promise.all([
+        fetchAllProfiles(),
+        fetchAllProducts()
+      ])
+      setProfiles(profilesData)
+      setProducts(productsData)
+    } catch (err) {
+      console.error('Erro ao carregar dados do dashboard:', err)
+      showToast('FALHA AO CONECTAR COM O SUPABASE.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type })
+    setTimeout(() => {
+      setToast(null)
+    }, 4000)
+  }
+
+  // Handler para aprovação e recusa de perfis com feedback reativo
+  const handleStatusChange = async (userId: string, newStatus: 'ativo' | 'recusado') => {
+    setUpdatingId(userId)
+    try {
+      const updated = await updateProfileStatus(userId, newStatus)
+      if (updated) {
+        await loadDashboardData()
+        const nomeOuRazao = updated.razao_social || updated.nome_completo || updated.email
+        showToast(`SOLICITAÇÃO DE ${nomeOuRazao.toUpperCase()} FOI ${newStatus === 'ativo' ? 'APROVADA' : 'RECUSADA'} COM SUCESSO!`, 'success')
+      } else {
+        showToast('ERRO AO ATUALIZAR STATUS NO BANCO DE DADOS.', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('FALHA DE REDE AO PROCESSAR SOLICITAÇÃO.', 'error')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
   const handleEditClick = (cliente: ClienteInfo) => {
     setSelectedClient(cliente)
     setProgresso(cliente.progresso)
@@ -115,108 +186,435 @@ export default function AdminOverview() {
 
   const handleLancarFatura = () => {
     setIsLancarFaturaOpen(true)
-    setStatusFinanceiro('Pendente') // When a new bill is generated it can toggle status
+    setStatusFinanceiro('Pendente')
   }
 
-  // Derived metrics
-  const totalClientes = clientes.length
-  const totalMrr = clientes.reduce((acc, curr) => acc + curr.mrr, 0)
-  const solicitacoesPendentes = clientes.filter(c => c.statusFinanceiro === 'Pendente' || c.progresso < 100).length
+  // Active section label for Breadcrumbs
+  const tabLabels: Record<string, string> = {
+    dashboard: 'Dashboard',
+    clientes: 'Clientes',
+    produtos: 'Produtos',
+    recebimentos: 'Recebimentos',
+    pendencias: 'Pendências',
+    agenda: 'Agenda',
+    chamados: 'Chamados',
+    projetos: 'Projetos',
+  }
+  const currentTabLabel = tabLabels[activeTab] || 'Dashboard'
+
+  // Metric values derived from Supabase & KPIs
+  const totalClientes = profiles.length
+  const totalProdutos = products.length
+  const solicitacoesPendentes = profiles.filter(p => p.status === 'pendente').length
 
   return (
     <div className="min-h-screen bg-brand-dark text-white font-sans relative overflow-x-hidden">
       
-      {/* Decorative background grid and neon lights */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(26,26,26,0.3)_1px,transparent_1px),linear-gradient(to_bottom,rgba(26,26,26,0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none -z-10" />
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-brand-neon/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+      {/* Decorative Background Grid */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,rgba(26,26,26,0.3)_1px,transparent_1px),linear-gradient(to_bottom,rgba(26,26,26,0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none -z-10" />
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-brand-neon/5 blur-[140px] rounded-full pointer-events-none -z-10" />
 
-      {/* Clean Admin Navigation Header */}
-      <header className="h-20 border-b border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-between px-6 sm:px-8 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2 group">
-            <Terminal className="text-brand-neon w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-            <span className="font-space font-bold tracking-wider text-base text-white">
-              AUTOMATION <span className="text-brand-neon">TEST</span>
-            </span>
-          </Link>
-          <div className="h-6 w-[1px] bg-white/10 hidden sm:block" />
-          <span className="text-[9px] uppercase tracking-[0.25em] text-gray-400 font-mono hidden sm:inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
-            <ShieldAlert className="w-3 h-3 text-brand-neon" />
-            Modo Master / Engenharia
-          </span>
-        </div>
+      {/* Collapsible Sidebar Navigation */}
+      <AdminSidebar
+        isCollapsed={isCollapsed}
+        onToggle={() => setIsCollapsed(!isCollapsed)}
+        activeItem={activeTab}
+        onSelectItem={(id) => setActiveTab(id)}
+      />
 
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded text-[10px] tracking-wider font-semibold hover:bg-white/5 text-gray-300 hover:text-white uppercase transition-all duration-300 font-mono"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Área do Cliente
-        </Link>
-      </header>
+      {/* Main Top Header */}
+      <AdminHeader
+        isCollapsed={isCollapsed}
+        onToggleSidebar={() => setIsCollapsed(!isCollapsed)}
+        activeSectionLabel={currentTabLabel}
+        onRefresh={loadDashboardData}
+        isRefreshing={loading}
+      />
 
-      {/* Main Admin Content Container */}
-      <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
-        
-        {/* Page Title Header */}
-        <div className="space-y-1">
-          <span className="text-[10px] tracking-[0.3em] font-mono text-brand-neon uppercase font-semibold block">
-            Painel Central / Administração
-          </span>
+      {/* Toast Notification Floating */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-24 right-6 z-50 px-5 py-3.5 rounded border text-xs font-mono tracking-wider uppercase backdrop-blur-md shadow-2xl flex items-center gap-3 ${
+              toast.type === 'success' 
+                ? 'bg-brand-neon/15 border-brand-neon text-brand-neon shadow-brand-neon/10' 
+                : 'bg-rose-500/15 border-rose-500 text-rose-400 shadow-rose-500/10'
+            }`}
+          >
+            {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+            <span>{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content Area (Dynamic Margin according to Sidebar State) */}
+      <main
+        className={`p-6 sm:p-8 space-y-8 transition-all duration-300 ${
+          isCollapsed ? 'md:ml-20' : 'md:ml-64'
+        }`}
+      >
+        {/* Page Header (Space Grotesk Title + Subtitle) */}
+        <div className="space-y-1 border-b border-white/5 pb-6">
           <h1 className="text-3xl sm:text-4xl font-space font-extrabold tracking-tight text-white uppercase">
-            PAINEL ADMINISTRATIVO
+            Dashboard
           </h1>
-          <p className="text-xs text-gray-500 font-light max-w-2xl leading-relaxed">
-            Painel mestre para controle de status, evolução de entrega de cronogramas e faturamento recorrente dos clientes Automation Test.
+          <p className="text-xs text-gray-400 font-light leading-relaxed">
+            Visão geral do seu negócio e métricas operacionais em tempo real.
           </p>
         </div>
 
-        {/* Operational Metrics Cards (Row of 3) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { label: 'Total de Clientes', value: `${totalClientes} Ativos`, icon: Users },
-            { label: 'Faturamento Recorrente (MRR)', value: `R$ ${totalMrr.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: DollarSign },
-            { label: 'Solicitações Pendentes', value: `${solicitacoesPendentes} Alertas`, icon: AlertTriangle, warning: solicitacoesPendentes > 0 }
-          ].map((card, idx) => {
-            const Icon = card.icon
-            return (
-              <div 
-                key={idx} 
-                className="bg-zinc-900/40 border border-white/10 p-6 rounded-lg backdrop-blur-sm relative overflow-hidden flex flex-col justify-between"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-sans font-bold tracking-wider text-gray-400 uppercase">
-                    {card.label}
-                  </span>
-                  <Icon className={`w-5 h-5 ${card.warning ? 'text-yellow-400' : 'text-brand-neon'}`} />
-                </div>
-                <div>
-                  <span className="text-2xl sm:text-3xl font-space font-extrabold tracking-tight text-white">
-                    {card.value}
-                  </span>
-                  <p className="text-[9px] text-gray-500 font-mono mt-1 uppercase">Monitoramento em tempo real</p>
-                </div>
+        {/* 8 Metric KPI Cards Grid (2 Rows of 4 Cards) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Card 1: Clientes (Supabase dynamic) */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Clientes</span>
+              <div className="p-2 rounded bg-brand-neon/10 border border-brand-neon/20">
+                <Users className="w-5 h-5 text-brand-neon" />
               </div>
-            )
-          })}
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">{totalClientes}</div>
+              <span className="text-[10px] font-mono text-emerald-400 mt-1 block font-semibold">+12% vs. mês anterior</span>
+            </div>
+          </div>
+
+          {/* Card 2: Produtos (Supabase dynamic) */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Produtos</span>
+              <div className="p-2 rounded bg-cyan-500/10 border border-cyan-500/20">
+                <Package className="w-5 h-5 text-cyan-400" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">{totalProdutos}</div>
+              <span className="text-[10px] font-mono text-emerald-400 mt-1 block font-semibold">+7 ativos no catálogo</span>
+            </div>
+          </div>
+
+          {/* Card 3: Recebimentos mês */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Recebimentos mês</span>
+              <div className="p-2 rounded bg-emerald-500/10 border border-emerald-500/20">
+                <Wallet className="w-5 h-5 text-emerald-400" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">R$ 48.230</div>
+              <span className="text-[10px] font-mono text-emerald-400 mt-1 block font-semibold">+8% vs. mês anterior</span>
+            </div>
+          </div>
+
+          {/* Card 4: Pendências (Supabase dynamic) */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Pendências</span>
+              <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20">
+                <AlertCircle className={`w-5 h-5 ${solicitacoesPendentes > 0 ? 'text-amber-400 animate-pulse' : 'text-amber-400'}`} />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">{solicitacoesPendentes}</div>
+              <span className="text-[10px] font-mono text-rose-400 mt-1 block font-semibold">-2 vs. mês anterior</span>
+            </div>
+          </div>
+
+          {/* Card 5: Compromissos hoje */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Compromissos hoje</span>
+              <div className="p-2 rounded bg-purple-500/10 border border-purple-500/20">
+                <Calendar className="w-5 h-5 text-purple-400" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">6</div>
+              <span className="text-[10px] font-mono text-gray-400 mt-1 block font-semibold">Agendados para hoje</span>
+            </div>
+          </div>
+
+          {/* Card 6: Chamados abertos */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Chamados abertos</span>
+              <div className="p-2 rounded bg-rose-500/10 border border-rose-500/20">
+                <LifeBuoy className="w-5 h-5 text-rose-400" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">9</div>
+              <span className="text-[10px] font-mono text-emerald-400 mt-1 block font-semibold">-1 vs. mês anterior</span>
+            </div>
+          </div>
+
+          {/* Card 7: Projetos ativos */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Projetos ativos</span>
+              <div className="p-2 rounded bg-blue-500/10 border border-blue-500/20">
+                <FolderKanban className="w-5 h-5 text-blue-400" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">14</div>
+              <span className="text-[10px] font-mono text-emerald-400 mt-1 block font-semibold">+2 vs. mês anterior</span>
+            </div>
+          </div>
+
+          {/* Card 8: Crescimento */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Crescimento</span>
+              <div className="p-2 rounded bg-brand-neon/10 border border-brand-neon/20">
+                <TrendingUp className="w-5 h-5 text-brand-neon" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-brand-neon">+18%</div>
+              <span className="text-[10px] font-mono text-emerald-400 mt-1 block font-semibold">Meta mensal atingida</span>
+            </div>
+          </div>
         </div>
 
-        {/* Client Management Table Card */}
-        <div className="bg-zinc-900/40 border border-white/10 rounded-lg p-6 sm:p-8 backdrop-blur-sm space-y-6">
+        {/* Lower Panels (2-Column Grid) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Panel 1: Atividade recente */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-6 backdrop-blur-sm space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <h3 className="font-space font-bold text-white text-sm uppercase tracking-wider">
+                Atividade recente
+              </h3>
+              <span className="text-[9px] font-mono text-gray-500 uppercase">Audit Feed</span>
+            </div>
+            
+            <ul className="space-y-3.5 text-xs">
+              <li className="flex items-center gap-3 font-sans text-gray-300">
+                <span className="w-2 h-2 rounded-full bg-brand-neon shrink-0" />
+                <span>Novo cliente cadastrado: <strong className="text-white font-semibold">Acme Ltda</strong></span>
+              </li>
+              <li className="flex items-center gap-3 font-sans text-gray-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                <span>Pagamento recebido: <strong className="text-white font-semibold">R$ 2.300</strong></span>
+              </li>
+              <li className="flex items-center gap-3 font-sans text-gray-300">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0" />
+                <span>Chamado <strong className="text-white font-semibold">#142</strong> respondido</span>
+              </li>
+              <li className="flex items-center gap-3 font-sans text-gray-300">
+                <span className="w-2 h-2 rounded-full bg-purple-400 shrink-0" />
+                <span>Projeto <strong className="text-white font-semibold">'Website'</strong> atualizado</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Panel 2: Próximos compromissos */}
+          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-6 backdrop-blur-sm space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <h3 className="font-space font-bold text-white text-sm uppercase tracking-wider">
+                Próximos compromissos
+              </h3>
+              <span className="text-[9px] font-mono text-brand-neon uppercase">Hoje</span>
+            </div>
+
+            <ul className="space-y-3 text-xs">
+              <li className="flex items-center gap-3 p-2.5 rounded bg-black/30 border border-white/5 font-mono">
+                <span className="text-brand-neon font-bold text-xs shrink-0 w-12">10:00</span>
+                <span className="text-gray-300 font-sans text-xs">Reunião com cliente João</span>
+              </li>
+              <li className="flex items-center gap-3 p-2.5 rounded bg-black/30 border border-white/5 font-mono">
+                <span className="text-brand-neon font-bold text-xs shrink-0 w-12">14:30</span>
+                <span className="text-gray-300 font-sans text-xs">Revisão do projeto Alpha</span>
+              </li>
+              <li className="flex items-center gap-3 p-2.5 rounded bg-black/30 border border-white/5 font-mono">
+                <span className="text-brand-neon font-bold text-xs shrink-0 w-12">16:00</span>
+                <span className="text-gray-300 font-sans text-xs">Ligação de suporte</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Supabase Profiles Management Section (Preserved) */}
+        <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-6 sm:p-8 backdrop-blur-sm space-y-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4 gap-2">
+            <div>
+              <h2 className="font-space font-bold text-white text-base uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-4 h-4 text-brand-neon" />
+                GESTÃO DE SOLICITAÇÕES E PERFIS (PF / PJ)
+              </h2>
+              <p className="text-[10px] text-gray-400 font-mono mt-1">
+                Aprovação atômica de contas conectada diretamente à tabela de profiles do Supabase
+              </p>
+            </div>
+            <span className="text-[9px] font-mono text-brand-neon bg-brand-neon/10 border border-brand-neon/20 px-2.5 py-1 rounded uppercase tracking-wider self-start sm:self-auto">
+              Supabase Integrated
+            </span>
+          </div>
+
+          {/* Estado de Carregamento (Loading State) */}
+          {loading ? (
+            <div className="py-12 text-center space-y-3 bg-black/20 rounded border border-white/5 backdrop-blur-sm">
+              <Loader2 className="w-8 h-8 text-brand-neon animate-spin mx-auto" />
+              <p className="text-xs font-mono text-gray-400 uppercase tracking-widest">
+                CARREGANDO PERFIS DO SUPABASE...
+              </p>
+            </div>
+          ) : profiles.length === 0 ? (
+            /* Estado de Lista Vazia (Empty State) */
+            <div className="py-12 text-center space-y-3 bg-black/20 rounded border border-white/5 backdrop-blur-sm">
+              <Users className="w-10 h-10 text-gray-600 mx-auto" />
+              <p className="text-sm font-space font-bold text-gray-300 uppercase tracking-wider">
+                NENHUM CLIENTE CADASTRADO OU PENDENTE
+              </p>
+              <p className="text-xs text-gray-500 font-mono max-w-md mx-auto">
+                Quando novos clientes se cadastrarem na plataforma, suas solicitações de acesso aparecerão nesta lista para aprovação.
+              </p>
+            </div>
+          ) : (
+            /* Tabela de Perfis Tech-Luxo */
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-[9px] font-mono text-gray-400 uppercase tracking-widest bg-white/[0.02]">
+                    <th className="py-3.5 px-4 font-semibold">Cliente / Razão Social</th>
+                    <th className="py-3.5 px-4 font-semibold">Documento & Contato</th>
+                    <th className="py-3.5 px-4 font-semibold">Data Cadastro</th>
+                    <th className="py-3.5 px-4 font-semibold">Status</th>
+                    <th className="py-3.5 px-4 font-semibold text-right">Ações de Aprovação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04]">
+                  {profiles.map((profile) => {
+                    const isPJ = profile.tipo_pessoa === 'PJ'
+                    const nomeExibicao = isPJ 
+                      ? (profile.razao_social || 'Razão Social não informada')
+                      : (profile.nome_completo || 'Nome não informado')
+                    const documentoExibicao = isPJ
+                      ? (profile.cnpj || 'CNPJ não informado')
+                      : (profile.cpf || 'CPF não informado')
+                    const isUpdating = updatingId === profile.id
+
+                    return (
+                      <tr key={profile.id} className="text-xs hover:bg-white/[0.02] transition-all duration-200">
+                        {/* Nome / Razão Social */}
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-white uppercase tracking-wide flex items-center gap-1.5">
+                              {isPJ ? <Building2 className="w-3.5 h-3.5 text-cyan-400" /> : <Users className="w-3.5 h-3.5 text-brand-neon" />}
+                              {nomeExibicao}
+                            </span>
+                            <span className="text-[10px] text-gray-500 font-mono lowercase">
+                              {profile.email}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Documento & Contato */}
+                        <td className="py-4 px-4 font-mono">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border uppercase ${
+                                isPJ 
+                                  ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' 
+                                  : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                              }`}>
+                                [{profile.tipo_pessoa || 'PF'}]
+                              </span>
+                              <span className="text-gray-300 font-bold">{documentoExibicao}</span>
+                            </div>
+                            <span className="text-[10px] text-gray-400 font-sans lowercase">
+                              {profile.email} {profile.telefone ? `• ${profile.telefone}` : ''}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Data de Cadastro */}
+                        <td className="py-4 px-4 font-mono text-gray-400 text-[10px]">
+                          {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'N/D'}
+                        </td>
+
+                        {/* Status com Estilo Tech-Luxo */}
+                        <td className="py-4 px-4 font-mono">
+                          {profile.status === 'pendente' && (
+                            <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded text-[9px] uppercase font-bold tracking-wider">
+                              <Clock className="w-3 h-3 animate-spin" />
+                              PENDENTE
+                            </span>
+                          )}
+                          {profile.status === 'ativo' && (
+                            <span className="inline-flex items-center gap-1 bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30 px-2.5 py-1 rounded text-[9px] uppercase font-bold tracking-wider">
+                              <CheckCircle2 className="w-3 h-3" />
+                              ATIVO
+                            </span>
+                          )}
+                          {profile.status === 'recusado' && (
+                            <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded text-[9px] uppercase font-bold tracking-wider">
+                              <XCircle className="w-3 h-3" />
+                              RECUSADO
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Botões de Ação em UPPERCASE */}
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Botão APROVAR */}
+                            <button
+                              onClick={() => handleStatusChange(profile.id, 'ativo')}
+                              disabled={profile.status === 'ativo' || isUpdating}
+                              className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
+                                profile.status === 'ativo'
+                                  ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
+                                  : 'bg-brand-neon text-black hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:scale-105'
+                              }`}
+                            >
+                              {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                              APROVAR
+                            </button>
+
+                            {/* Botão RECUSAR */}
+                            <button
+                              onClick={() => handleStatusChange(profile.id, 'recusado')}
+                              disabled={profile.status === 'recusado' || isUpdating}
+                              className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
+                                profile.status === 'recusado'
+                                  ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
+                                  : 'bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/50 hover:scale-105'
+                              }`}
+                            >
+                              {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
+                              RECUSAR
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Operational Section: Projects & Monthly Charges */}
+        <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-6 sm:p-8 backdrop-blur-sm space-y-6 shadow-xl">
           <div className="border-b border-white/5 pb-4">
-            <h3 className="font-space font-bold text-white text-sm uppercase tracking-wider">
-              CLIENTES E PROJETOS ATIVOS
-            </h3>
-            <p className="text-[10px] text-gray-500 font-mono mt-1">
-              Gerencie a integridade financeira e o status de desenvolvimento visível para os clientes
+            <h2 className="font-space font-bold text-white text-sm uppercase tracking-wider">
+              PROJETOS EM ANDAMENTO E MENSALIDADES ERP
+            </h2>
+            <p className="text-[10px] text-gray-400 font-mono mt-1">
+              Gerencie a integridade financeira e o progresso do desenvolvimento sob medida
             </p>
           </div>
 
-          {/* Minimalist Dark Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/5 text-[9px] font-mono text-gray-500 uppercase tracking-widest">
+                <tr className="border-b border-white/5 text-[9px] font-mono text-gray-400 uppercase tracking-widest">
                   <th className="py-4 px-4 font-semibold">Empresa</th>
                   <th className="py-4 px-4 font-semibold">Produto Ativo</th>
                   <th className="py-4 px-4 font-semibold">Fase Atual</th>
@@ -255,10 +653,9 @@ export default function AdminOverview() {
                     <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => handleEditClick(c)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-brand-neon text-black text-[9px] tracking-wider font-bold rounded hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all uppercase cursor-pointer"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-brand-neon text-black text-[9px] font-mono tracking-wider font-bold rounded hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all uppercase cursor-pointer"
                       >
-                        <Settings className="w-3.5 h-3.5" />
-                        Editar Status
+                        EDITAR STATUS
                       </button>
                     </td>
                   </tr>
@@ -327,7 +724,7 @@ export default function AdminOverview() {
                 {/* Progress Slider */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-[10px] tracking-wider font-mono text-gray-400">
-                    <span>Progresso do Projeto</span>
+                    <span>PROGRESSO DO PROJETO</span>
                     <span className="text-brand-neon font-bold">{progresso}%</span>
                   </div>
                   <input
@@ -344,7 +741,7 @@ export default function AdminOverview() {
                   {/* Phase Select */}
                   <div className="space-y-2">
                     <label className="block text-[10px] tracking-wider text-gray-400 font-mono uppercase">
-                      Fase Atual
+                      FASE ATUAL
                     </label>
                     <select
                       value={fase}
@@ -362,7 +759,7 @@ export default function AdminOverview() {
                   {/* Financial Status Select */}
                   <div className="space-y-2">
                     <label className="block text-[10px] tracking-wider text-gray-400 font-mono uppercase">
-                      Status Financeiro
+                      STATUS FINANCEIRO
                     </label>
                     <select
                       value={statusFinanceiro}
@@ -378,7 +775,7 @@ export default function AdminOverview() {
                 {/* Next Delivery Input */}
                 <div className="space-y-2">
                   <label className="block text-[10px] tracking-wider text-gray-400 font-mono uppercase">
-                    Próxima Entrega
+                    PRÓXIMA ENTREGA
                   </label>
                   <input
                     type="text"
@@ -392,14 +789,14 @@ export default function AdminOverview() {
                 {/* Faturamento / Mensalidade Recorrente */}
                 <div className="border-t border-white/5 pt-4 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider">Recorrência Mensal (MRR)</span>
+                    <span className="text-[10px] font-mono uppercase text-gray-400 tracking-wider">RECORRÊNCIA MENSAL (MRR)</span>
                     <button
                       type="button"
                       onClick={handleLancarFatura}
                       className="inline-flex items-center gap-1 text-[9px] font-mono text-brand-neon hover:underline uppercase"
                     >
                       <Plus className="w-3 h-3" />
-                      Lançar Nova Fatura/Mensalidade
+                      LANÇAR NOVA FATURA
                     </button>
                   </div>
 
@@ -410,7 +807,7 @@ export default function AdminOverview() {
                       className="grid grid-cols-2 gap-4 bg-black/20 p-4 border border-white/5 rounded-lg"
                     >
                       <div className="space-y-2">
-                        <label className="block text-[9px] font-mono text-gray-500 uppercase">Valor Mensalidade (R$)</label>
+                        <label className="block text-[9px] font-mono text-gray-500 uppercase">VALOR MENSALIDADE (R$)</label>
                         <input
                           type="number"
                           value={valorMensalidade}
@@ -419,7 +816,7 @@ export default function AdminOverview() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-[9px] font-mono text-gray-500 uppercase">Data de Vencimento</label>
+                        <label className="block text-[9px] font-mono text-gray-500 uppercase">DATA DE VENCIMENTO</label>
                         <input
                           type="text"
                           value={vencimentoMensalidade}
@@ -439,14 +836,14 @@ export default function AdminOverview() {
                     onClick={() => setSelectedClient(null)}
                     className="px-4 py-2.5 border border-white/10 text-white rounded text-[10px] tracking-wider font-semibold hover:bg-white/5 uppercase transition-all duration-300 font-mono cursor-pointer"
                   >
-                    Cancelar
+                    CANCELAR
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-brand-neon text-black rounded text-[10px] tracking-wider font-bold hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-1.5 cursor-pointer"
+                    className="px-6 py-2.5 bg-brand-neon text-black rounded text-[10px] tracking-wider font-bold hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-1.5 cursor-pointer font-mono"
                   >
                     <Save className="w-3.5 h-3.5" />
-                    Salvar Alterações
+                    SALVAR ALTERAÇÕES
                   </button>
                 </div>
 
