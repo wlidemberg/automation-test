@@ -52,9 +52,11 @@ export async function submitProposalRequest(payload: ProposalPayload) {
     }
 
     // 3. Cadastra a solicitação na tabela projects vinculada ao cliente
+    const projectId = crypto.randomUUID();
     const { error: projectError } = await supabase
       .from('projects')
       .insert({
+        id: projectId,
         client_id: clientId,
         nome: `Solicitação: ${payload.produtoSlug.toUpperCase()}`,
         status_projeto: 'briefing',
@@ -67,7 +69,7 @@ export async function submitProposalRequest(payload: ProposalPayload) {
       throw new Error(`Falha ao registrar projeto: ${projectError.message}`);
     }
 
-    return { success: true };
+    return { success: true, projectId };
   } catch (err: any) {
     console.error('Falha real na submissao da proposta:', err.message || err);
     throw err;

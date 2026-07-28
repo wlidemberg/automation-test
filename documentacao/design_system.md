@@ -267,3 +267,24 @@ Com a substituição de modais por páginas dedicadas, os formulários do Admin 
 - **Grids Responsivas**: Agrupamento lógico de campos em layouts flexíveis (`grid grid-cols-1 sm:grid-cols-12` ou `sm:grid-cols-3 gap-5`) que se adaptam perfeitamente a dispositivos móveis e desktops de alta resolução.
 - **Ações de Formulário**: Botões de ação em UPPERCASE (`SALVAR CLIENTE`, `SALVAR PRODUTO`, `CANCELAR`) que usam fonte mono e sombra de brilho (glow) em verde neon (`bg-brand-neon`) sob foco/hover.
 
+---
+
+## 13. Especificações Visuais do Fluxo de Briefing & Propostas IA
+
+As novas interfaces dedicadas ao fluxo de briefing e propostas comerciais utilizam as diretrizes Tech-Luxo para manter a coerência de alta fidelidade visual:
+
+### Página de Briefing do Cliente (`pages/BriefingPage.tsx`)
+* **Layout**: Centrado em formulário estruturado de Glassmorphism com fundos `bg-brand-gray/90` e contorno de `1px` em `border-brand-gray`. Glow superior em gradiente neon em cada bloco do formulário.
+* **Componentes**:
+  - *Seletores de Cor Hexadecimal*: Inputs nativos de paleta integrados de forma sutil com inputs de texto mono.
+  - *Funcionalidades e Integrações*: Renderizados em grids com botões interativos de seleção dupla, apresentando bordas verdes neon (`border-brand-neon`) e preenchimento leve (`bg-brand-neon/10`) quando ativos.
+  - *Botão de Envio*: Caixa alta (`ENVIAR BRIEFING PARA ANÁLISE IA`) estilizada em cor neon sólida (`bg-brand-neon text-black`) com efeito de sombra glow no foco.
+
+### Página de Visualização de Proposta IA (`pages/ProposalViewPage.tsx`)
+* **Layout**: Apresentação de dados em cascata de blocos glassmorphism.
+* **Componentes**:
+  - *Aguarde da IA*: Loader de rotação contínua e texto em fonte mono sinalizando a análise automatizada. Botão secundário de simulação de retorno em fonte mono.
+  - *Bloco de Proposta*: Escopo estruturado e entregáveis mapeados individualmente com ícones de raio (`Zap`) em verde neon.
+  - *Seletor de Upsells*: Cards clicáveis que calculam dinamicamente a precificação total e o valor da entrada de 50% em tempo real.
+  - *Botão de Pagamento*: Caixa alta (`EFETUAR PAGAMENTO DA ENTRADA (50%)`) de largura cheia com destaque verde neon e glow de alta tecnologia.
+

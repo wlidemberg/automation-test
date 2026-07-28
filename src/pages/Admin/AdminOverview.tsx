@@ -53,6 +53,7 @@ export default function AdminOverview() {
 
   // Supabase Proposals State
   const [proposals, setProposals] = useState<any[]>([])
+  const [briefings, setBriefings] = useState<any[]>([])
   const [loadingProposals, setLoadingProposals] = useState<boolean>(true)
   const [isProposalModalOpen, setIsProposalModalOpen] = useState<boolean>(false)
 
@@ -123,6 +124,20 @@ export default function AdminOverview() {
     }
   }
 
+  const loadBriefings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('briefings')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (!error && data) {
+        setBriefings(data)
+      }
+    } catch (err) {
+      console.error('Erro ao carregar briefings:', err)
+    }
+  }
+
   const loadProposals = async () => {
     setLoadingProposals(true)
     try {
@@ -139,6 +154,7 @@ export default function AdminOverview() {
   useEffect(() => {
     loadDashboardData()
     loadProposals()
+    loadBriefings()
   }, [])
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -187,13 +203,57 @@ export default function AdminOverview() {
       const success = await acceptProposalAndPayEntry(projectId, invoice.id)
       if (success) {
         showToast('PROPOSTA ACEITA E FATURA DE ENTRADA PAGA COM SUCESSO!', 'success')
-        await Promise.all([loadDashboardData(), loadProposals()])
+        await Promise.all([loadDashboardData(), loadProposals(), loadBriefings()])
       } else {
         showToast('ERRO AO PROCESSAR ACEITE DA PROPOSTA.', 'error')
       }
     } catch (err) {
       console.error(err)
       showToast('FALHA OPERACIONAL.', 'error')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const handleApproveClientAndContract = async (userId: string, briefingId: string, projectId: string | null) => {
+    setUpdatingId(userId)
+    try {
+      // 1. Altera o status do perfil para 'ativo'
+      const updatedProfile = await updateProfileStatus(userId, 'ativo')
+      if (!updatedProfile) {
+        showToast('ERRO AO ATIVAR PERFIL DO CLIENTE.', 'error')
+        return
+      }
+
+      // 2. Vincula o projeto definitivo (altera fase_atual para 'em_desenvolvimento')
+      if (projectId) {
+        await supabase
+          .from('projects')
+          .update({ fase_atual: 'em_desenvolvimento', progresso: 15 })
+          .eq('id', projectId)
+
+        // Atualiza status da fatura para pago se houver alguma pendente de entrada
+        await supabase
+          .from('invoices')
+          .update({ status: 'pago' })
+          .eq('project_id', projectId)
+          .eq('tipo', 'entrada')
+      }
+
+      // 3. Atualiza o status do briefing
+      await supabase
+        .from('briefings')
+        .update({ status_briefing: 'proposta_aceita' })
+        .eq('id', briefingId)
+
+      // 4. Simula o disparo de e-mail de primeiro acesso
+      showToast('CADASTRO ATIVADO E CONTRATO DE LUXO GERADO COM SUCESSO!', 'success')
+      
+      // Recarregar dados
+      await Promise.all([loadDashboardData(), loadProposals(), loadBriefings()])
+    } catch (err) {
+      console.error(err)
+      showToast('FALHA OPERACIONAL AO GERAR CONTRATO.', 'error')
     } finally {
       setUpdatingId(null)
     }
@@ -560,6 +620,8 @@ export default function AdminOverview() {
                       ? (profile.cnpj || 'CNPJ não informado')
                       : (profile.cpf || 'CPF não informado')
                     const isUpdating = updatingId === profile.id
+                    const associatedBriefing = briefings.find((b: any) => b.client_id === profile.id)
+                    const hasConfirmedPayment = associatedBriefing?.status_briefing === 'proposta_aceita'
 
                     return (
                       <tr key={profile.id} className="text-xs hover:bg-white/[0.02] transition-all duration-200">
@@ -625,19 +687,33 @@ export default function AdminOverview() {
                         {/* Botões de Ação em UPPERCASE */}
                         <td className="py-4 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {/* Botão APROVAR */}
-                            <button
-                              onClick={() => handleStatusChange(profile.id, 'ativo')}
-                              disabled={profile.status === 'ativo' || isUpdating}
-                              className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
-                                profile.status === 'ativo'
-                                  ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
-                                  : 'bg-brand-neon text-black hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:scale-105'
-                              }`}
-                            >
-                              {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                              APROVAR
-                            </button>
+                             {hasConfirmedPayment ? (
+                               <button
+                                 onClick={() => handleApproveClientAndContract(profile.id, associatedBriefing.id, associatedBriefing.project_id)}
+                                 disabled={profile.status === 'ativo' || isUpdating}
+                                 className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
+                                   profile.status === 'ativo'
+                                     ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
+                                     : 'bg-brand-neon text-black hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] hover:scale-105 shadow-[0_0_10px_rgba(204,255,0,0.2)] border border-brand-neon/30'
+                                 }`}
+                               >
+                                 {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                                 APROVAR CADASTRO E GERAR CONTRATO
+                               </button>
+                             ) : (
+                               <button
+                                 onClick={() => handleStatusChange(profile.id, 'ativo')}
+                                 disabled={profile.status === 'ativo' || isUpdating}
+                                 className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
+                                   profile.status === 'ativo'
+                                     ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
+                                     : 'bg-brand-neon text-black hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:scale-105'
+                                 }`}
+                               >
+                                 {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                                 APROVAR
+                               </button>
+                             )}
 
                             {/* Botão RECUSAR */}
                             <button

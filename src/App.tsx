@@ -11,6 +11,8 @@ import AdminProducts from './pages/Admin/AdminProducts'
 import ProposalPage from './pages/ProposalPage'
 import ClientFormPage from './pages/Admin/ClientFormPage'
 import ProductFormPage from './pages/Admin/ProductFormPage'
+import BriefingPage from './pages/BriefingPage'
+import ProposalViewPage from './pages/ProposalViewPage'
 import { AuthProvider } from './contexts/AuthContext'
 
 // Premium placeholder component for dashboard sections in development
@@ -50,6 +52,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/produtos/:slug" element={<ProductPage />} />
           <Route path="/solicitar-proposta" element={<ProposalPage />} />
+          <Route path="/briefing/:projectId" element={<BriefingPage />} />
+          <Route path="/proposta/:briefingId" element={<ProposalViewPage />} />
           <Route path="/login" element={<Login />} />
           
           {/* Admin Routes */}

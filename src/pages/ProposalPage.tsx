@@ -22,6 +22,7 @@ export default function ProposalPage() {
   // UI States
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
 
   // Pre-select product when page loads or parameter changes
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function ProposalPage() {
       })
 
       if (result && result.success) {
+        setCreatedProjectId(result.projectId || null)
         setIsSuccess(true)
       } else {
         alert('Ocorreu um erro ao enviar sua solicitação. Por favor, tente novamente.')
@@ -62,6 +64,7 @@ export default function ProposalPage() {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       if (isLocal) {
         console.warn('Aviso: Utilizando fallback de sucesso local para desenvolvimento (erro no banco ignorado).')
+        setCreatedProjectId(crypto.randomUUID())
         setIsSuccess(true)
       } else {
         alert('Falha crítica de comunicação com o banco. Por favor, tente novamente mais tarde.')
@@ -324,19 +327,30 @@ export default function ProposalPage() {
                   </p>
                 </div>
                 
-                <div className="pt-4 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="px-8 py-3 bg-[#CCFF00] text-black rounded text-xs font-mono font-bold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all cursor-pointer uppercase"
-                  >
-                    IR PARA O DASHBOARD
-                  </button>
-                  <button
-                    onClick={() => navigate('/')}
-                    className="px-8 py-3 bg-white/5 border border-white/10 rounded text-xs font-mono tracking-widest text-white uppercase hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
-                  >
-                    VOLTAR AO INÍCIO
-                  </button>
+                <div className="pt-4 flex flex-col gap-3 w-full sm:w-auto items-center">
+                  {createdProjectId && (
+                    <button
+                      onClick={() => navigate(`/briefing/${createdProjectId}`)}
+                      className="w-full sm:w-auto px-8 py-4 bg-[#CCFF00] text-black rounded text-xs font-mono font-bold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all cursor-pointer uppercase flex items-center justify-center gap-2"
+                    >
+                      PREENCHER BRIEFING DETALHADO (RECOMENDADO)
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                    <button
+                      onClick={() => navigate('/dashboard')}
+                      className="px-8 py-3 bg-white/5 border border-white/10 rounded text-xs font-mono tracking-widest text-white uppercase hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+                    >
+                      IR PARA O DASHBOARD
+                    </button>
+                    <button
+                      onClick={() => navigate('/')}
+                      className="px-8 py-3 bg-white/5 border border-white/10 rounded text-xs font-mono tracking-widest text-white uppercase hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+                    >
+                      VOLTAR AO INÍCIO
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

@@ -43,6 +43,13 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Conversão do CRUD de Produtos do Admin em páginas dedicadas (`/admin/produtos/novo` e `/admin/produtos/editar/:id` -> `ProductFormPage.tsx`).
   - Remoção de todos os modais obsoletos do catálogo e de cadastros.
 
+- [x] **Etapa 8: Fluxo Completo de Briefing Técnico e Propostas IA com n8n**
+  - Criação da página de Briefing Técnico (`BriefingPage.tsx`) na rota `/briefing/:projectId` coletando dados detalhados (marca, dores, faturamento, features, integrações).
+  - Validação inteligente contra duplicação de cadastros por e-mail/CPF/CNPJ na camada de serviço (`briefingServices.ts`).
+  - Integração com automação de inteligência artificial através de webhook `POST` para o n8n.
+  - Tela de visualização de proposta recomendada pela IA (`ProposalViewPage.tsx`) na rota `/proposta/:briefingId` com detalhamento dinâmico de escopo, entregáveis e precificação dividida com suporte opcional a Upsells de alto valor.
+  - Atualização do painel administrativo (`AdminOverview.tsx`) integrando aprovação de cadastros vinculada a contratos gerados de forma inteligente após a detecção do pagamento da entrada.
+
 ---
 
 ## 2. Cronograma de Entregas
@@ -51,5 +58,6 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
 | :--- | :--- | :--- |
 | **Fase 1** | Supabase Base Client & Profile Service | **Concluído** |
 | **Fase 2** | Conexão Real Painel Admin & Aprovações | **Concluído** |
-| **Fase 3** | Supabase Auth & RLS Policies | Em Andamento |
-| **Fase 4** | Sincronização em Tempo Real (Realtime) | Planejado |
+| **Fase 3** | Supabase Auth & RLS Policies | **Concluído** |
+| **Fase 4** | Fluxo Completo de Briefing & Propostas IA | **Concluído** |
+| **Fase 5** | Sincronização em Tempo Real (Realtime) | Planejado |

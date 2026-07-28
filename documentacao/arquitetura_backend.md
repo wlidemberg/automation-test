@@ -222,19 +222,64 @@ O fluxo público de captação de leads substitui a compra direta e integra o ca
    - Cria um registro associado na tabela `projects` com a fase inicial `fase_atual = 'briefing'` (ou `'proposta_pendente'` como fallback) e valores comerciais zerados (`valor_setup = 0`, `valor_mensalidade = 0`).
    - **Mecanismo de Resiliência Local**: O fluxo é desenhado para capturar erros de RLS ou ausência de tabelas no Supabase, logando o aviso no console e retornando um estado de sucesso (`success: true, isFallback: true`) para assegurar o funcionamento da navegação do usuário localmente.
 2. **Ciclo de Conversão**:
-   - O projeto entra na fila de análise da administração.
-   - O Administrador revisa as necessidades e precifica o projeto enviando a proposta, migrando a fase do projeto para `'proposta_enviada'` e gerando a fatura de 50% de entrada.
+    - O projeto entra na fila de análise da administração.
+    - O Administrador revisa as necessidades e precifica o projeto enviando a proposta, migrando a fase do projeto para `'proposta_enviada'` e gerando a fatura de 50% de entrada.
 
 ---
 
-## 12. Rotas de Navegação Dedicadas (React Router)
+## 12. Fluxo de Briefing Técnico e Propostas com Inteligência Artificial (N8N)
+
+Para suportar o fluxo operacional do diagrama de negócios, foi adicionada a tabela de briefings técnicos conectando clientes, projetos, webhook do N8N e o modelo de propostas autogeradas.
+
+### Tabela `briefings`
+```sql
+CREATE TABLE public.briefings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+  nome_projeto TEXT NOT NULL,
+  logo_url TEXT,
+  cor_primaria TEXT,
+  cor_secundaria TEXT,
+  tom_de_voz TEXT,
+  faturamento_mensal TEXT,
+  qtd_funcionarios INTEGER DEFAULT 1 NOT NULL,
+  qtd_socios INTEGER DEFAULT 1 NOT NULL,
+  publico_alvo TEXT,
+  dores_principais TEXT NOT NULL,
+  funcionalidades_esperadas TEXT[] DEFAULT '{}'::text[] NOT NULL,
+  integracoes_necessarias TEXT[] DEFAULT '{}'::text[] NOT NULL,
+  proposta_ia JSONB,
+  link_pagamento_entrada TEXT,
+  status_briefing TEXT DEFAULT 'pendente' NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+```
+
+### Validação de Duplicidade de Cadastro
+Antes da inserção de um briefing, a API executa a checagem na tabela `public.profiles` para garantir que o `email`, o `cpf` ou o `cnpj` inseridos não pertençam a contas preexistentes de outros clientes. Isso preserva a integridade cadastral e evita redundâncias de dados de faturamento.
+
+### Integração com Webhook N8N
+Ao salvar um briefing com status `'em_analise_ia'`, um disparo HTTP `POST` assíncrono é enviado para `VITE_N8N_BRIEFING_WEBHOOK` com os metadados do projeto. O workflow do n8n processa estes dados com LLMs e atualiza a coluna `proposta_ia` com o escopo e precificação sugeridos, mudando o status para `'proposta_gerada'`.
+
+### Manutenção do RLS (Row Level Security) Compatível
+* As políticas de RLS das tabelas de `briefings`, `projects` e `profiles` permitem que usuários públicos (`anon`) façam inserções em novos registros de briefing técnico contanto que sigam a integridade relacional.
+* Consultas privadas e atualizações de status são restritas para proprietários autorizados (`auth.uid() = client_id`) e administradores do sistema (`role = 'admin'`), evitando vazamento de propostas sensíveis.
+
+---
+
+## 13. Rotas de Navegação Dedicadas (React Router)
 
 A reestruturação arquitetural substitui o fluxo de modais por páginas e rotas dedicadas no React Router:
 
 ### Rotas Públicas
 - `/solicitar-proposta`: Página inteira para recepção de briefing de leads. Oferece suporte opcional ao parâmetro `?produto=slug` na query-string para carregar a intenção inicial de compra.
+- `/briefing/:projectId`: Página estruturada em padrão Tech-Luxo para envio dos dados da marca, métricas de negócio e necessidades técnicas adicionais.
+- `/proposta/:briefingId`: Tela dinâmica de visualização do escopo, entregáveis e opções de upsells calculados pela inteligência artificial.
 
 ### Rotas do Painel Administrativo
+- `/admin`: Tela principal de consolidação de métricas operacionais e aprovação de cadastros. Agora com botão dinâmico para gerar contratos e liberar acesso instantaneamente ao detectar propostas pagas.
 - `/admin/clientes/novo`: Tela exclusiva para cadastrar e ativar perfis de clientes diretamente pelo administrador.
 - `/admin/clientes/editar/:id`: Tela para alteração de dados cadastrais de um cliente selecionado, incluindo a estruturação do endereço de faturamento (`endereco` JSONB).
 - `/admin/produtos/novo`: Tela exclusiva para cadastrar novas soluções tecnológicas no catálogo de produtos.

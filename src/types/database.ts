@@ -108,3 +108,28 @@ export interface ProjectRoadmap {
   ordem: number;
   created_at?: string;
 }
+
+export type BriefingStatus = 'pendente' | 'em_analise_ia' | 'proposta_gerada' | 'proposta_aceita' | 'recusado';
+
+export interface Briefing {
+  id: string;
+  client_id: string;
+  project_id: string | null;
+  nome_projeto: string;
+  logo_url: string | null;
+  cor_primaria: string | null;
+  cor_secundaria: string | null;
+  tom_de_voz: string | null;
+  faturamento_mensal: string | null;
+  qtd_funcionarios: number;
+  qtd_socios: number;
+  publico_alvo: string | null;
+  dores_principais: string;
+  funcionalidades_esperadas: string[];
+  integracoes_necessarias: string[];
+  proposta_ia: Record<string, any> | null;
+  link_pagamento_entrada: string | null;
+  status_briefing: BriefingStatus;
+  created_at?: string;
+  updated_at?: string;
+}
