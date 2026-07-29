@@ -50,6 +50,10 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Tela de visualização de proposta recomendada pela IA (`ProposalViewPage.tsx`) na rota `/proposta/:briefingId` com detalhamento dinâmico de escopo, entregáveis e precificação dividida com suporte opcional a Upsells de alto valor.
   - Atualização do painel administrativo (`AdminOverview.tsx`) integrando aprovação de cadastros vinculada a contratos gerados de forma inteligente após a detecção do pagamento da entrada.
 
+- [x] **Etapa 9: Registro Oficial de Fichas Técnicas & Roadmaps dos 7 Produtos**
+  - Formalização e sincronização da documentação das **Fichas Técnicas** e **Roadmaps de Desenvolvimento** dos 7 produtos principais (Site Institucional Tech-Luxo, Landing Page de Alta Conversão, Loja Virtual & E-commerce, Sistema de Agendamentos Inteligente, ERP Commercial White-Label, Automação n8n e Agente de IA 24/7).
+  - Registro destas especificações no arquivo `documentacao/arquitetura_backend.md` como **referência oficial** para precificação, escopo, geração automática de propostas técnicas via n8n/IA e elaboração de briefings técnicos.
+
 ---
 
 ## 2. Cronograma de Entregas
@@ -61,11 +65,13 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
 | **Fase 3** | Supabase Auth & RLS Policies | **Concluído** |
 | **Fase 4** | Fluxo Completo de Briefing & Propostas IA | **Concluído** |
 | **Fase 5** | Unificação de Briefing e Wizard Form | **Concluído** |
-| **Fase 6** | Sincronização em Tempo Real (Realtime) | Planejado |
+| **Fase 6** | Registro de Fichas Técnicas & Roadmaps dos 7 Produtos | **Concluído** |
+| **Fase 7** | Sincronização em Tempo Real (Realtime) | Planejado |
 
 ---
 
 ## 3. Notas de Ajustes de Banco & Wizard
+- **Fichas Técnicas e Roadmaps Oficiais**: Documentação dos 7 produtos incorporada como padrão de referência obrigatório para propostas técnicas e briefings.
 - **Wizard 4 Etapas**: Unificação da captação em `/solicitar-proposta` (Identificação, Marca, Métricas, Escopo).
 - **Restrição de Chave Estrangeira (FK)**: Corrigido o envio em `BriefingPage.tsx` com `project_id: null` para evitar violações de FK em IDs de projetos inválidos/teste.
 - **CHECK Constraint no Supabase**: Alinhado o status do briefing para persistir `'pago'` / `'aprovado'` e `'proposta_enviada'` conforme restrições nativas da tabela `briefings`.
