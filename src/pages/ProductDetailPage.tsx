@@ -36,7 +36,6 @@ import type { ElementType } from 'react'
 import Layout from '../components/Layout'
 import { productsData, getLocalProductBySlug } from '../data/productsData'
 import type { Product as ProductDataType } from '../data/productsData'
-import { fetchProductBySlug } from '../services/productService'
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -45,65 +44,30 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductDataType | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
-  // Rolagem automática para o topo ao alterar o slug
+  // Rolagem automática para o topo ao alterar o produto
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [slug])
 
   useEffect(() => {
-    async function loadProductData() {
+    function loadProductData() {
       if (!slug) {
         setProduct(null)
         setLoading(false)
         return
       }
 
-      try {
-        setLoading(true)
-        // Tenta obter o produto local enriquecido pelo helper de slugs/aliases
-        const localMeta = getLocalProductBySlug(slug)
+      setLoading(true)
+      // Tenta obter o produto local enriquecido pelo helper de slugs/aliases
+      const localMeta = getLocalProductBySlug(slug)
 
-        // Busca dados dinâmicos de suporte no Supabase (se disponível)
-        const dbProduct = await fetchProductBySlug(slug).catch(() => null)
-
-        if (localMeta) {
-          setProduct({
-            ...localMeta,
-            nome: localMeta.nome,
-            subtitulo: localMeta.subtitulo,
-            descricaoExecutiva: localMeta.descricaoExecutiva
-          })
-        } else if (dbProduct) {
-          // Fallback se o produto existir apenas no Supabase
-          const fallbackMeta = productsData[0]
-          setProduct({
-            id: dbProduct.id,
-            slug: dbProduct.slug,
-            nome: dbProduct.nome,
-            title: dbProduct.nome,
-            categoria: dbProduct.categoria || 'Solução Digital',
-            subtitulo: dbProduct.descricao_curta || 'Solução tecnológica corporativa sob medida',
-            descricaoExecutiva: dbProduct.descricao_completa || dbProduct.descricao_curta || 'Desenvolvimento e integração sob medida.',
-            badge: dbProduct.rotulo || 'Tecnologia Corporativa',
-            description: dbProduct.descricao_curta || '',
-            descricaoLonga: dbProduct.descricao_completa || '',
-            beneficios: fallbackMeta.beneficios,
-            tecnologias: ['React', 'TypeScript', 'Supabase'],
-            icon: Package,
-            bgImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
-            oQueCompoe: fallbackMeta.oQueCompoe,
-            roadmap: fallbackMeta.roadmap
-          })
-        } else {
-          setProduct(null)
-        }
-      } catch (err) {
-        console.error('Erro ao carregar detalhes do produto:', err)
-        const local = getLocalProductBySlug(slug)
-        setProduct(local || null)
-      } finally {
-        setLoading(false)
+      if (localMeta) {
+        setProduct(localMeta)
+      } else {
+        const fallback = productsData.find(p => p.slug === slug)
+        setProduct(fallback || null)
       }
+      setLoading(false)
     }
 
     loadProductData()
@@ -146,7 +110,7 @@ export default function ProductDetailPage() {
         <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4 bg-brand-dark">
           <Loader2 className="w-10 h-10 text-brand-neon animate-spin" />
           <p className="font-mono text-xs uppercase tracking-widest text-gray-500">
-            Carregando especificações do produto...
+            Carregando especificações da solução...
           </p>
         </div>
       </Layout>
@@ -163,10 +127,10 @@ export default function ProductDetailPage() {
               PRODUTO NÃO ENCONTRADO
             </span>
             <h1 className="text-4xl sm:text-5xl font-space font-extrabold tracking-tight text-white uppercase">
-              404 - CATALOG ERROR
+              SOLUÇÃO INDISPONÍVEL
             </h1>
             <p className="font-sans text-gray-400 max-w-md mx-auto font-light leading-relaxed text-sm">
-              O produto especificado não foi encontrado no nosso catálogo oficial.
+              A solução especificada não foi encontrada no nosso catálogo ativo.
             </p>
           </div>
           <Link
@@ -188,35 +152,24 @@ export default function ProductDetailPage() {
       {/* Background Wrapper */}
       <div className="bg-brand-dark text-white font-sans selection:bg-brand-neon selection:text-black">
         
-        {/* Navigation Quick Switcher Bar */}
+        {/* Navigation Breadcrumbs Bar (Limpo, sem barra de rolagem horizontal feia) */}
         <div className="border-b border-white/10 bg-black/40 backdrop-blur-md sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between overflow-x-auto gap-4 no-scrollbar">
-            <div className="flex items-center gap-2 text-xs font-mono text-gray-400 shrink-0">
+          <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between font-mono text-xs text-gray-400">
+            <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap text-ellipsis">
               <Link to="/" className="hover:text-white transition-colors">HOME</Link>
-              <ChevronRight className="w-3 h-3 text-gray-600" />
-              <span className="text-gray-500">PRODUTOS</span>
-              <ChevronRight className="w-3 h-3 text-gray-600" />
-              <span className="text-brand-neon font-semibold uppercase">{product.nome}</span>
+              <ChevronRight className="w-3 h-3 text-gray-600 shrink-0" />
+              <Link to="/#produtos" className="hover:text-white transition-colors shrink-0">PRODUTOS</Link>
+              <ChevronRight className="w-3 h-3 text-gray-600 shrink-0" />
+              <span className="text-brand-neon font-semibold uppercase truncate">{product.nome}</span>
             </div>
 
-            <div className="flex items-center gap-4 shrink-0 font-mono text-[11px]">
-              {productsData.map((p) => {
-                const isActive = p.slug === product.slug
-                return (
-                  <Link
-                    key={p.slug}
-                    to={`/produtos/${p.slug}`}
-                    className={`uppercase tracking-wider transition-colors duration-200 hover:text-white px-2 py-1 rounded ${
-                      isActive 
-                        ? 'text-brand-neon font-bold bg-brand-neon/10 border border-brand-neon/30' 
-                        : 'text-gray-400'
-                    }`}
-                  >
-                    {p.nome}
-                  </Link>
-                )
-              })}
-            </div>
+            <Link
+              to="/"
+              className="hidden sm:inline-flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors uppercase tracking-wider text-[11px] shrink-0"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              VOLTAR À HOME
+            </Link>
           </div>
         </div>
 
@@ -245,8 +198,8 @@ export default function ProductDetailPage() {
               {product.nome}
             </h1>
 
-            {/* Subtítulo Persuasivo */}
-            <p className="font-sans text-gray-300 text-lg sm:text-2xl max-w-3xl mx-auto font-light leading-relaxed">
+            {/* Subtítulo Persuasivo Focado nas Dores do Cliente */}
+            <p className="font-sans text-gray-200 text-lg sm:text-2xl max-w-3xl mx-auto font-light leading-relaxed">
               {product.subtitulo}
             </p>
 
@@ -274,7 +227,7 @@ export default function ProductDetailPage() {
           </div>
         </section>
 
-        {/* BLOCO 1: DESCRIÇÃO EXECUTIVA (Glassmorphism Card) */}
+        {/* BLOCO 1: DESCRIÇÃO EXECUTIVA & IMPACTO NO NEGÓCIO (Glassmorphism Card) */}
         <section className="py-16 px-6 max-w-7xl mx-auto">
           <div className="bg-zinc-900/40 border border-white/10 p-8 sm:p-12 rounded-2xl relative overflow-hidden backdrop-blur-md shadow-2xl space-y-6">
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-neon/[0.02] blur-3xl pointer-events-none" />
@@ -283,10 +236,10 @@ export default function ProductDetailPage() {
               <div className="w-2 h-8 bg-brand-neon rounded-full" />
               <div>
                 <span className="text-xs uppercase tracking-[0.25em] font-mono text-brand-neon font-semibold block">
-                  POSICIONAMENTO & VALOR ESTRATÉGICO
+                  RESOLUÇÃO DE PROBLEMAS & IMPACTO NO NEGÓCIO
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-space font-bold text-white uppercase tracking-tight">
-                  Descrição Executiva
+                  Como Esta Solução Transforma Seu Negócio
                 </h2>
               </div>
             </div>
@@ -295,19 +248,17 @@ export default function ProductDetailPage() {
               {product.descricaoExecutiva}
             </p>
 
-            {/* Destaques rápidos de tecnologias */}
-            <div className="pt-4 flex flex-wrap gap-2 items-center">
-              <span className="text-xs font-mono text-gray-500 uppercase tracking-wider mr-2">
-                Tecnologias do Ecossistema:
+            <div className="pt-4 border-t border-white/5 flex flex-wrap gap-4 items-center font-mono text-xs text-gray-400">
+              <span className="text-brand-neon font-bold">✓ RESULTADOS ESPERADOS:</span>
+              <span className="bg-brand-gray/80 border border-white/10 px-3 py-1 rounded text-gray-300">
+                Aumento de Conversão
               </span>
-              {(product.tecnologias || []).map((tec, idx) => (
-                <span
-                  key={idx}
-                  className="text-[11px] font-mono uppercase bg-brand-gray border border-white/10 px-3 py-1 rounded text-gray-300"
-                >
-                  {tec}
-                </span>
-              ))}
+              <span className="bg-brand-gray/80 border border-white/10 px-3 py-1 rounded text-gray-300">
+                Redução de Custos Operacionais
+              </span>
+              <span className="bg-brand-gray/80 border border-white/10 px-3 py-1 rounded text-gray-300">
+                Retenção & Satisfação do Cliente
+              </span>
             </div>
           </div>
         </section>
@@ -317,13 +268,13 @@ export default function ProductDetailPage() {
           
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <span className="text-xs uppercase tracking-[0.3em] font-semibold text-brand-neon font-mono block">
-              ARQUITETURA DA SOLUÇÃO
+              ENTREGÁVEIS DE ALTO VALOR
             </span>
             <h2 className="text-3xl sm:text-4xl font-space font-bold text-white uppercase tracking-tight">
               O que compõe este produto
             </h2>
             <p className="font-sans text-gray-400 text-sm sm:text-base font-light">
-              Os 5 pilares fundamentais que garantem performance, segurança e usabilidade técnica superior.
+              Os 5 pilares estratégicos desenhados para resolver Gargalos e escalar suas vendas com segurança.
             </p>
             <div className="w-12 h-[1px] bg-brand-neon mx-auto mt-4" />
           </div>
@@ -360,7 +311,7 @@ export default function ProductDetailPage() {
 
                 <div className="pt-6 mt-6 border-t border-white/5 flex items-center gap-2 text-[11px] font-mono text-gray-500 group-hover:text-gray-300 transition-colors">
                   <CheckCircle2 className="w-3.5 h-3.5 text-brand-neon" />
-                  <span>Pilar Certificado Tech-Luxo</span>
+                  <span>Pilar de Alto Valor Garantido</span>
                 </div>
               </motion.div>
             ))}
@@ -369,23 +320,23 @@ export default function ProductDetailPage() {
             <div className="bg-brand-neon/5 border border-brand-neon/20 p-8 rounded-xl flex flex-col justify-between relative overflow-hidden backdrop-blur-sm">
               <div className="space-y-4">
                 <span className="text-xs uppercase tracking-widest font-mono text-brand-neon font-bold block">
-                  DIFERENCIAIS EXCLUSIVOS
+                  VANTAGENS EXCLUSIVAS
                 </span>
                 <h3 className="text-lg font-space font-bold text-white uppercase">
-                  Garantia de Qualidade
+                  Por que Escolher Esta Solução?
                 </h3>
-                <ul className="space-y-2 font-sans text-xs text-gray-300 font-light">
+                <ul className="space-y-3 font-sans text-xs text-gray-300 font-light">
                   {(product.beneficios || []).map((b, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-neon shrink-0" />
-                      <span>{b}</span>
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-neon shrink-0 mt-1" />
+                      <span className="leading-relaxed">{b}</span>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="pt-6 mt-6 border-t border-brand-neon/20">
                 <span className="text-[10px] font-mono uppercase text-brand-neon font-semibold">
-                  ENTREGA AGNOSTICA E ESCALÁVEL
+                  SOLUÇÃO SOB MEDIDA PARA SEU CRESCIMENTO
                 </span>
               </div>
             </div>
@@ -398,13 +349,13 @@ export default function ProductDetailPage() {
           
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <span className="text-xs uppercase tracking-[0.3em] font-semibold text-brand-neon font-mono block">
-              PASSO A PASSO DA ENTREGA
+              METODOLOGIA DE ENTREGA
             </span>
             <h2 className="text-3xl sm:text-4xl font-space font-bold text-white uppercase tracking-tight">
-              Roadmap de Desenvolvimento
+              Como Trabalhamos
             </h2>
             <p className="font-sans text-gray-400 text-sm sm:text-base font-light">
-              Nossa metodologia agnóstica de engenharia em 6 etapas para garantir previsibilidade, transparência e alta qualidade técnica.
+              Processo em 6 etapas estruturadas para garantir previsibilidade, transparência e retorno imediato.
             </p>
             <div className="w-12 h-[1px] bg-brand-neon mx-auto mt-4" />
           </div>
@@ -447,13 +398,13 @@ export default function ProductDetailPage() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-brand-neon/[0.04] blur-[120px] rounded-full pointer-events-none" />
             
             <span className="text-xs font-mono uppercase tracking-[0.3em] text-brand-neon font-bold block">
-              PRONTO PARA ESCALAR SEU NEGÓCIO?
+              PRONTO PARA RESOLVER ESTES GARGALOS?
             </span>
             <h3 className="text-2xl sm:text-4xl font-space font-bold text-white uppercase max-w-2xl mx-auto">
               Inicie a implementação do {product.nome} agora mesmo
             </h3>
             <p className="font-sans text-gray-300 text-sm sm:text-base font-light max-w-xl mx-auto">
-              Preencha nosso formulário técnico e receba um orçamento recomendado sob medida gerado em tempo real.
+              Solicite uma proposta técnica sem compromisso e veja como podemos acelerar seus resultados.
             </p>
             
             <div className="pt-4">

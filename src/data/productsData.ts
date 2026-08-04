@@ -25,15 +25,15 @@ export interface Product {
   id: string
   slug: string
   nome: string
-  title: string // Alias para nome (compatibilidade)
+  title: string
   categoria: string
   subtitulo: string
   descricaoExecutiva: string
   badge: string
-  description: string // Alias para descricaoExecutiva (compatibilidade)
+  description: string
   descricaoLonga: string
   beneficios: string[]
-  tecnologias: string[]
+  tecnologias?: string[]
   icon: ElementType
   bgImage: string
   oQueCompoe: PilarProduto[]
@@ -47,55 +47,54 @@ export const productsData: Product[] = [
     nome: 'Site Institucional',
     title: 'Site Institucional',
     categoria: 'Design / Web Design',
-    subtitulo: 'Autoridade digital e performance extrema sob medida para sua marca',
-    badge: 'Autoridade Digital',
-    descricaoExecutiva: 'Desenvolvimento de portais corporativos sob medida para consolidar a presença online da sua empresa com velocidade e otimização avançada de SEO. Construído sob a arquitetura Tech-Luxo em React e Vite em CDN global, eliminando a lentidão e vulnerabilidades de CMSs legados como WordPress.',
-    description: 'Desenvolvimento de portais corporativos sob medida para consolidar a presença online da sua empresa com velocidade e otimização avançada de SEO.',
-    descricaoLonga: 'Nossos sites institucionais são construídos com React e integrados com soluções de SEO de última geração. Em vez de utilizar plataformas lentas com dezenas de plugins, criamos estruturas estáticas hiper-rápidas que carregam instantaneamente em qualquer dispositivo. Isso eleva seu posicionamento orgânico no Google, reduz a taxa de rejeição e projeta extrema autoridade corporativa.',
+    subtitulo: 'Transforme visitantes em clientes pagantes com uma presença digital corporativa que transmite autoridade imediata.',
+    badge: 'Autoridade & Credibilidade',
+    descricaoExecutiva: 'Um site amador ou lento faz sua empresa perder contratos valiosos antes mesmo da primeira conversa. Desenvolvemos portais corporativos de alto padrão com design exclusivo Tech-Luxo, carregamento instantâneo e navegação impecável. Posicione sua marca como líder incontestável de mercado e conquiste a confiança de clientes exigentes desde o primeiro segundo.',
+    description: 'Portais corporativos de alto padrão desenhados para posicionar sua marca como líder e fechar grandes contratos.',
+    descricaoLonga: 'Sua empresa é julgada pela primeira impressão no mundo digital. Se o seu site atual carrega devagar, tem visual ultrapassado ou não funciona bem no celular, seus potenciais clientes procuram imediatamente o concorrente. Nosso portal corporativo resolve isso oferecendo uma experiência premium de nível internacional, que destaca a reputação do seu negócio e gera um fluxo constante de contatos qualificados.',
     beneficios: [
-      'Carregamento Instantâneo (< 1s)',
-      'SEO Técnico Avançado e Indexação Google',
-      'Código Limpo, Modular e Seguro',
-      'Design Exclusivo em Efeito Glassmorphism',
-      'Hospedagem em CDN Global Distribuída'
+      'Posicionamento de Marca Corporativa Premium',
+      'Carregamento Ultra-Rápido sem Travamentos',
+      'Experiência Perfeita em Celulares e Computadores',
+      'Destaque no Google para Busca Organicmente Qualificada',
+      'Estrutura Inviolável de Alta Confiabilidade'
     ],
-    tecnologias: ['React', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Vite'],
     icon: Globe,
     bgImage: 'https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1200&auto=format&fit=crop',
     oQueCompoe: [
       {
-        titulo: 'UI/UX Design Tech-Luxo',
-        descricao: 'Interface visual exclusiva adaptada à identidade de marca, com tipografia moderna, efeitos glassmorphism e paleta de alto impacto.',
+        titulo: 'Design Exclusivo de Alto Impacto',
+        descricao: 'Interface visual única adaptada à essência da sua marca, transmitindo sofisticação, profissionalismo e liderança.',
         icone: 'Layout'
       },
       {
-        titulo: 'Arquitetura JAMstack Otimizada',
-        descricao: 'Frontend desvinculado de servidores pesados, entregue via edge network para carregamento ultra-rápido.',
-        icone: 'Globe'
+        titulo: 'Carregamento Instantâneo',
+        descricao: 'Abertura imediata de páginas que retém a atenção do visitante e evita a perda de potenciais clientes.',
+        icone: 'Zap'
       },
       {
-        titulo: 'Engenharia de SEO & Metadados',
-        descricao: 'Estruturação de tags OpenGraph, dados estruturados JSON-LD e sitemaps dinâmicos para indexação no Google.',
+        titulo: 'Arquitetura Otimizada para o Google',
+        descricao: 'Estruturação estratégica para que sua empresa seja encontrada por compradores no momento exato da busca.',
         icone: 'Search'
       },
       {
-        titulo: 'Responsividade Líquida & Mobile-First',
-        descricao: 'Experiência perfeita em todos os tamanhos de tela, de smartphones a monitores ultrawide 4K.',
+        titulo: 'Adaptação Perfeita para Mobile',
+        descricao: 'Navegação fluida e confortável para executivos e decisores que navegam diretamente pelo smartphone.',
         icone: 'Smartphone'
       },
       {
-        titulo: 'Segurança & Criptografia SSL',
-        descricao: 'Proteção total contra invasões e headers de segurança HTTP modernos pré-configurados.',
+        titulo: 'Proteção & Confiabilidade Máxima',
+        descricao: 'Ambiente seguro e estável que garante disponibilidade contínua sem riscos de queda ou invasão.',
         icone: 'ShieldCheck'
       }
     ],
     roadmap: [
-      { passo: 1, titulo: 'Briefing & Arquitetura', descricao: 'Alinhamento dos objetivos corporativos, análise da concorrência e definição da hierarquia de páginas.' },
-      { passo: 2, titulo: 'Wireframe & Prototipagem', descricao: 'Criação da estrutura visual e mapas de navegação em alta fidelidade para aprovação.' },
-      { passo: 3, titulo: 'Desenvolvimento Front-End', descricao: 'Codificação modular em React + Tailwind CSS seguindo padrões SOLID e DRY.' },
-      { passo: 4, titulo: 'Otimização & Performance', descricao: 'Auditoria Lighthouse, compressão de ativos e ajustes de velocidade de renderização.' },
-      { passo: 5, titulo: 'Homologação & Revisão', descricao: 'Testes de navegabilidade, formulários e integração em ambiente de validação.' },
-      { passo: 6, titulo: 'Lançamento & Go-Live', descricao: 'Apontamento de domínio DNS, emissão de certificado SSL e publicação em CDN.' }
+      { passo: 1, titulo: 'Entendimento do Negócio', descricao: 'Mapeamento do perfil dos seus melhores clientes, concorrentes e diferenciais competitivos.' },
+      { passo: 2, titulo: 'Arquitetura de Navegação', descricao: 'Desenho da estrutura visual e da jornada do visitante para guiar o cliente até o contato.' },
+      { passo: 3, titulo: 'Criação do Design Premium', descricao: 'Desenvolvimento visual personalizado com estética Tech-Luxo e aprovação da sua equipe.' },
+      { passo: 4, titulo: 'Construção & Otimização', descricao: 'Montagem do portal garantindo máxima velocidade, responsividade e fluidez.' },
+      { passo: 5, titulo: 'Validação Geral', descricao: 'Testes rigorosos de formulários, botões de WhatsApp e carregamento em múltiplos dispositivos.' },
+      { passo: 6, titulo: 'Lançamento Oficial', descricao: 'Publicação do portal com suporte completo para início imediato das operações.' }
     ]
   },
   {
@@ -104,55 +103,54 @@ export const productsData: Product[] = [
     nome: 'Landing Page',
     title: 'Landing Page',
     categoria: 'Design / Web Design',
-    subtitulo: 'Páginas de alta conversão para acelerar captação de leads e ROI em tráfego',
-    badge: 'Foco em Conversão',
-    descricaoExecutiva: 'Páginas otimizadas de alta performance criadas para capturar leads qualificados e acelerar o retorno de campanhas de tráfego pago (Google Ads, Meta Ads). Com carregamento em menos de 1 segundo e pontuação máxima no Google Lighthouse, maximizamos a taxa de conversão do seu funil.',
-    description: 'Páginas otimizadas de alta performance criadas para capturar leads qualificados e acelerar o retorno de campanhas de tráfego pago.',
-    descricaoLonga: 'Cada segundo de lentidão em uma Landing Page custa orçamento de mídia pago. Desenvolvemos páginas focadas em experiência do usuário e velocidade máxima. Integramos nativamente com seu CRM, WhatsApp e ferramentas de analytics para rastreamento de eventos em tempo real.',
+    subtitulo: 'Pare de queimar orçamento em anúncios com páginas lentas. Converta cliques em vendas reais.',
+    badge: 'Foco em Vendas & Leads',
+    descricaoExecutiva: 'Investir em tráfego pago sem uma Landing Page de alta conversão é como tentar encher um balde furado: você gasta milhares de reais em anúncios, mas a maioria dos visitantes abandona a página antes mesmo de carregar. Criamos Landing Pages ultrarrápidas, persuasivas e estrategicamente estruturadas para capturar a atenção imediata do seu comprador e multiplicar suas vendas.',
+    description: 'Páginas de alta velocidade e conversão para transformar investimento em tráfego em lucro real.',
+    descricaoLonga: 'Seus anúncios geram cliques, mas as vendas não acontecem? O problema quase sempre está na página de destino. Se o visitante espera mais de 2 segundos para ver a oferta, ele fecha a aba. Nossa Landing Page elimina essa perda de dinheiro, entregando uma comunicação direta, persuasiva e com velocidade sub-segundo que conduz o cliente direto para o fechamento.',
     beneficios: [
-      'Pontuação Máxima no Google Lighthouse',
-      'Rastreamento Avançado (Pixel Meta, GA4)',
-      'Formulários Inteligentes com Proteção Duplicados',
-      'Design Direcionado a Chamadas de Ação (CTA)',
-      'Integração Nativa de Webhooks com CRMs'
+      'Multiplicação da Taxa de Conversão de Anúncios',
+      'Carregamento Sub-Segundo que Evita Abandono',
+      'Narrativa Persuasiva Focada nas Dores do Comprador',
+      'Rastreamento Exato de Qual Anúncio Gerou Cada Venda',
+      'Integração Direta com seu WhatsApp e Vendedores'
     ],
-    tecnologias: ['React', 'Tailwind CSS', 'Framer Motion', 'Google Analytics', 'Meta Pixel'],
     icon: Rocket,
     bgImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop',
     oQueCompoe: [
       {
-        titulo: 'Copywriting & Seções Estratégicas',
-        descricao: 'Estruturação persuasiva de gatilhos mentais, dores do cliente, benefícios e provas sociais.',
+        titulo: 'Comunicação Persuasiva de Alto Impacto',
+        descricao: 'Textos e argumentos estruturados para tocar nas dores exatas do cliente e demonstrar sua solução como a única escolha.',
         icone: 'FileText'
       },
       {
-        titulo: 'Formulários Inteligentes Multi-Etapas',
-        descricao: 'Coleta otimizada de informações sem gerar atrito ou abandono na navegação.',
+        titulo: 'Formulários Simplificados sem Atrito',
+        descricao: 'Coleta rápida de dados de contato sem burocracia para garantir que o comprador finalize o cadastro.',
         icone: 'Users'
       },
       {
-        titulo: 'Velocidade Sub-Segundo',
-        descricao: 'Ativos minificados e carregamento progressivo para retenção total de visitantes de tráfego pago.',
+        titulo: 'Abertura Ultra-Rápida de Página',
+        descricao: 'Velocidade extrema para aproveitar 100% dos cliques vindos do Google Ads e Meta Ads sem perda de tráfego.',
         icone: 'Zap'
       },
       {
-        titulo: 'Rastreamento de Conversão',
-        descricao: 'Disparo de eventos customizados para otimização de algoritmos de anúncios do Meta e Google.',
+        titulo: 'Métricas & Rastreamento de Vendas',
+        descricao: 'Medição precisa de conversões para saber exatamente qual campanha está gerando mais lucro.',
         icone: 'BarChart3'
       },
       {
-        titulo: 'Botões Flutuantes & CTAs Diretos',
-        descricao: 'Encaminhamento rápido para o WhatsApp ou formulário de proposta técnica com 1 clique.',
+        titulo: 'Chamadas Diretas para o Comercial',
+        descricao: 'Botões estratégicos de contato instantâneo que colocam o cliente qualificado direto em conversa com seu vendedor.',
         icone: 'MessageSquare'
       }
     ],
     roadmap: [
-      { passo: 1, titulo: 'Alinhamento da Oferta', descricao: 'Estudo do produto ou serviço, perfil do lead ideal e definição da proposta de valor central.' },
-      { passo: 2, titulo: 'Estruturação da Copy', descricao: 'Redação da narrativa persuasiva, títulos de impacto e organização das chamadas para ação.' },
-      { passo: 3, titulo: 'Design & Prototipagem', descricao: 'Criação do layout exclusivo no padrão Tech-Luxo com foco na experiência mobile.' },
-      { passo: 4, titulo: 'Engenharia Front-End', descricao: 'Construção rápida e otimizada da página com componentes responsivos.' },
-      { passo: 5, titulo: 'Integração de Pixels & CRM', descricao: 'Instalação das tags de rastreamento e conexão de formulários com o CRM/n8n.' },
-      { passo: 6, titulo: 'Publicação & Validação', descricao: 'Testes de velocidade, envio de leads de teste e liberação para tráfego pago.' }
+      { passo: 1, titulo: 'Diagnóstico da Oferta', descricao: 'Análise profunda do produto, perfil do comprador e principais objeções de vendas.' },
+      { passo: 2, titulo: 'Estruturação Persuasiva', descricao: 'Criação do roteiro de argumentos e gatilhos que direcionam o visitante até a conversão.' },
+      { passo: 3, titulo: 'Design de Alta Conversão', descricao: 'Elaboração de visual marcante focado em direcionar os olhos do cliente para a ação de compra.' },
+      { passo: 4, titulo: 'Desenvolvimento Otimizado', descricao: 'Construção técnica focada em velocidade máxima de carregamento em qualquer conexão.' },
+      { passo: 5, titulo: 'Conexão de Rastreamento', descricao: 'Configuração dos rastreadores de anúncios para otimizar suas campanhas ativas.' },
+      { passo: 6, titulo: 'Publicação & Vendas', descricao: 'Página pronta para receber tráfego pago e iniciar a conversão imediata de leads.' }
     ]
   },
   {
@@ -161,55 +159,54 @@ export const productsData: Product[] = [
     nome: 'E-Commerce Headless',
     title: 'E-Commerce Headless',
     categoria: 'Desenvolvimento Web',
-    subtitulo: 'Plataforma de comércio eletrônico robusta com checkout fluido e alta velocidade',
-    badge: 'E-Commerce Completo',
-    descricaoExecutiva: 'Sistemas de comércio eletrônico robustos, painéis de gestão integrados e checkout fluido para impulsionar suas vendas de ponta a ponta. Arquitetura headless com React e Supabase, oferecendo segurança máxima, alto desempenho e controle total de catálogo e pedidos.',
-    description: 'Sistemas de comércio eletrônico robustos, painéis de gestão integrados e checkout fluido para impulsionar suas vendas de ponta a ponta.',
-    descricaoLonga: 'Desenvolvemos e-commerces completos sob medida, descartando plataformas genéricas e pesadas. Com integrações de gateways de pagamento modernos (Stripe, PIX), o processo de compra é simples e sem atritos, reduzindo drasticamente o abandono de carrinho.',
+    subtitulo: 'Elimine o abandono de carrinho com uma loja virtual ultrarrápida e pagamento sem atrito.',
+    badge: 'Escala de Vendas Online',
+    descricaoExecutiva: 'Cada segundo de lentidão ou complicação no checkout faz o cliente desistir da compra e ir para o concorrente. Nosso E-Commerce Headless entrega uma experiência de compra instantânea, com checkout fluido em poucos cliques, integração de PIX imediata e painel completo para você gerenciar seus pedidos e faturar mais sem dor de cabeça.',
+    description: 'Loja virtual de alta velocidade e checkout transparente para maximizar suas vendas online.',
+    descricaoLonga: 'Plataformas genéricas de e-commerce sofrem com travamentos em dias de promoção, checkouts confusos com formulários longos e taxas de abandono altíssimas. Desenvolvemos lojas virtuais sob medida com navegação fluida, atualização automática de estoque e recebimento via PIX e cartão sem fricção, permitindo que seu e-commerce venda em grande escala.',
     beneficios: [
-      'Checkout Transparente e Sem Fricções',
-      'Painel de Gestão de Catálogo e Vendas',
-      'Integração com Gateways de Pagamento & PIX',
-      'Controle Automático de Estoque e Clientes',
-      'Segurança Avançada de Dados Transacionais'
+      'Redução Drástica do Abandono de Carrinho',
+      'Pagamento Instantâneo via PIX e Cartão sem Erros',
+      'Painel Simples para Gerenciar Vendas e Estoque',
+      'Navegação Ultra-Rápida em Celulares',
+      'Infraestrutura Pronta para Suportar Altos Volumes de Acessos'
     ],
-    tecnologias: ['React', 'Supabase', 'Stripe', 'Tailwind CSS', 'Node.js'],
     icon: ShoppingBag,
     bgImage: 'https://images.unsplash.com/photo-1557821552-17105176677c?q=80&w=1200&auto=format&fit=crop',
     oQueCompoe: [
       {
-        titulo: 'Catálogo Dinâmico de Produtos',
-        descricao: 'Filtros avançados, categorias, variações de atributos (tamanho, cor) e busca instantânea.',
+        titulo: 'Vitrine de Produtos Atraente',
+        descricao: 'Exibição clara de imagens, detalhes, variações de cor/tamanho e busca instantânea de itens.',
         icone: 'ShoppingBag'
       },
       {
-        titulo: 'Carrinho & Checkout Fluidos',
-        descricao: 'Fluxo de pagamento limpo sem redirecionamentos externos confusos, com cálculo de frete.',
+        titulo: 'Checkout Transparente em 1 Clique',
+        descricao: 'Processo de compra direto e sem páginas intermediárias confusas para garantir a finalização do pedido.',
         icone: 'CreditCard'
       },
       {
-        titulo: 'Painel Administrativo Próprio',
-        descricao: 'Gestão intuitiva de pedidos, alteração de status de entregas e cadastro de novos itens.',
+        titulo: 'Central de Gestão de Vendas',
+        descricao: 'Painel intuitivo para acompanhar pedidos aprovados, emitir notas e atualizar entregas.',
         icone: 'Database'
       },
       {
-        titulo: 'Integração de Gateways & PIX',
-        descricao: 'Recebimento seguro via Cartão de Crédito, PIX com confirmação via webhook em tempo real.',
+        titulo: 'Confirmação Automática de Pagamento',
+        descricao: 'Integração direta com PIX e gateways de cartão para liberação imediata do pedido.',
         icone: 'Lock'
       },
       {
-        titulo: 'Segurança & Auditoria de Pedidos',
-        descricao: 'Criptografia de ponta a ponta e controle estrito de acessos aos dados dos clientes.',
+        titulo: 'Cálculo Automático de Frete',
+        descricao: 'Integração transparente com correios e transportadoras para exibição clara de prazos e valores.',
         icone: 'ShieldCheck'
       }
     ],
     roadmap: [
-      { passo: 1, titulo: 'Mapeamento de Produtos', descricao: 'Estruturação das categorias, atributos de produtos e regras de precificação/frete.' },
-      { passo: 2, titulo: 'Design do E-Commerce', descricao: 'Prototipagem das telas de vitrine, página do produto, carrinho e painel administrativo.' },
-      { passo: 3, titulo: 'Modelagem de Banco de Dados', descricao: 'Construção das tabelas relacionais de produtos, clientes e faturas no Postgres.' },
-      { passo: 4, titulo: 'Integração de Pagamentos', descricao: 'Conexão dos gateways (Stripe, Mercado Pago) e rotas de webhooks de confirmação.' },
-      { passo: 5, titulo: 'Testes Transacionais', descricao: 'Simulação completa de compras, geração de faturas e testes de segurança RLS.' },
-      { passo: 6, titulo: 'Lançamento da Loja', descricao: 'Publicação oficial do e-commerce e ativação da esteira de atendimento.' }
+      { passo: 1, titulo: 'Estruturação do Catálogo', descricao: 'Organização de categorias, produtos, variações e regras de frete da loja.' },
+      { passo: 2, titulo: 'Design do E-Commerce', descricao: 'Prototipagem das páginas de produto e fluxo de pagamento focando em usabilidade.' },
+      { passo: 3, titulo: 'Desenvolvimento do Sistema', descricao: 'Construção da loja virtual com foco em velocidade de navegação e segurança.' },
+      { passo: 4, titulo: 'Integração Financeira', descricao: 'Conexão segura com os meios de pagamento PIX e cartão de crédito.' },
+      { passo: 5, titulo: 'Simulação de Compras', descricao: 'Testes de pedidos, cálculos de frete e atualização de estoque em tempo real.' },
+      { passo: 6, titulo: 'Abertura para Vendas', descricao: 'Loja virtual ativa e pronta para receber pedidos dos clientes.' }
     ]
   },
   {
@@ -218,55 +215,54 @@ export const productsData: Product[] = [
     nome: 'Sistema de Agendamento Inteligente',
     title: 'Sistema de Agendamento Inteligente',
     categoria: 'Desenvolvimento Web',
-    subtitulo: 'Gestão autônoma de marcação de horários e atendimento ao cliente',
-    badge: 'Reservas & Marcações',
-    descricaoExecutiva: 'Plataformas intuitivas de reserva e controle de horários com notificações automáticas para otimizar o fluxo de atendimento da sua equipe. Permite que seus clientes escolham serviços, profissionais e horários 24 horas por dia sem intermediários.',
-    description: 'Plataformas intuitivas de reserva e controle de horários com notificações automáticas para otimizar o fluxo de atendimento.',
-    descricaoLonga: 'Elimine o atrito de trocas manuais de mensagens para marcar reuniões ou consultas. Nossa plataforma oferece sincronização em tempo real com calendários corporativos e envio de lembretes automáticos para diminuir taxas de ausência (no-show).',
+    subtitulo: 'Acabe com a troca manual de mensagens e lote sua agenda 24h por dia no piloto automático.',
+    badge: 'Automação de Agendas',
+    descricaoExecutiva: 'Sua equipe perde horas respondendo mensagens no WhatsApp apenas para tentar alinhar horários disponíveis, e ainda assim sofre com faltas indevidas de clientes. Nosso Sistema de Agendamento Inteligente permite que seu cliente escolha o serviço e o horário ideal em segundos, confirma a reserva automaticamente e envia lembretes para garantir presença garantida.',
+    description: 'Plataforma autônoma de marcação de horários que elimina atendimentos manuais e reduz faltas de clientes.',
+    descricaoLonga: 'Gerenciar horários por mensagens avulsas gera confusão, sobreposição de compromissos e perda de novos clientes que querem agendar fora do horário de expediente. Com nossa plataforma, sua agenda fica aberta 24 horas por dia com atualização em tempo real, enviando confirmações diretas e organizando o fluxo de atendimento de toda a sua equipe.',
     beneficios: [
-      'Agendamento Online 24 Horas por Dia',
-      'Lembretes Automáticos por E-mail e WhatsApp',
-      'Sincronização Bidirecional com Google Calendar',
-      'Painel Multi-Profissional e Gestão de Agendas',
-      'Regras de Bloqueio e Feriados Personalizáveis'
+      'Agendamentos Autônomos 24 Horas por Dia',
+      'Redução Drástica de Faltas (No-Shows) com Lembretes',
+      'Zero Confusão ou Conflito de Horários',
+      'Organização Inteligente de Múltiplos Atendentes',
+      'Liberação da sua Equipe para Focar no Atendimento'
     ],
-    tecnologias: ['React', 'Supabase', 'Twilio', 'Tailwind CSS', 'Google Calendar API'],
     icon: Calendar,
     bgImage: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop',
     oQueCompoe: [
       {
-        titulo: 'Grade de Horários Dinâmica',
-        descricao: 'Seleção intuitiva de data, horário disponível e profissional conforme regras de atendimento.',
+        titulo: 'Grade de Marcação Intuitiva',
+        descricao: 'Visualização clara dos horários livres onde o cliente escolhe a data e horário ideal com poucos toques.',
         icone: 'Calendar'
       },
       {
-        titulo: 'Lembretes & Disparos WhatsApp',
-        descricao: 'Notificações automáticas pré-atendimento para confirmação ou reagendamento de clientes.',
+        titulo: 'Lembretes Automáticos no WhatsApp',
+        descricao: 'Envio automático de alertas de confirmação que lembram o cliente do compromisso com antecedência.',
         icone: 'MessageSquare'
       },
       {
-        titulo: 'Sincronização Google Calendar',
-        descricao: 'Integração bidirecional garantindo que novos compromissos sejam espelhados na agenda oficial.',
+        titulo: 'Sincronização de Agenda Corporativa',
+        descricao: 'Conexão contínua com seu calendário para evitar agendamentos em horários já ocupados.',
         icone: 'Clock'
       },
       {
-        titulo: 'Painel Multi-Atendente',
-        descricao: 'Visão consolidada para gerentes e profissionais acompanharem seus compromissos diários.',
+        titulo: 'Gestão da Equipe de Atendimento',
+        descricao: 'Painel onde cada profissional visualiza seus compromissos e disponibilidades diárias.',
         icone: 'Users'
       },
       {
-        titulo: 'Histórico & CRM de Clientes',
-        descricao: 'Registro centralizado dos atendimentos passados, preferências e dados de contato.',
+        titulo: 'Histórico de Atendimento ao Cliente',
+        descricao: 'Registro completo de consultas anteriores, contatos e preferências de cada cliente.',
         icone: 'Database'
       }
     ],
     roadmap: [
-      { passo: 1, titulo: 'Levantamento de Regras', descricao: 'Definição das etapas de agendamento, duração dos serviços e horários de funcionamento.' },
-      { passo: 2, titulo: 'Design do Fluxo de Reserva', descricao: 'Criação de uma experiência simples de marcação em 3 cliques para o cliente final.' },
-      { passo: 3, titulo: 'Integração de APIs de Agenda', descricao: 'Conexão com Google Calendar e APIs de mensageria para confirmações.' },
-      { passo: 4, titulo: 'Painel de Controle Interno', descricao: 'Construção da área administrativa para gestão de horários e equipes.' },
-      { passo: 5, titulo: 'Testes de Concorrência', descricao: 'Simulação de reservas simultâneas para garantir ausência de choque de horários.' },
-      { passo: 6, titulo: 'Deploy & Onboarding', descricao: 'Publicação do sistema e treinamento da equipe de atendimento.' }
+      { passo: 1, titulo: 'Mapeamento dos Serviços', descricao: 'Definição das durações, profissionais atendentes e horários de funcionamento.' },
+      { passo: 2, titulo: 'Desenho do Fluxo de Reserva', descricao: 'Criação de um processo simples onde o cliente agenda em menos de 1 minuto.' },
+      { passo: 3, titulo: 'Construção da Plataforma', descricao: 'Desenvolvimento do sistema com sincronização automática e regras de horários.' },
+      { passo: 4, titulo: 'Configuração de Lembretes', descricao: 'Ativação dos disparos automáticos de confirmação de presença via mensagem.' },
+      { passo: 5, titulo: 'Treinamento da Equipe', descricao: 'Apresentação do painel de controle simples para os profissionais acompanharem a agenda.' },
+      { passo: 6, titulo: 'Liberação do Link de Agendamento', descricao: 'Divulgação do canal de agendamentos no seu site, redes sociais e WhatsApp.' }
     ]
   },
   {
@@ -275,55 +271,54 @@ export const productsData: Product[] = [
     nome: 'ERP Commercial SaaS',
     title: 'ERP Commercial SaaS',
     categoria: 'Sistemas & ERP',
-    subtitulo: 'Gestão empresarial integrada para controle financeiro, estoque e operações',
-    badge: 'Sistemas & ERP',
-    descricaoExecutiva: 'Plataforma completa de gestão empresarial (ERP) desenvolvida sob medida para centralizar faturamento, relatórios financeiros, cadastro de clientes e fluxo de caixa com controle estrito de permissões (RLS) e suporte a múltiplos módulos corporativos.',
-    description: 'Plataforma completa de gestão empresarial desenvolvida sob medida para centralizar faturamento, estoque e operações.',
-    descricaoLonga: 'Substitua planilhas desconectadas por um sistema ERP corporativo seguro e escalável. Oferecemos visão estratégica completa do seu negócio com dados em tempo real, emissão de faturas, controle de mensalidades recorrentes e gestão simplificada.',
+    subtitulo: 'Tome o controle total da sua empresa com gestão financeira e operacional centralizada em um só lugar.',
+    badge: 'Controle & Gestão Empresarial',
+    descricaoExecutiva: 'Gerenciar uma empresa através de planilhas desconectadas gera erros financeiros, atrasos de cobranças e cegueira sobre o lucro real do negócio. O ERP Commercial SaaS centraliza seu faturamento, controle de clientes, cobranças recorrentes e relatórios gerenciais em uma plataforma intuitiva, segura e ágil para você tomar decisões lucrativas com total confiança.',
+    description: 'Sistema completo de gestão para controlar financeiro, vendas, faturas e clientes sem complicação.',
+    descricaoLonga: 'Se você não sabe exatamente quanto sua empresa vai faturar no próximo mês ou perde tempo cobrando clientes manualmente, seu negócio está correndo riscos invisíveis. Nosso ERP elimina a bagunça operacional organizando faturas, contratos, pagamentos recorrentes e indicadores de desempenho em um painel claro e descomplicado.',
     beneficios: [
-      'Visão Geral Financeira & DRE em Tempo Real',
-      'Controle de Faturas, Mensalidades e Recorrência',
-      'Gestão Centralizada de Perfis (Clientes/Admins)',
-      'Segurança Estrita de Dados com Supabase RLS',
-      'Módulos Expansíveis sob Medida'
+      'Visão Exata do Lucro e Faturamento em Tempo Real',
+      'Automação de Faturas e Cobranças Recorrentes',
+      'Fim da Dependência de Planilhas Lentas e Frágeis',
+      'Controle Total de Clientes, Contratos e Serviços',
+      'Acesso Seguro de Qualquer Lugar com Níveis de Permissão'
     ],
-    tecnologias: ['React', 'TypeScript', 'Supabase PostgreSQL', 'Tailwind CSS', 'Recharts'],
     icon: Database,
     bgImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop',
     oQueCompoe: [
       {
-        titulo: 'Módulo Financeiro & Faturamento',
+        titulo: 'Gestão Financeira & Faturamento',
         descricao: 'Emissão e controle de cobranças de entrada, mensalidades e relatórios de fluxo de caixa.',
         icone: 'CreditCard'
       },
       {
-        titulo: 'Gestão de Clientes & Projetos',
-        descricao: 'Cadastro estruturado de perfis PF/PJ, histórico de contratos e status de evolução.',
+        titulo: 'Cadastro Estruturado de Clientes',
+        descricao: 'Centralização de dados de contatos, histórico de contratos e status de cada cliente.',
         icone: 'Users'
       },
       {
-        titulo: 'Relatórios & Dashboards Visuais',
-        descricao: 'Gráficos interativos apresentando faturamento mensal, margens e projeção de receita.',
+        titulo: 'Dashboards & Indicadores de Desempenho',
+        descricao: 'Gráficos simples que mostram a receita mensal, despesas e previsibilidade do negócio.',
         icone: 'BarChart3'
       },
       {
-        titulo: 'Segurança RLS & Permissões',
-        descricao: 'Níveis de acesso distintos para Administradores e Clientes protegidos via banco relacional.',
+        titulo: 'Controle de Acessos & Segurança',
+        descricao: 'Definição de o que cada colaborador ou administrador pode visualizar ou alterar.',
         icone: 'Lock'
       },
       {
-        titulo: 'Catálogo de Produtos & Serviços',
-        descricao: 'Gerenciamento dos preços de setup, mensalidades e especificações operacionais.',
+        titulo: 'Gestão de Produtos & Serviços',
+        descricao: 'Organização do catálogo de ofertas, valores de setup e mensalidades da empresa.',
         icone: 'Layers'
       }
     ],
     roadmap: [
-      { passo: 1, titulo: 'Mapeamento de Processos', descricao: 'Estudo detalhado dos fluxos operacionais, financeiros e operacionais da empresa.' },
-      { passo: 2, titulo: 'Arquitetura de Dados RLS', descricao: 'Modelagem de entidades, tabelas e políticas de segurança Row Level Security no PostgreSQL.' },
-      { passo: 3, titulo: 'Desenvolvimento dos Módulos', descricao: 'Construção das telas de dashboard, clientes, faturas e controle de produtos.' },
-      { passo: 4, titulo: 'Regras Financeiras & Cálculos', descricao: 'Implementação dos algoritmos de cálculo de recorrência, status de faturas e saldo.' },
-      { passo: 5, titulo: 'Homologação de Segurança', descricao: 'Auditoria de dados para garantir isolamento de informações entre perfis.' },
-      { passo: 6, titulo: 'Implantação Operacional', descricao: 'Migração de dados legados, treinamento dos colaboradores e ativação.' }
+      { passo: 1, titulo: 'Mapeamento Financeiro', descricao: 'Estudo dos fluxos de caixa, modelos de cobrança e rotinas administrativas atuais.' },
+      { passo: 2, titulo: 'Estruturação do Sistema', descricao: 'Modelagem do banco de dados focado em segurança estrita e agilidade de consulta.' },
+      { passo: 3, titulo: 'Desenvolvimento dos Módulos', descricao: 'Construção das telas de controle financeiro, faturas, clientes e relatórios.' },
+      { passo: 4, titulo: 'Configuração de Cobranças', descricao: 'Definição das regras de notificação de faturas e controle de inadimplência.' },
+      { passo: 5, titulo: 'Validação Operacional', descricao: 'Testes de precisão dos cálculos financeiros e auditoria de segurança de dados.' },
+      { passo: 6, titulo: 'Implantação no Negócio', descricao: 'Organização dos dados iniciais, treinamento dos usuários e início do uso.' }
     ]
   },
   {
@@ -332,55 +327,54 @@ export const productsData: Product[] = [
     nome: 'Automação de Processos com n8n',
     title: 'Automação de Processos com n8n',
     categoria: 'Automações de Processos',
-    subtitulo: 'Conexão de sistemas, webhooks e eliminação de tarefas manuais repetitivas',
-    badge: 'Automação & Webhooks',
-    descricaoExecutiva: 'Fluxos automatizados de alta performance que conectam suas ferramentas, bancos de dados, CRMs e canais de mensageria via n8n. Elimine erros humanos e garanta o processamento de dados em tempo real em segundo plano.',
-    description: 'Fluxos automatizados que conectam suas ferramentas, bancos de dados e canais para eliminar tarefas manuais repetitivas.',
-    descricaoLonga: 'Conecte seus sistemas sem necessidade de código manual frágil. Criamos fluxos de trabalho no n8n para direcionar formulários ao CRM, gerar propostas em PDF automaticamente, emitir cobranças e enviar alertas imediatos via WhatsApp.',
+    subtitulo: 'Elimine o trabalho braçal e conecte seus sistemas para sua operação rodar sem falhas humanas.',
+    badge: 'Eficiência Operacional',
+    descricaoExecutiva: 'Sua equipe gasta horas valiosas copiando dados de planilhas, enviando e-mails manualmente e digitando propostas em sistemas diferentes. Com a Automação de Processos, conectamos todas as suas ferramentas para que tarefas repetitivas sejam executadas instantaneamente em segundo plano, reduzindo custos operacionais e liberando seu time para focar no crescimento do negócio.',
+    description: 'Integração total de sistemas para automatizar tarefas repetitivas, envios e processos operacionais.',
+    descricaoLonga: 'Erros de digitação, esquecimento de envios e atrasos no repasse de informações acontecem quando o trabalho operacional é 100% humano. Criamos fluxos inteligentes que conectam seu site, CRM, e-mail e WhatsApp para que novos cadastros gerem propostas automáticas, avisem vendedores e atualizem seu banco de dados sem que ninguém precise mover um dedo.',
     beneficios: [
-      'Integração Instantânea entre Ferramentas Web',
-      'Disparos Automáticos e Personalizados no WhatsApp',
-      'Geração Automática de Documentos e PDFs',
-      'Zero Erro Humano em Tarefas Repetitivas',
-      'Monitoramento e Logs de Execução 24/7'
+      'Eliminação de Tarefas Manuais Repetitivas',
+      'Zero Erros de Digitação ou Perda de Informações',
+      'Velocidade Instantânea no Processamento de Dados',
+      'Conexão Fluida entre Todas as Suas Ferramentas',
+      'Redução Significativa nos Custos Operacionais'
     ],
-    tecnologias: ['Node.js', 'n8n Workflow Engine', 'PostgreSQL', 'Supabase Webhooks', 'WhatsApp API'],
     icon: Zap,
     bgImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
     oQueCompoe: [
       {
-        titulo: 'Orquestração de Webhooks',
-        descricao: 'Captura imediata de eventos de formulários, sistemas de pagamento e disparos externos.',
+        titulo: 'Conexão Automática entre Sistemas',
+        descricao: 'Troca de informações em tempo real entre formulários do site, WhatsApp, e-mail e CRM.',
         icone: 'Workflow'
       },
       {
-        titulo: 'Manipulação de Dados via Code Nodes',
-        descricao: 'Transformação, tratamento e higienização de payloads JSON em JavaScript/TypeScript.',
+        titulo: 'Tratamento & Organização de Dados',
+        descricao: 'Limpeza e padronização automática de cadastros de clientes sem intervenção manual.',
         icone: 'Code2'
       },
       {
-        titulo: 'Automação WhatsApp & Mensageria',
-        descricao: 'Envio de mensagens personalizadas, links de pagamento e propostas em tempo real.',
+        titulo: 'Disparos Automáticos no WhatsApp',
+        descricao: 'Envio imediato de confirmações, links de pagamentos e propostas direto para o cliente.',
         icone: 'MessageSquare'
       },
       {
         titulo: 'Sincronização de Banco de Dados',
-        descricao: 'Atualização atômica de cadastros em tabelas Postgres sem intervenção humana.',
+        descricao: 'Atualização instantânea do status de pedidos e cadastros em todas as suas telas.',
         icone: 'Database'
       },
       {
-        titulo: 'Tratamento de Exceções & Retentativas',
-        descricao: 'Arquitetura resiliente com alertas automáticos em caso de falha em serviços de terceiros.',
+        titulo: 'Alerta & Monitoramento Continuo',
+        descricao: 'Sistema inteligente de avisos imediatos em caso de qualquer inconsistência operacional.',
         icone: 'ShieldCheck'
       }
     ],
     roadmap: [
-      { passo: 1, titulo: 'Diagnóstico de Gargalos', descricao: 'Identificação das tarefas manuais mais repetitivas e lentas na rotina da empresa.' },
-      { passo: 2, titulo: 'Mapeamento de Endpoints', descricao: 'Catalogação das APIs, chaves de autenticação e estruturas de webhooks necessárias.' },
-      { passo: 3, titulo: 'Construção dos Workflows', descricao: 'Montagem e configuração visual e programática dos fluxos de trabalho no n8n.' },
-      { passo: 4, titulo: 'Testes de Carga & Validação', descricao: 'Envio de múltiplos cenários de dados para garantir resiliência e tratamento de erros.' },
-      { passo: 5, titulo: 'Homologação com a Equipe', descricao: 'Acompanhamento das execuções em tempo real junto aos operadores.' },
-      { passo: 6, titulo: 'Produção & Monitoramento', descricao: 'Ativação em ambiente de produção com logs e métricas de execução contínuas.' }
+      { passo: 1, titulo: 'Mapeamento de Gargalos', descricao: 'Identificação das rotinas manuais que mais consomem tempo e geram erros na sua empresa.' },
+      { passo: 2, titulo: 'Desenho das Automações', descricao: 'Criação do mapa de fluxo de como os dados vão trafegar entre suas ferramentas.' },
+      { passo: 3, titulo: 'Construção dos Fluxos', descricao: 'Configuração e programação da esteira de automação com conexão direta de APIs.' },
+      { passo: 4, titulo: 'Testes de Confiabilidade', descricao: 'Simulação de múltiplos cenários para garantir que nenhuma informação seja perdida.' },
+      { passo: 5, titulo: 'Acompanhamento Inicial', descricao: 'Monitoramento das primeiras execuções automáticas junto com a sua equipe.' },
+      { passo: 6, titulo: 'Operação 100% Automática', descricao: 'Ativação definitiva da esteira gerando economia de tempo diária.' }
     ]
   },
   {
@@ -389,55 +383,54 @@ export const productsData: Product[] = [
     nome: 'Agente de IA 24/7',
     title: 'Agente de IA 24/7',
     categoria: 'Inteligência Artificial',
-    subtitulo: 'Atendimento autônomo e qualificação de leads com IA gerativa contextualizada',
-    badge: 'IA & Atendimento 24/7',
-    descricaoExecutiva: 'Agentes de inteligência artificial treinados com a base de conhecimento exclusiva da sua empresa para atender clientes, responder dúvidas técnicas, qualificar leads e agendar reuniões no WhatsApp ou Web de forma ininterrupta.',
-    description: 'Robôs inteligentes integrados capazes de responder dúvidas, qualificar contatos e direcionar leads em tempo integral.',
-    descricaoLonga: 'Ofereça um atendimento de nível especialista a qualquer hora do dia ou da noite. Nossos Agentes de IA utilizam técnicas avançadas de RAG (Retrieval-Augmented Generation) para consultar seus manuais, tabelas e processos, respondendo com precisão corporativa.',
+    subtitulo: 'Atenda e qualifique clientes 24 horas por dia sem precisar aumentar sua equipe de vendas.',
+    badge: 'Vendas & Atendimento 24/7',
+    descricaoExecutiva: 'Mais de 60% dos leads de alto valor entram em contato à noite ou nos finais de semana. Se sua empresa demora para responder, o cliente compra do concorrente que atendeu primeiro. Nosso Agente de IA 24/7 responde dúvidas técnicas com precisão humana, qualifica a real intenção de compra do cliente e realiza o pré-agendamento de reuniões a qualquer hora do dia ou da noite.',
+    description: 'Inteligência Artificial para atendimento ininterrupto, qualificação de leads e agendamentos de vendas.',
+    descricaoLonga: 'Diferente de robôs antigos que respondem menus genéricos e irritam o comprador, nosso Agente de IA é treinado com todas as informações dos seus produtos e serviços. Ele conversa naturalmente no WhatsApp ou no site, entende o que o cliente precisa, tira dúvidas complexas e passa o comprador pronto para o seu vendedor fechar o contrato.',
     beneficios: [
-      'Disponibilidade Ininterrupta (24 horas por dia, 7 dias por semana)',
-      'Respostas Contextualizadas via Base RAG',
-      'Qualificação Automática de Leads e Sondagem',
-      'Integração Nativa com WhatsApp e Web Chat',
-      'Transição Fluida para Atendimento Humano'
+      'Atendimento Instantâneo 24 Horas por Dia, 7 Dias por Semana',
+      'Respostas Humanizadas Baseadas na Sua Empresa',
+      'Filtro Automático dos Clientes Mais Lucrativos',
+      'Presença no WhatsApp e no Site da Empresa',
+      'Encaminhamento Direto de Compradores Prontos para Venda'
     ],
-    tecnologias: ['React', 'OpenAI API / Gemini API', 'Supabase Vector Store', 'LangChain', 'Node.js'],
     icon: Bot,
     bgImage: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?q=80&w=1200&auto=format&fit=crop',
     oQueCompoe: [
       {
-        titulo: 'Conexão com Base de Conhecimento RAG',
-        descricao: 'Ingestão inteligente de documentos corporativos, FAQs e manuais para respostas sem alucinações.',
+        titulo: 'Treinamento Exclusivo do Negócio',
+        descricao: 'IA capacitada com todos os manuais, preços e informações oficiais da sua empresa.',
         icone: 'Sparkles'
       },
       {
-        titulo: 'Modelos de Linguagem de Ponta (LLMs)',
-        descricao: 'Utilização dos modelos GPT-4o e Claude 3.5 para conversas naturais e fluidas.',
+        titulo: 'Conversação Humana Avançada',
+        descricao: 'Diálogos naturais e fluidos que tiram dúvidas técnicas com máxima cordialidade e clareza.',
         icone: 'Bot'
       },
       {
-        titulo: 'Qualificação Automática de Contatos',
-        descricao: 'Filtro e triagem de leads perguntando necessidade, orçamento e urgência antes de agendar.',
+        titulo: 'Qualificação Inteligente de Leads',
+        descricao: 'Perguntas estratégicas que identificam o orçamento e urgência do cliente antes do atendimento humano.',
         icone: 'Users'
       },
       {
-        titulo: 'Integração Multicanal (WhatsApp/Web)',
-        descricao: 'Presença onde seu cliente está, mantendo o mesmo contexto histórico de conversas.',
+        titulo: 'Presença Multicanal no WhatsApp',
+        descricao: 'Integração no canal de mensagens preferido dos seus clientes com retenção de histórico.',
         icone: 'MessageSquare'
       },
       {
-        titulo: 'Handover Humano-IA',
-        descricao: 'Mecanismo de transferência automática para o time de vendas quando o lead é altamente qualificado.',
+        titulo: 'Transferência para Vendedor Humano',
+        descricao: 'Passagem automática do cliente quente direto para o WhatsApp da sua equipe de vendas.',
         icone: 'Workflow'
       }
     ],
     roadmap: [
-      { passo: 1, titulo: 'Ingestão de Dados & FAQs', descricao: 'Coleta de manuais, tabelas de preços e histórico de atendimento para criar a base RAG.' },
-      { passo: 2, titulo: 'Engenharia de Prompt & Tom', descricao: 'Definição da personalidade do agente, restrições corporativas e diretrizes éticas.' },
-      { passo: 3, titulo: 'Configuração Vector Store', descricao: 'Indexação vetorial de documentos no banco de dados para busca de contexto hiper-rápida.' },
-      { passo: 4, titulo: 'Integração de Canais', descricao: 'Conexão do motor de IA aos números de WhatsApp e widgets web do produto.' },
-      { passo: 5, titulo: 'Simulação & Testes de Acurácia', descricao: 'Bateria de testes com perguntas desafiadoras para ajuste fino do modelo.' },
-      { passo: 6, titulo: 'Deploy & Monitoramento', descricao: 'Liberação do agente para atendimento com painel de métricas e acompanhamento humano.' }
+      { passo: 1, titulo: 'Coleta de Informações', descricao: 'Reunião de todas as dúvidas frequentes, tabelas e regras comerciais do seu negócio.' },
+      { passo: 2, titulo: 'Definição da Personalidade', descricao: 'Configuração do tom de voz, postura e limites do Agente de IA.' },
+      { passo: 3, titulo: 'Treinamento do Motor de IA', descricao: 'Carregamento do conhecimento oficial da sua empresa no sistema de inteligência.' },
+      { passo: 4, titulo: 'Conexão com WhatsApp e Site', descricao: 'Instalação do robô nos canais de comunicação com os clientes.' },
+      { passo: 5, titulo: 'Testes de Diálogos', descricao: 'Simulações reais de conversas para garantir que todas as perguntas recebam respostas perfeitas.' },
+      { passo: 6, titulo: 'Ativação do Atendimento 24/7', descricao: 'Agente ativo gerando oportunidades de vendas dia e noite.' }
     ]
   }
 ]
