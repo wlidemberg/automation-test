@@ -4,7 +4,7 @@ import { CheckCircle2, Loader2, ArrowRight, Check, Star, ChevronRight, ChevronLe
 import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/Layout'
 import { fetchActiveProducts } from '../services/productServices'
-import { submitProposalRequest } from '../services/leadServices'
+import { submitProposalRequest, createLead } from '../services/leadServices'
 
 const AVAILABLE_FEATURES = [
   'Painel de Controle / Dashboard Restrito',
@@ -163,6 +163,24 @@ export default function ProposalPage() {
     setIsSubmitting(true)
 
     try {
+      // Registra o lead na tabela public.leads
+      await createLead({
+        produtoSlug: selectedProductSlug || 'site-institucional',
+        categoriaProduto: 'design_web',
+        razaoSocialNome: nomeRazao,
+        cpfCnpj,
+        email,
+        telefone,
+        faturamentoMensal,
+        doresPrincipais,
+        dadosEspecificosCategoria: {
+          nomeProjeto,
+          publicoAlvo,
+          selectedFeatures,
+          selectedIntegrations
+        }
+      }).catch(err => console.warn('Aviso de registro de lead:', err));
+
       const result = await submitProposalRequest({
         tipoPessoa,
         nomeRazao,
