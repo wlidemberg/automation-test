@@ -24,6 +24,7 @@ import {
   FileText, 
   Users, 
   CreditCard,
+  MessageSquare,
   ArrowLeft, 
   ArrowUpRight, 
   Loader2,
@@ -35,14 +36,13 @@ import type { ElementType } from 'react'
 import Layout from '../components/Layout'
 import { productsData, getLocalProductBySlug } from '../data/productsData'
 import type { Product as ProductDataType } from '../data/productsData'
-import { fetchProductBySlug, fetchProducts } from '../services/productService'
+import { fetchProductBySlug } from '../services/productService'
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
 
   const [product, setProduct] = useState<ProductDataType | null>(null)
-  const [allProducts, setAllProducts] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
   // Rolagem automática para o topo ao alterar o slug
@@ -60,27 +60,21 @@ export default function ProductDetailPage() {
 
       try {
         setLoading(true)
-        // Busca catálogo do banco e produto específico em paralelo
-        const [dbProducts, dbProduct] = await Promise.all([
-          fetchProducts().catch(() => []),
-          fetchProductBySlug(slug).catch(() => null)
-        ])
-
-        setAllProducts(dbProducts.length > 0 ? dbProducts : productsData)
-
         // Tenta obter o produto local enriquecido pelo helper de slugs/aliases
         const localMeta = getLocalProductBySlug(slug)
 
+        // Busca dados dinâmicos de suporte no Supabase (se disponível)
+        const dbProduct = await fetchProductBySlug(slug).catch(() => null)
+
         if (localMeta) {
-          // Se encontrou no catálogo de dados oficial
           setProduct({
             ...localMeta,
-            nome: dbProduct?.nome || localMeta.nome,
-            subtitulo: localMeta.subtitulo || dbProduct?.descricao_curta || '',
-            descricaoExecutiva: localMeta.descricaoExecutiva || dbProduct?.descricao_completa || localMeta.description
+            nome: localMeta.nome,
+            subtitulo: localMeta.subtitulo,
+            descricaoExecutiva: localMeta.descricaoExecutiva
           })
         } else if (dbProduct) {
-          // Fallback se existir apenas no Supabase
+          // Fallback se o produto existir apenas no Supabase
           const fallbackMeta = productsData[0]
           setProduct({
             id: dbProduct.id,
@@ -105,7 +99,6 @@ export default function ProductDetailPage() {
         }
       } catch (err) {
         console.error('Erro ao carregar detalhes do produto:', err)
-        // Fallback final para dados locais
         const local = getLocalProductBySlug(slug)
         setProduct(local || null)
       } finally {
@@ -307,7 +300,7 @@ export default function ProductDetailPage() {
               <span className="text-xs font-mono text-gray-500 uppercase tracking-wider mr-2">
                 Tecnologias do Ecossistema:
               </span>
-              {product.tecnologias.map((tec, idx) => (
+              {(product.tecnologias || []).map((tec, idx) => (
                 <span
                   key={idx}
                   className="text-[11px] font-mono uppercase bg-brand-gray border border-white/10 px-3 py-1 rounded text-gray-300"
@@ -336,7 +329,7 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {product.oQueCompoe.map((pilar, index) => (
+            {(product.oQueCompoe || []).map((pilar, index) => (
               <motion.div
                 key={index}
                 whileHover={{ y: -5 }}
@@ -382,7 +375,7 @@ export default function ProductDetailPage() {
                   Garantia de Qualidade
                 </h3>
                 <ul className="space-y-2 font-sans text-xs text-gray-300 font-light">
-                  {product.beneficios.map((b, i) => (
+                  {(product.beneficios || []).map((b, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-brand-neon shrink-0" />
                       <span>{b}</span>
@@ -418,7 +411,7 @@ export default function ProductDetailPage() {
 
           {/* Timeline de 6 Etapas */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
-            {product.roadmap.map((etapa) => (
+            {(product.roadmap || []).map((etapa) => (
               <div
                 key={etapa.passo}
                 className="bg-zinc-900/50 border border-white/10 p-8 rounded-xl space-y-4 relative overflow-hidden backdrop-blur-sm hover:border-brand-neon/30 transition-all duration-300"

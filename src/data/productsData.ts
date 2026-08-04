@@ -5,25 +5,7 @@ import {
   Calendar, 
   Database, 
   Zap, 
-  Bot, 
-  Cpu, 
-  MessageSquare, 
-  Terminal, 
-  ShieldCheck, 
-  Layout, 
-  Search, 
-  Smartphone, 
-  Code2, 
-  Workflow, 
-  Sparkles, 
-  Layers, 
-  Clock, 
-  Lock, 
-  BarChart3, 
-  CheckCircle2, 
-  FileText, 
-  Users, 
-  CreditCard 
+  Bot 
 } from 'lucide-react'
 import type { ElementType } from 'react'
 
