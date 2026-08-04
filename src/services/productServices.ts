@@ -8,7 +8,7 @@ import type { Product } from '../types/database';
 const mockProductsList: Product[] = [
   {
     id: '1',
-    nome: 'Site Institucional Tech-Luxo',
+    nome: 'Site Institucional Corporativo',
     slug: 'site-institucional',
     categoria: 'design_web',
     tipo_cobranca: 'unico',

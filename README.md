@@ -5,7 +5,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-8.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-O **Automation Test** é uma plataforma digital corporativa estruturada sob a identidade visual de alto padrão **Tech-Luxo**. O ecossistema integra um portal público responsivo para exibição de portfólios, catálogos e orçamentos, associado a um painel restrito de cliente (Dashboard) para acompanhamento transparente de cronogramas e entregas de negócios.
+O **Automation Test** é uma plataforma digital corporativa estruturada sob uma identidade visual corporativa de alto padrão. O ecossistema integra um portal público responsivo para exibição de portfólios, catálogos e orçamentos, associado a um painel restrito de cliente (Dashboard) para acompanhamento transparente de cronogramas e entregas de negócios.
 
 ---
 
@@ -13,14 +13,14 @@ O **Automation Test** é uma plataforma digital corporativa estruturada sob a id
 
 ### 🌐 Portal Institucional (Área Pública)
 - **Vitrine Tecnológica**: Exposição fluida de produtos de alta performance (Websites, Lojas Headless, Agentes de IA).
-- **Páginas de Produtos**: Detalhamento individual com slugs dinâmicos, especificações, tecnologias e badges.
+- **Páginas de Produtos**: Detalhamento individual com slugs dinâmicos, especificações e badges.
 - **Chamada de Ação (CTA)**: Seções focadas em conversão, com direcionamento rápido para contato e área logada.
 - **Header & Footer Persistentes**: Navegação otimizada com âncoras internas suaves (`#sobre`, `#produtos`, `#contato`).
 
 ### 🔒 Backstage (Área do Cliente)
-- **Tela de Login Premium**: Interface dedicada com efeito glassmorphism e inputs de estilo Tech-Luxo, sem Cabeçalhos/Rodapés públicos.
+- **Tela de Login Premium**: Interface dedicada com efeito glassmorphism e inputs de estilo corporativo, sem Cabeçalhos/Rodapés públicos.
 - **Dashboard Layout**: Painel interno exclusivo dotado de barra lateral de navegação minimalista e totalmente responsiva.
-- **Overview de Negócio & Licenciamento**: Central de entrega de projetos sob medida e controle de licenças de sistemas ERP White-Label corporativos, focando em métricas de negócio e recorrência (faturamento e mensalidades).
+- **Overview de Negócio & Licenciamento**: Central de entrega de projetos sob medida e controle de licenças de sistemas ERP corporativos, focando em métricas de negócio e recorrência (faturamento e mensalidades).
 - **Gerenciamento de Projetos e Solicitações**: Subpágina dedicada para visualizar o cronograma detalhado de cada serviço e Central de Solicitações para envio direto de novos requisitos ao time.
 
 ---

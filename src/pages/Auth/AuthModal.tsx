@@ -179,7 +179,7 @@ export default function AuthModal({ isOpen, onClose, initialProductSlug }: AuthM
             <X className="w-5 h-5"/>
           </button>
 
-          {/* Left Column: Resumo Financeiro Tech-Luxo */}
+          {/* Left Column: Resumo Financeiro Corporativo */}
           <div className="w-full lg:w-5/12 bg-zinc-900/50 p-6 border-b lg:border-b-0 lg:border-r border-zinc-800 overflow-y-auto">
             <div className="absolute top-0 right-0 w-24 h-24 bg-brand-neon/[0.02] blur-xl rounded-full pointer-events-none" />
             

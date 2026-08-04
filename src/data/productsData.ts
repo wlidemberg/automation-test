@@ -49,7 +49,7 @@ export const productsData: Product[] = [
     categoria: 'Design / Web Design',
     subtitulo: 'Transforme visitantes em clientes pagantes com uma presença digital corporativa que transmite autoridade imediata.',
     badge: 'Autoridade & Credibilidade',
-    descricaoExecutiva: 'Um site amador ou lento faz sua empresa perder contratos valiosos antes mesmo da primeira conversa. Desenvolvemos portais corporativos de alto padrão com design exclusivo Tech-Luxo, carregamento instantâneo e navegação impecável. Posicione sua marca como líder incontestável de mercado e conquiste a confiança de clientes exigentes desde o primeiro segundo.',
+    descricaoExecutiva: 'Um site amador ou lento faz sua empresa perder contratos valiosos antes mesmo da primeira conversa. Desenvolvemos portais corporativos de alto padrão com design exclusivo, carregamento instantâneo e navegação impecável. Posicione sua marca como líder incontestável de mercado e conquiste a confiança de clientes exigentes desde o primeiro segundo.',
     description: 'Portais corporativos de alto padrão desenhados para posicionar sua marca como líder e fechar grandes contratos.',
     descricaoLonga: 'Sua empresa é julgada pela primeira impressão no mundo digital. Se o seu site atual carrega devagar, tem visual ultrapassado ou não funciona bem no celular, seus potenciais clientes procuram imediatamente o concorrente. Nosso portal corporativo resolve isso oferecendo uma experiência premium de nível internacional, que destaca a reputação do seu negócio e gera um fluxo constante de contatos qualificados.',
     beneficios: [
@@ -91,7 +91,7 @@ export const productsData: Product[] = [
     roadmap: [
       { passo: 1, titulo: 'Entendimento do Negócio', descricao: 'Mapeamento do perfil dos seus melhores clientes, concorrentes e diferenciais competitivos.' },
       { passo: 2, titulo: 'Arquitetura de Navegação', descricao: 'Desenho da estrutura visual e da jornada do visitante para guiar o cliente até o contato.' },
-      { passo: 3, titulo: 'Criação do Design Premium', descricao: 'Desenvolvimento visual personalizado com estética Tech-Luxo e aprovação da sua equipe.' },
+      { passo: 3, titulo: 'Criação do Design Premium', descricao: 'Desenvolvimento visual personalizado com estética exclusiva de alto padrão e aprovação da sua equipe.' },
       { passo: 4, titulo: 'Construção & Otimização', descricao: 'Montagem do portal garantindo máxima velocidade, responsividade e fluidez.' },
       { passo: 5, titulo: 'Validação Geral', descricao: 'Testes rigorosos de formulários, botões de WhatsApp e carregamento em múltiplos dispositivos.' },
       { passo: 6, titulo: 'Lançamento Oficial', descricao: 'Publicação do portal com suporte completo para início imediato das operações.' }

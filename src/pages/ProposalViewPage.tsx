@@ -7,7 +7,7 @@ import type { Briefing } from '../types/database'
 import Layout from '../components/Layout'
 
 const MOCK_AI_PROPOSAL = {
-  resumo_escopo: 'Desenvolvimento de ecossistema tecnológico completo com alta velocidade de carregamento, design Tech-Luxo responsivo de altíssima fidelidade estética e integração automatizada de fluxos operacionais.',
+  resumo_escopo: 'Desenvolvimento de ecossistema tecnológico completo com alta velocidade de carregamento, design corporativo responsivo de altíssima fidelidade estética e integração automatizada de fluxos operacionais.',
   entregaveis: [
     'Design de Interface UI/UX personalizado (Figma)',
     'Desenvolvimento Frontend otimizado (React / Tailwind)',

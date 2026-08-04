@@ -247,7 +247,7 @@ export default function AdminOverview() {
         .eq('id', briefingId)
 
       // 4. Simula o disparo de e-mail de primeiro acesso
-      showToast('CADASTRO ATIVADO E CONTRATO DE LUXO GERADO COM SUCESSO!', 'success')
+      showToast('CADASTRO ATIVADO E CONTRATO CORPORATIVO GERADO COM SUCESSO!', 'success')
       
       // Recarregar dados
       await Promise.all([loadDashboardData(), loadProposals(), loadBriefings()])
@@ -598,7 +598,7 @@ export default function AdminOverview() {
               </p>
             </div>
           ) : (
-            /* Tabela de Perfis Tech-Luxo */
+            /* Tabela de Perfis Corporativos */
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -734,7 +734,7 @@ export default function AdminOverview() {
                            </div>
                          </td>
 
-                        {/* Status com Estilo Tech-Luxo */}
+                         {/* Status do Perfil */}
                         <td className="py-4 px-4 font-mono">
                           {profile.status === 'pendente' && (
                             <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded text-[9px] uppercase font-bold tracking-wider">

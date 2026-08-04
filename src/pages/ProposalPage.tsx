@@ -271,7 +271,7 @@ export default function ProposalPage() {
                 ))}
               </div>
               <blockquote className="text-[11px] font-sans text-gray-400 italic font-light leading-relaxed">
-                "O formulário unificado facilitou muito a especificação de nosso ERP de luxo. Recebemos a proposta formatada pela IA em poucos minutos."
+                "O formulário unificado facilitou muito a especificação de nosso ERP corporativo. Recebemos a proposta formatada pela IA em poucos minutos."
               </blockquote>
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-[10px] font-bold text-brand-neon">

@@ -63,7 +63,7 @@ const FALLBACK_PROJECTS: Project[] = [
 const FALLBACK_ROADMAPS: Record<string, ProjectRoadmap[]> = {
   'sistema-agendamentos': [
     { id: 'sa-1', project_id: 'sistema-agendamentos', nome_fase: 'Análise de Requisitos', status: 'done', descricao_fase: 'Reunião de alinhamento técnico e levantamento inicial', ordem: 1 },
-    { id: 'sa-2', project_id: 'sistema-agendamentos', nome_fase: 'Design & Protótipo', status: 'done', descricao_fase: 'Interface visual de luxo validada com o cliente', ordem: 2 },
+    { id: 'sa-2', project_id: 'sistema-agendamentos', nome_fase: 'Design & Protótipo', status: 'done', descricao_fase: 'Interface visual corporativa validada com o cliente', ordem: 2 },
     { id: 'sa-3', project_id: 'sistema-agendamentos', nome_fase: 'Desenvolvimento Core', status: 'done', descricao_fase: 'Codificação da lógica do sistema e conexões básicas', ordem: 3 },
     { id: 'sa-4', project_id: 'sistema-agendamentos', nome_fase: 'Homologação Visual', status: 'current', descricao_fase: 'Validação estética em ambiente de homologação', ordem: 4 },
     { id: 'sa-5', project_id: 'sistema-agendamentos', nome_fase: 'Integração de IA & WhatsApp', status: 'pending', descricao_fase: 'Finalização do agente de IA e conexão da API oficial do WhatsApp', ordem: 5 }
