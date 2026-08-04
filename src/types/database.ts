@@ -1,13 +1,26 @@
 export type UserRole = 'admin' | 'client';
-export type UserStatus = 'pendente' | 'ativo' | 'recusado' | 'inativo';
+export type UserStatus = 'lead' | 'pendente' | 'ativo' | 'recusado' | 'inativo';
 export type TipoPessoa = 'PF' | 'PJ';
 
 export type ProductCategory = 'design_web' | 'desenvolvimento' | 'erp_saas' | 'automacao' | 'ia';
 export type PricingType = 'unico' | 'recorrente' | 'hibrido';
 
-export type ProjectPhase = 'briefing' | 'proposta_pendente' | 'proposta_enviada' | 'aguardando_pagamento' | 'em_desenvolvimento' | 'homologacao' | 'concluido' | 'recusado';
+export type ProjectPhase = 
+  | 'briefing_pendente'
+  | 'em_analise_ia'
+  | 'proposta_enviada'
+  | 'aguardando_pagamento'
+  | 'em_desenvolvimento'
+  | 'homologacao'
+  | 'concluido'
+  | 'cancelado'
+  | 'Homologação Visual'
+  | 'Lançamento'
+  | 'Operação em Produção';
+
 export type InvoiceStatus = 'pendente' | 'pago' | 'cancelado';
 export type InvoiceType = 'entrada' | 'mensalidade' | 'avulso';
+export type BriefingStatus = 'pendente' | 'em_analise_ia' | 'proposta_enviada' | 'pago' | 'aprovado';
 
 export interface Address {
   cep?: string;
@@ -23,16 +36,14 @@ export interface Profile {
   id: string;
   email: string;
   role: UserRole;
+  status: UserStatus;
   tipo_pessoa: TipoPessoa;
   razao_social?: string | null;
   cnpj?: string | null;
   nome_completo?: string | null;
   cpf?: string | null;
-  data_nascimento?: string | null;
   telefone?: string | null;
   endereco?: Address | Record<string, any> | null;
-  dados_adicionais?: Record<string, any> | null;
-  status: UserStatus;
   created_at?: string;
   updated_at?: string;
 }
@@ -41,26 +52,21 @@ export interface Product {
   id: string;
   nome: string;
   slug: string;
-  
-  // Fields from main
-  descricao?: string;
-  valor_implementacao?: number;
-  valor_setup?: number;
-  valor_mensalidade?: number;
-  ativo?: boolean;
-  
-  // Fields from feat/painel-administrativo
   rotulo?: string | null;
   categoria?: ProductCategory;
   tipo_cobranca?: PricingType;
   preco_setup?: number;
   preco_mensal?: number;
+  valor_implementacao?: number;
+  valor_setup?: number;
+  valor_mensalidade?: number;
   descricao_curta?: string;
   descricao_completa?: string | null;
+  descricao?: string;
   recursos?: string[] | any;
   icone?: string | null;
   status?: boolean;
-
+  ativo?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -68,24 +74,48 @@ export interface Product {
 export interface Project {
   id: string;
   client_id: string;
+  product_id?: string | null;
   nome: string;
-  descricao: string | null;
-  data_inicio: string | null;
-  previsao_entrega: string | null;
+  descricao?: string | null;
   fase_atual: ProjectPhase;
-  proxima_entrega: string | null;
-  status_pagamento: string | null;
-  status_geral: string | null;
-  url_projeto: string | null;
-  btn_online_label: string | null;
-  btn_gerenciar_label: string | null;
-  progresso: number | null;
-  ativo: boolean;
   valor_setup?: number | null;
   valor_mensalidade?: number | null;
-  status_projeto?: string | null;
-  valor_total?: number | null;
+  progresso?: number | null;
+  ativo?: boolean;
+  data_inicio?: string | null;
+  previsao_entrega?: string | null;
+  proxima_entrega?: string | null;
+  status_pagamento?: string | null;
+  status_geral?: string | null;
+  url_projeto?: string | null;
+  btn_online_label?: string | null;
+  btn_gerenciar_label?: string | null;
   created_at?: string;
+  updated_at?: string;
+}
+
+export interface Briefing {
+  id: string;
+  project_id?: string | null;
+  client_id: string;
+  nome_projeto: string;
+  logo_url?: string | null;
+  cor_primaria?: string | null;
+  cor_secundaria?: string | null;
+  tom_de_voz?: string | null;
+  faturamento_mensal?: string | null;
+  qtd_funcionarios?: number;
+  qtd_socios?: number;
+  publico_alvo?: string | null;
+  dores_principais: string;
+  funcionalidades_esperadas: string[];
+  integracoes_necessarias: string[];
+  proposta_ia?: Record<string, any> | null;
+  link_pagamento?: string | null;
+  link_pagamento_entrada?: string | null;
+  status_briefing?: BriefingStatus;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Invoice {
@@ -96,6 +126,7 @@ export interface Invoice {
   vencimento: string;
   tipo: InvoiceType;
   status: InvoiceStatus;
+  payload_pagamento?: Record<string, any> | null;
   created_at?: string;
 }
 
@@ -104,32 +135,31 @@ export interface ProjectRoadmap {
   project_id: string;
   nome_fase: string;
   status: 'done' | 'current' | 'pending';
-  descricao_fase: string | null;
+  descricao_fase?: string | null;
   ordem: number;
   created_at?: string;
 }
 
-export type BriefingStatus = 'pendente' | 'em_analise_ia' | 'proposta_enviada' | 'pago' | 'aprovado';
 
-export interface Briefing {
+export interface Invoice {
   id: string;
+  project_id: string;
   client_id: string;
-  project_id: string | null;
-  nome_projeto: string;
-  logo_url: string | null;
-  cor_primaria: string | null;
-  cor_secundaria: string | null;
-  tom_de_voz: string | null;
-  faturamento_mensal: string | null;
-  qtd_funcionarios: number;
-  qtd_socios: number;
-  publico_alvo: string | null;
-  dores_principais: string;
-  funcionalidades_esperadas: string[];
-  integracoes_necessarias: string[];
-  proposta_ia: Record<string, any> | null;
-  link_pagamento_entrada: string | null;
-  status_briefing: BriefingStatus;
+  valor: number;
+  vencimento: string;
+  tipo: InvoiceType;
+  status: InvoiceStatus;
+  payload_pagamento?: Record<string, any> | null;
   created_at?: string;
-  updated_at?: string;
 }
+
+export interface ProjectRoadmap {
+  id: string;
+  project_id: string;
+  nome_fase: string;
+  status: 'done' | 'current' | 'pending';
+  descricao_fase?: string | null;
+  ordem: number;
+  created_at?: string;
+}
+

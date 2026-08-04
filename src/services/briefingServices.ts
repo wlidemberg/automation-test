@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { Briefing, BriefingStatus } from '../types/database';
+import type { Briefing } from '../types/database';
 
 /**
  * Cria ou atualiza um briefing no Supabase e opcionalmente dispara o webhook para o N8N.
@@ -21,8 +21,8 @@ export async function createBriefing(briefingData: Partial<Briefing>): Promise<B
     .single();
 
   if (error) {
-    console.error('Erro ao salvar briefing:', error.message);
-    throw error;
+    console.error('Erro ao salvar briefing no Supabase:', error);
+    return null;
   }
 
   return data as Briefing;
@@ -39,7 +39,7 @@ export async function fetchBriefingById(briefingId: string): Promise<Briefing | 
     .maybeSingle();
 
   if (error) {
-    console.error('Erro ao buscar briefing por ID:', error.message);
+    console.error('Erro ao buscar briefing:', error);
     return null;
   }
   return data as Briefing;
@@ -80,7 +80,7 @@ export async function updateBriefing(
     .single();
 
   if (error) {
-    console.error('Erro ao atualizar briefing:', error.message);
+    console.error('Erro ao atualizar briefing:', error);
     return null;
   }
   return data as Briefing;
@@ -124,7 +124,7 @@ export async function checkProfileDuplicity(
   cpfCnpj?: string
 ): Promise<{ exists: boolean; field?: 'email' | 'cpf_cnpj' }> {
   // Verifica e-mail
-  const { data: emailMatch, error: emailError } = await supabase
+  const { data: emailMatch } = await supabase
     .from('profiles')
     .select('id')
     .eq('email', email)

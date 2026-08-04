@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Terminal, Shield, Sparkles, Loader2, CheckCircle2, ChevronRight, Info } from 'lucide-react'
+import { Sparkles, Loader2, CheckCircle2, ChevronRight, Info } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { createBriefing, triggerN8NBriefingWebhook, checkProfileDuplicity } from '../services/briefingServices'
-import type { BriefingStatus, Briefing } from '../types/database'
 import Layout from '../components/Layout'
 
 const AVAILABLE_FEATURES = [
@@ -39,7 +37,6 @@ export default function BriefingPage() {
 
   // Database contexts
   const [clientId, setClientId] = useState<string>('')
-  const [projectTitle, setProjectTitle] = useState<string>('')
   const [clientEmail, setClientEmail] = useState<string>('')
   const [clientCpfCnpj, setClientCpfCnpj] = useState<string>('')
 
@@ -92,11 +89,15 @@ export default function BriefingPage() {
           .eq('id', projectId)
           .maybeSingle()
 
+        if (pError) {
+          console.warn('Erro ao carregar projeto:', pError.message)
+        }
+
         if (project) {
           setIsProjectFound(true)
           setClientId(project.client_id)
-          setProjectTitle(project.nome)
           setProjectName(project.nome.replace('Solicitação: ', ''))
+          console.log('Projeto carregado:', project.nome)
 
           // Fetch client details
           const { data: profile } = await supabase
@@ -140,23 +141,26 @@ export default function BriefingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isSubmitting) return
-    setErrorMessage(null)
 
-    if (!projectName || !doresPrincipais) {
-      setErrorMessage('POR FAVOR, PREENCHA OS CAMPOS OBRIGATÓRIOS (*).')
+    if (!projectName.trim() || !doresPrincipais.trim()) {
+      setErrorMessage('Por favor, preencha o Nome do Projeto e as Dores Principais.')
       return
     }
 
     setIsSubmitting(true)
+    setErrorMessage('')
 
     try {
-      // 1. Validação de Duplicidade de Cadastro no banco (email e CPF/CNPJ)
-      if (clientEmail) {
-        const duplicity = await checkProfileDuplicity(clientEmail, clientCpfCnpj)
-        if (duplicity.exists && duplicity.field === 'cpf_cnpj') {
-          console.warn('CPF/CNPJ já cadastrado em outro perfil.');
-        }
+      // 1. Checagem prévia de duplicidade de e-mail/documento
+      const duplicityCheck = await checkProfileDuplicity(clientEmail, clientCpfCnpj)
+      if (duplicityCheck.exists) {
+        setErrorMessage(
+          duplicityCheck.field === 'email'
+            ? 'Este e-mail já possui um projeto cadastrado. Por favor, acesse o Login para acompanhar.'
+            : 'Este CPF/CNPJ já está cadastrado em nossa base. Faça login para continuar.'
+        )
+        setIsSubmitting(false)
+        return
       }
 
       // 2. Salva o briefing na tabela briefings

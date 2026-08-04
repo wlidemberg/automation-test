@@ -13,47 +13,48 @@ A plataforma utiliza o **Supabase (PostgreSQL)** como serviço de backend (BaaS 
 
 ---
 
-## 2. Esquema da Tabela `profiles`
+## 2. Esquema da Tabela `profiles` (V2 Unificado)
 
-A tabela `profiles` armazena os dados cadastrais e de status de acesso de cada usuário.
+A tabela `profiles` armazena os dados cadastrais e de status de acesso de cada usuário, totalmente vinculada ao `auth.users` do Supabase.
 
 ```sql
 CREATE TYPE user_role AS ENUM ('admin', 'client');
-CREATE TYPE user_status AS ENUM ('pendente', 'ativo', 'recusado');
+CREATE TYPE user_status AS ENUM ('lead', 'pendente', 'ativo', 'recusado', 'inativo');
 CREATE TYPE tipo_pessoa AS ENUM ('PF', 'PJ');
 
 CREATE TABLE public.profiles (
-  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-  email TEXT NOT NULL,
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL UNIQUE,
   role user_role DEFAULT 'client'::user_role NOT NULL,
-  status user_status DEFAULT 'pendente'::user_status NOT NULL,
-  tipo_pessoa tipo_pessoa NOT NULL,
+  status user_status DEFAULT 'lead'::user_status NOT NULL,
+  tipo_pessoa tipo_pessoa DEFAULT 'PF'::tipo_pessoa NOT NULL,
   razao_social TEXT,
   cnpj TEXT,
   nome_completo TEXT,
   cpf TEXT,
-  data_nascimento DATE,
   telefone TEXT,
-  endereco JSONB,
+  endereco JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 ```
 
+> **Trigger Automático de Cadastro (`handle_new_user`)**: Ao criar um usuário via `auth.users` (Supabase Auth), uma nova linha é criada automaticamente na tabela `profiles` com `status: 'lead'`.
+
 ---
 
-## 3. Fluxo de Transição de Estado de Cadastro (`pendente` ➔ `ativo`/`recusado`/`inativo`)
+## 3. Fluxo de Transição de Estado de Cadastro (`lead` ➔ `pendente` ➔ `ativo`/`recusado`/`inativo`)
 
-O ciclo de vida do perfil de usuário segue um fluxo atômico controlado exclusivamente pelo Administrador Master:
+O ciclo de vida do perfil de usuário segue um fluxo atômico controlado pela esteira comercial e pelo Administrador:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pendente: Cadastro pelo Próprio Cliente
-    [*] --> Ativo: Cadastro Direto via Painel Admin
-    Pendente --> Ativo: Administrador clica em "APROVAR"
-    Pendente --> Recusado: Administrador clica em "RECUSAR"
-    Ativo --> Inativo: Administrador clica em "INATIVAR"
-    Inativo --> Ativo: Administrador clica em "ATIVAR"
+    [*] --> Lead: Usuário cria conta ou preenche solicitação
+    Lead --> Pendente: Envia briefing para análise
+    Pendente --> Ativo: Pagamento de entrada confirmado / Aprovação Admin
+    Pendente --> Recusado: Proposta recusada / cancelada
+    Ativo --> Inativo: Suspensão contratual via Admin
+    Inativo --> Ativo: Reativação via Admin
 ```
 
 ### Detalhamento dos Estados:

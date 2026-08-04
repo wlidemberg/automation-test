@@ -80,7 +80,7 @@ export default function Overview() {
   }
 
   // Identifica o projeto ativo principal (com progresso incompleto)
-  const activeProject = projects.find(p => p.progresso !== null && p.progresso < 100) || projects[0]
+  const activeProject = projects.find(p => (p.progresso ?? 0) < 100) || projects[0]
   // Os demais projetos vão para a seção de sistemas e licenças
   const otherProjects = projects.filter(p => p.id !== activeProject?.id)
 

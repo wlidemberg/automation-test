@@ -17,9 +17,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   fetchAllProfiles, 
-  updateProfileStatus, 
-  createAdminClient, 
-  updateClientProfile 
+  updateProfileStatus 
 } from '../../services/profileServices'
 import type { Profile, UserStatus } from '../../types/database'
 import AdminSidebar from '../../components/Admin/AdminSidebar'

@@ -16,8 +16,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   fetchAllProducts, 
-  createProduct, 
-  updateProduct, 
   toggleProductStatus 
 } from '../../services/productServices'
 import type { Product, ProductCategory } from '../../types/database'
@@ -37,9 +35,6 @@ export default function AdminProducts() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const navigate = useNavigate()
-
-  // Modal state
-  const [isSaving, setIsSaving] = useState<boolean>(false)
 
   // Load products from Supabase/Service
   const loadProducts = async () => {
@@ -86,7 +81,7 @@ export default function AdminProducts() {
   const handleToggleStatus = async (product: Product) => {
     setUpdatingId(product.id)
     try {
-      const updated = await toggleProductStatus(product.id, product.status)
+      const updated = await toggleProductStatus(product.id, Boolean(product.status ?? product.ativo))
       if (updated) {
         await loadProducts()
         showToast(
@@ -311,7 +306,7 @@ export default function AdminProducts() {
                         {/* Categoria */}
                         <td className="py-4 px-4 font-mono text-gray-300">
                           <span className="bg-white/5 border border-white/10 px-2.5 py-1 rounded text-[10px] uppercase text-gray-300">
-                            {categoryLabels[product.categoria] || product.categoria}
+                            {product.categoria ? (categoryLabels[product.categoria] || product.categoria) : 'GERAL'}
                           </span>
                         </td>
 

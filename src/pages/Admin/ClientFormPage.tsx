@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { UserCheck, Building2, Save, ArrowLeft, Loader2, CheckCircle2, XCircle } from 'lucide-react'
+import { Save, ArrowLeft, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getProfileById, createAdminClient, updateClientProfile } from '../../services/profileServices'
 import type { Profile, TipoPessoa } from '../../types/database'

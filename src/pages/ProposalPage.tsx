@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Building2, User, Mail, Phone, CheckCircle2, Loader2, ArrowRight, Check, Star, Sparkles, ChevronRight, ChevronLeft, CreditCard } from 'lucide-react'
+import { CheckCircle2, Loader2, ArrowRight, Check, Star, ChevronRight, ChevronLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/Layout'
 import { fetchActiveProducts } from '../services/productServices'
