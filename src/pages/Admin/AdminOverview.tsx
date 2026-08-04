@@ -23,6 +23,9 @@ import { fetchAllProducts } from '../../services/productServices'
 import type { Profile, Product } from '../../types/database'
 import AdminSidebar from '../../components/Admin/AdminSidebar'
 import AdminHeader from '../../components/Admin/AdminHeader'
+import ProposalModal from '../../components/Admin/ProposalModal'
+import { fetchClientProposals, acceptProposalAndPayEntry } from '../../services/proposalServices'
+import { supabase } from '../../lib/supabase'
 
 interface ClienteInfo {
   id: string
@@ -47,6 +50,12 @@ export default function AdminOverview() {
   const [loading, setLoading] = useState<boolean>(true)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  // Supabase Proposals State
+  const [proposals, setProposals] = useState<any[]>([])
+  const [briefings, setBriefings] = useState<any[]>([])
+  const [loadingProposals, setLoadingProposals] = useState<boolean>(true)
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState<boolean>(false)
 
   // Legacy/Mock Projects State for operational view
   const [clientes, setClientes] = useState<ClienteInfo[]>([
@@ -115,8 +124,37 @@ export default function AdminOverview() {
     }
   }
 
+  const loadBriefings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('briefings')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (!error && data) {
+        setBriefings(data)
+      }
+    } catch (err) {
+      console.error('Erro ao carregar briefings:', err)
+    }
+  }
+
+  const loadProposals = async () => {
+    setLoadingProposals(true)
+    try {
+      const data = await fetchClientProposals()
+      setProposals(data)
+    } catch (err) {
+      console.error('Erro ao carregar propostas:', err)
+      showToast('FALHA AO CARREGAR PROPOSTAS.', 'error')
+    } finally {
+      setLoadingProposals(false)
+    }
+  }
+
   useEffect(() => {
     loadDashboardData()
+    loadProposals()
+    loadBriefings()
   }, [])
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -141,6 +179,81 @@ export default function AdminOverview() {
     } catch (err) {
       console.error(err)
       showToast('FALHA DE REDE AO PROCESSAR SOLICITAÇÃO.', 'error')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const handleAcceptProposal = async (projectId: string) => {
+    setUpdatingId(projectId)
+    try {
+      // Buscar a fatura pendente associada ao projeto
+      const { data: invoice, error } = await supabase
+        .from('invoices')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('status', 'pendente')
+        .maybeSingle();
+
+      if (error || !invoice) {
+        showToast('NENHUMA FATURA PENDENTE ENCONTRADA.', 'error')
+        return
+      }
+
+      const success = await acceptProposalAndPayEntry(projectId, invoice.id)
+      if (success) {
+        showToast('PROPOSTA ACEITA E FATURA DE ENTRADA PAGA COM SUCESSO!', 'success')
+        await Promise.all([loadDashboardData(), loadProposals(), loadBriefings()])
+      } else {
+        showToast('ERRO AO PROCESSAR ACEITE DA PROPOSTA.', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('FALHA OPERACIONAL.', 'error')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const handleApproveClientAndContract = async (userId: string, briefingId: string, projectId: string | null) => {
+    setUpdatingId(userId)
+    try {
+      // 1. Altera o status do perfil para 'ativo'
+      const updatedProfile = await updateProfileStatus(userId, 'ativo')
+      if (!updatedProfile) {
+        showToast('ERRO AO ATIVAR PERFIL DO CLIENTE.', 'error')
+        return
+      }
+
+      // 2. Vincula o projeto definitivo (altera fase_atual para 'em_desenvolvimento')
+      if (projectId) {
+        await supabase
+          .from('projects')
+          .update({ fase_atual: 'em_desenvolvimento', progresso: 15 })
+          .eq('id', projectId)
+
+        // Atualiza status da fatura para pago se houver alguma pendente de entrada
+        await supabase
+          .from('invoices')
+          .update({ status: 'pago' })
+          .eq('project_id', projectId)
+          .eq('tipo', 'entrada')
+      }
+
+      // 3. Atualiza o status do briefing para 'aprovado'
+      await supabase
+        .from('briefings')
+        .update({ status_briefing: 'aprovado' })
+        .eq('id', briefingId)
+
+      // 4. Simula o disparo de e-mail de primeiro acesso
+      showToast('CADASTRO ATIVADO E CONTRATO DE LUXO GERADO COM SUCESSO!', 'success')
+      
+      // Recarregar dados
+      await Promise.all([loadDashboardData(), loadProposals(), loadBriefings()])
+    } catch (err) {
+      console.error(err)
+      showToast('FALHA OPERACIONAL AO GERAR CONTRATO.', 'error')
     } finally {
       setUpdatingId(null)
     }
@@ -257,13 +370,23 @@ export default function AdminOverview() {
         }`}
       >
         {/* Page Header (Space Grotesk Title + Subtitle) */}
-        <div className="space-y-1 border-b border-white/5 pb-6">
-          <h1 className="text-3xl sm:text-4xl font-space font-extrabold tracking-tight text-white uppercase">
-            Dashboard
-          </h1>
-          <p className="text-xs text-gray-400 font-light leading-relaxed">
-            Visão geral do seu negócio e métricas operacionais em tempo real.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-6 gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl sm:text-4xl font-space font-extrabold tracking-tight text-white uppercase">
+              Dashboard
+            </h1>
+            <p className="text-xs text-gray-400 font-light leading-relaxed">
+              Visão geral do seu negócio e métricas operacionais em tempo real.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setIsProposalModalOpen(true)}
+            className="px-5 py-3 bg-[#CCFF00] text-black rounded text-xs font-mono font-extrabold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+          >
+            <Plus className="w-4 h-4" />
+            + NOVA PROPOSTA
+          </button>
         </div>
 
         {/* 8 Metric KPI Cards Grid (2 Rows of 4 Cards) */}
@@ -483,6 +606,7 @@ export default function AdminOverview() {
                     <th className="py-3.5 px-4 font-semibold">Cliente / Razão Social</th>
                     <th className="py-3.5 px-4 font-semibold">Documento & Contato</th>
                     <th className="py-3.5 px-4 font-semibold">Data Cadastro</th>
+                    <th className="py-3.5 px-4 font-semibold text-center">Etapas do Funil</th>
                     <th className="py-3.5 px-4 font-semibold">Status</th>
                     <th className="py-3.5 px-4 font-semibold text-right">Ações de Aprovação</th>
                   </tr>
@@ -497,6 +621,12 @@ export default function AdminOverview() {
                       ? (profile.cnpj || 'CNPJ não informado')
                       : (profile.cpf || 'CPF não informado')
                     const isUpdating = updatingId === profile.id
+                    const associatedBriefing = briefings.find((b: any) => b.client_id === profile.id)
+                    const hasConfirmedPayment = associatedBriefing?.status_briefing === 'pago' || associatedBriefing?.status_briefing === 'aprovado'
+                    const stepBriefing = associatedBriefing !== undefined
+                    const stepProposta = (associatedBriefing?.proposta_ia !== null && associatedBriefing?.proposta_ia !== undefined) || associatedBriefing?.status_briefing === 'proposta_enviada' || associatedBriefing?.status_briefing === 'pago' || associatedBriefing?.status_briefing === 'aprovado' || profile.status === 'ativo'
+                    const stepPagou = associatedBriefing?.status_briefing === 'pago' || associatedBriefing?.status_briefing === 'aprovado' || profile.status === 'ativo'
+                    const stepAtivado = profile.status === 'ativo'
 
                     return (
                       <tr key={profile.id} className="text-xs hover:bg-white/[0.02] transition-all duration-200">
@@ -533,9 +663,76 @@ export default function AdminOverview() {
                         </td>
 
                         {/* Data de Cadastro */}
-                        <td className="py-4 px-4 font-mono text-gray-400 text-[10px]">
-                          {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'N/D'}
-                        </td>
+                         <td className="py-4 px-4 font-mono text-gray-400 text-[10px]">
+                           {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'N/D'}
+                         </td>
+ 
+                         {/* Etapas do Funil */}
+                         <td className="py-4 px-4 text-center">
+                           <div className="inline-flex items-center justify-center gap-3 font-mono text-[9px]">
+                             {/* 1. Enviou Briefing */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepBriefing
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepBriefing ? 'Briefing Enviado' : 'Aguardando Briefing'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepBriefing ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Briefing</span>
+                             </div>
+ 
+                             <span className="text-zinc-800 text-[8px] select-none">/</span>
+ 
+                             {/* 2. Recebe Proposta */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepProposta
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepProposta ? 'Proposta Gerada' : 'Aguardando Proposta'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepProposta ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Proposta</span>
+                             </div>
+ 
+                             <span className="text-zinc-800 text-[8px] select-none">/</span>
+ 
+                             {/* 3. Pagou */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepPagou
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepPagou ? 'Entrada Paga' : 'Aguardando Pagamento'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepPagou ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Pagou</span>
+                             </div>
+ 
+                             <span className="text-zinc-800 text-[8px] select-none">/</span>
+ 
+                             {/* 4. Gerou senha definitiva */}
+                             <div className="flex items-center gap-1">
+                               <span className={`p-1 rounded-full border transition-all ${
+                                 stepAtivado
+                                   ? 'bg-[#CCFF00]/10 border-[#CCFF00] text-[#CCFF00] font-bold shadow-[0_0_8px_rgba(204,255,0,0.3)]'
+                                   : 'bg-zinc-900 border-white/5 text-gray-600 opacity-20'
+                               }`} title={stepAtivado ? 'Acesso Ativado (Senha Gerada)' : 'Acesso Pendente'}>
+                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                 </svg>
+                               </span>
+                               <span className={`text-[8px] uppercase tracking-wider ${stepAtivado ? 'text-[#CCFF00] font-semibold' : 'text-gray-600 opacity-40'}`}>Senha</span>
+                             </div>
+                           </div>
+                         </td>
 
                         {/* Status com Estilo Tech-Luxo */}
                         <td className="py-4 px-4 font-mono">
@@ -562,19 +759,33 @@ export default function AdminOverview() {
                         {/* Botões de Ação em UPPERCASE */}
                         <td className="py-4 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {/* Botão APROVAR */}
-                            <button
-                              onClick={() => handleStatusChange(profile.id, 'ativo')}
-                              disabled={profile.status === 'ativo' || isUpdating}
-                              className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
-                                profile.status === 'ativo'
-                                  ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
-                                  : 'bg-brand-neon text-black hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:scale-105'
-                              }`}
-                            >
-                              {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                              APROVAR
-                            </button>
+                             {hasConfirmedPayment ? (
+                               <button
+                                 onClick={() => handleApproveClientAndContract(profile.id, associatedBriefing.id, associatedBriefing.project_id)}
+                                 disabled={profile.status === 'ativo' || isUpdating}
+                                 className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
+                                   profile.status === 'ativo'
+                                     ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
+                                     : 'bg-brand-neon text-black hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] hover:scale-105 shadow-[0_0_10px_rgba(204,255,0,0.2)] border border-brand-neon/30'
+                                 }`}
+                               >
+                                 {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                                 APROVAR CADASTRO E GERAR CONTRATO
+                               </button>
+                             ) : (
+                               <button
+                                 onClick={() => handleStatusChange(profile.id, 'ativo')}
+                                 disabled={profile.status === 'ativo' || isUpdating}
+                                 className={`px-3 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase transition-all duration-300 cursor-pointer flex items-center gap-1 ${
+                                   profile.status === 'ativo'
+                                     ? 'bg-zinc-800 text-gray-600 border border-zinc-700 cursor-not-allowed opacity-50'
+                                     : 'bg-brand-neon text-black hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:scale-105'
+                                 }`}
+                               >
+                                 {isUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                                 APROVAR
+                               </button>
+                             )}
 
                             {/* Botão RECUSAR */}
                             <button
@@ -665,7 +876,122 @@ export default function AdminOverview() {
           </div>
         </div>
 
+        {/* Supabase Proposals List Section */}
+        <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-6 sm:p-8 backdrop-blur-sm space-y-6 shadow-xl">
+          <div className="border-b border-white/5 pb-4">
+            <h2 className="font-space font-bold text-white text-sm uppercase tracking-wider flex items-center gap-2">
+              <FolderKanban className="w-4 h-4 text-brand-neon" />
+              PROPOSTAS E PROJETOS PERSONALIZADOS (SUPABASE)
+            </h2>
+            <p className="text-[10px] text-gray-400 font-mono mt-1">
+              Acompanhe propostas enviadas aos clientes e realize o aceite de faturas de entrada
+            </p>
+          </div>
+
+          {loadingProposals ? (
+            <div className="py-12 text-center space-y-3 bg-black/20 rounded border border-white/5 backdrop-blur-sm">
+              <Loader2 className="w-8 h-8 text-brand-neon animate-spin mx-auto" />
+              <p className="text-xs font-mono text-gray-400 uppercase tracking-widest">
+                CARREGANDO PROPOSTAS...
+              </p>
+            </div>
+          ) : proposals.length === 0 ? (
+            <div className="py-12 text-center space-y-3 bg-black/20 rounded border border-white/5 backdrop-blur-sm">
+              <FolderKanban className="w-10 h-10 text-gray-600 mx-auto" />
+              <p className="text-sm font-space font-bold text-gray-300 uppercase tracking-wider">
+                NENHUMA PROPOSTA CADASTRADA
+              </p>
+              <p className="text-xs text-gray-500 font-mono max-w-md mx-auto">
+                Clique em "+ NOVA PROPOSTA" no topo da página para enviar a primeira proposta comercial.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/5 text-[9px] font-mono text-gray-400 uppercase tracking-widest bg-white/[0.02]">
+                    <th className="py-4 px-4 font-semibold">Cliente</th>
+                    <th className="py-4 px-4 font-semibold">Projeto / Escopo</th>
+                    <th className="py-4 px-4 font-semibold">Setup</th>
+                    <th className="py-4 px-4 font-semibold">Mensalidade</th>
+                    <th className="py-4 px-4 font-semibold">Fase Atual</th>
+                    <th className="py-4 px-4 font-semibold text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.03]">
+                  {proposals.map((prop) => {
+                    const clientProfile = profiles.find(p => p.id === prop.client_id)
+                    const clientName = clientProfile 
+                      ? (clientProfile.razao_social || clientProfile.nome_completo || clientProfile.email) 
+                      : 'Carregando...'
+
+                    return (
+                      <tr key={prop.id} className="text-xs hover:bg-white/[0.01] transition-all duration-200">
+                        <td className="py-4 px-4 font-bold text-white uppercase">{clientName}</td>
+                        <td className="py-4 px-4 text-gray-300">
+                          <div className="font-semibold text-white uppercase">{prop.nome}</div>
+                          <div className="text-[10px] text-gray-500 font-sans max-w-xs truncate">{prop.descricao}</div>
+                        </td>
+                        <td className="py-4 px-4 font-mono text-white">
+                          {prop.valor_setup 
+                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(prop.valor_setup) 
+                            : 'R$ 0,00'}
+                        </td>
+                        <td className="py-4 px-4 font-mono text-[#CCFF00]">
+                          {prop.valor_mensalidade 
+                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(prop.valor_mensalidade) 
+                            : 'R$ 0,00'}
+                        </td>
+                        <td className="py-4 px-4 font-mono">
+                          {prop.fase_atual === 'proposta_pendente' && (
+                            <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded text-[9px] uppercase font-bold tracking-wider">
+                              PROPOSTA PENDENTE
+                            </span>
+                          )}
+                          {prop.fase_atual === 'proposta_enviada' && (
+                            <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2.5 py-1 rounded text-[9px] uppercase font-bold tracking-wider">
+                              PROPOSTA ENVIADA
+                            </span>
+                          )}
+                          {prop.fase_atual === 'em_desenvolvimento' && (
+                            <span className="bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30 px-2.5 py-1 rounded text-[9px] uppercase font-bold tracking-wider">
+                              EM DESENVOLVIMENTO
+                            </span>
+                          )}
+                          {!['proposta_pendente', 'proposta_enviada', 'em_desenvolvimento'].includes(prop.fase_atual) && (
+                            <span className="bg-white/5 border border-white/10 px-2.5 py-1 rounded text-[10px] uppercase text-gray-300 font-bold tracking-wider">
+                              {prop.fase_atual.toUpperCase().replace('_', ' ')}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          {['proposta_enviada', 'proposta_pendente'].includes(prop.fase_atual) && (
+                            <button
+                              onClick={() => handleAcceptProposal(prop.id)}
+                              disabled={updatingId !== null}
+                              className="px-3 py-1.5 bg-[#CCFF00] text-black text-[9px] font-mono tracking-wider font-bold rounded hover:shadow-[0_0_10px_rgba(204,255,0,0.3)] transition-all uppercase cursor-pointer disabled:opacity-50"
+                            >
+                              ACEITAR & PAGAR ENTRADA
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
       </main>
+
+      {/* Proposal Modal component */}
+      <ProposalModal
+        isOpen={isProposalModalOpen}
+        onClose={() => setIsProposalModalOpen(false)}
+        onSuccess={loadProposals}
+      />
 
       {/* Edit Status Modal (Glassmorphism Overlay) */}
       <AnimatePresence>

@@ -17,19 +17,16 @@ import {
   Terminal, 
   Loader2 
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { fetchProducts } from '../services/productService'
 import { productsData } from '../data/productsData'
-import AuthModal from '../pages/Auth/AuthModal'
 
 export default function ProductsSection() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   
-  // Controle do modal de contratação
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [selectedProductSlug, setSelectedProductSlug] = useState<string | undefined>(undefined)
+  const navigate = useNavigate()
 
   // Mapeador dinâmico de ícones da biblioteca lucide-react
   const getIconComponent = (iconName?: string | null) => {
@@ -191,22 +188,10 @@ export default function ProductsSection() {
 
                     {/* Preços Setup & Recorrência */}
                     <div className="flex gap-4 pt-4 border-t border-white/5 font-mono">
-                      <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded p-2.5 backdrop-blur-sm text-center">
-                        <span className="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Setup</span>
-                        <span className="text-sm font-bold text-white">
-                          {product.valor_setup > 0 ? (
-                            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_setup)}</span>
-                          ) : (
-                            <span>GRATUITO</span>
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded p-2.5 backdrop-blur-sm text-center">
-                        <span className="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Mensalidade</span>
-                        <span className="text-sm font-bold text-brand-neon">
-                          {product.valor_mensalidade > 0 
-                            ? `${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.valor_mensalidade)}/mês`
-                            : 'Isento'}
+                      <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded py-3 px-4 backdrop-blur-sm flex items-center justify-between">
+                        <span className="text-[9px] uppercase tracking-widest text-gray-500 font-semibold">VALOR DA SOLUÇÃO</span>
+                        <span className="text-[10px] uppercase tracking-wider font-extrabold text-[#CCFF00] bg-[#CCFF00]/10 border border-[#CCFF00]/20 px-2.5 py-1 rounded">
+                          {product.slug === 'sites-institucionais' || product.slug === 'landing-pages' ? 'SOB CONSULTA' : 'SOB MEDIDA'}
                         </span>
                       </div>
                     </div>
@@ -214,13 +199,10 @@ export default function ProductsSection() {
 
                   <div className="pt-8 mt-auto flex flex-wrap gap-x-6 gap-y-2 items-center">
                     <button
-                      onClick={() => {
-                        setSelectedProductSlug(product.slug)
-                        setIsAuthModalOpen(true)
-                      }}
+                      onClick={() => navigate(`/solicitar-proposta?produto=${product.slug}`)}
                       className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300 cursor-pointer"
                     >
-                      ADQUIRIR PRODUTO
+                      SOLICITAR PROPOSTA
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </button>
                     <Link
@@ -239,12 +221,6 @@ export default function ProductsSection() {
 
       </div>
 
-      {/* Modal de checkout de produto */}
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-        initialProductSlug={selectedProductSlug} 
-      />
     </section>
   )
 }

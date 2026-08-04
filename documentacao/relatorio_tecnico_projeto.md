@@ -68,27 +68,23 @@ O **Automation Test** é um ecossistema digital corporativo estruturado sob a id
 | **Cliente Supabase & Profile Services** | 🟢 **Concluído** | CRUD de perfis e funções de consulta integradas |
 | **Supabase Auth & RLS Guard** | 🟡 **Em Andamento** | Integração dos formulários de login/cadastro e rotas protegidas |
 | **Modelagem de Projetos e Faturas** | 🔵 **Planejado** | Migração dos dados de faturamento (MRR) para tabelas do Supabase |
-| **Supabase Realtime** | 🔵 **Planejado** | Sincronização via WebSockets para atualizações sem refresh |
 
 ---
 
 ## 5. Próximos Passos (Roadmap de Execução)
 
-### 📌 Passo 1: Autenticação de Usuários (`Supabase Auth`)
-- Conectar os formulários de [`Login.tsx`](file:///f:/automation-test/src/pages/Login.tsx) para realizar cadastro com `supabase.auth.signUp()` e autenticação com `supabase.auth.signInWithPassword()`.
-- Criar trigger/função de disparo para popular a tabela `profiles` automaticamente com status `'pendente'` no momento do cadastro.
-- Implementar o componente `ProtectedRoute` no [`App.tsx`](file:///f:/automation-test/src/App.tsx) garantindo acesso restrito às rotas `/dashboard/*` e `/admin`.
-
-### 📌 Passo 2: Políticas RLS Estritas no Supabase
-- Definir políticas SQL na tabela `profiles` garantindo a **RN-004** (clientes lêem e alteram apenas seu próprio perfil, enquanto administradores possuem acesso irrestrito).
-
-### 📌 Passo 3: Migração de Projetos e Mensalidades ERP para Tabelas Relacionais
-- Criar as tabelas `projects` e `invoices` no Supabase PostgreSQL.
-- Substituir os dados estáticos em [`Overview.tsx`](file:///f:/automation-test/src/pages/Dashboard/Overview.tsx) e [`ProjectDetail.tsx`](file:///f:/automation-test/src/pages/Dashboard/ProjectDetail.tsx) por chamadas dinâmicas.
-- Desenvolver os módulos atualmente sob placeholder: *Documentos*, *Tickets & Suporte* e *Faturas & Cobranças*.
-
-### 📌 Passo 4: Sincronização em Tempo Real (`Supabase Realtime`)
+### 📌 Passo 1: Sincronização em Tempo Real (`Supabase Realtime`)
 - Adicionar subscriptions de escuta em tempo real no [`AdminOverview.tsx`](file:///f:/automation-test/src/pages/Admin/AdminOverview.tsx) para que novos cadastros de clientes surjam instantaneamente no painel admin sem necessidade de recarregar a tela.
 
-### 📌 Passo 5: Suíte de Testes e Homologação Final
+### 📌 Passo 2: Suíte de Testes e Homologação Final
 - Realizar validação dos fluxos E2E de cadastro de cliente PF/PJ, aprovação do admin e liberação de acesso ao dashboard.
+
+---
+
+## 6. Fluxo de Onboarding Técnico com IA & Funil Admin
+A plataforma agora conta com a esteira automatizada completa de onboarding:
+1. **Formulário Wizard Unificado (`/solicitar-proposta`)**: Captação do lead estruturada em 4 passos (Identificação, Marca, Métricas, Requisitos de Escopo) salvando perfil, projeto e briefing em uma única submissão, com carregamento dinâmico de produtos ativos.
+2. **Briefing Público Resiliente (`/briefing/:projectId`)**: Preenchimento complementar com verificação contra IDs de projetos inválidos e tratamento de fallback `project_id: null` para evitar violações da restrição `FK briefings_project_id_fkey` no Supabase.
+3. **Integração n8n/IA**: Envio automatizado para o webhook do n8n para precificação com retorno do escopo dinâmico e upsells no portal (`/proposta/:briefingId`).
+4. **Linha de Acompanhamento Reativa (Funil) & Alinhamento CHECK**: O Administrador monitora o onboarding reativamente em `/admin` através de um Stepper horizontal com ícones. Os status foram alinhados às restrições estritas `CHECK` da tabela `briefings` (`'pendente'`, `'em_analise_ia'`, `'proposta_enviada'`, `'pago'`, `'aprovado'`).
+5. **Proteção Operacional**: Double-click guards em nível de estado bloqueiam submissões simultâneas acidentais.

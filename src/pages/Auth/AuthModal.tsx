@@ -124,9 +124,9 @@ export default function AuthModal({ isOpen, onClose, initialProductSlug }: AuthM
           produto_contratado_id: selectedProduct.id,
           produto_contratado_nome: selectedProduct.nome,
           produto_contratado_slug: selectedProduct.slug,
-          setup_total: selectedProduct.valor_implementacao,
-          entrada_obrigatoria: selectedProduct.valor_implementacao * 0.5,
-          mensalidade: selectedProduct.valor_mensalidade,
+          setup_total: selectedProduct.preco_setup || selectedProduct.valor_implementacao || 0,
+          entrada_obrigatoria: (selectedProduct.preco_setup || selectedProduct.valor_implementacao || 0) * 0.5,
+          mensalidade: selectedProduct.preco_mensal || selectedProduct.valor_mensalidade || 0,
           data_solicitacao: new Date().toISOString()
         }
       }
@@ -145,9 +145,9 @@ export default function AuthModal({ isOpen, onClose, initialProductSlug }: AuthM
   }
 
   // Preços
-  const setupTotal = selectedProduct?.valor_implementacao || 0
+  const setupTotal = selectedProduct ? (selectedProduct.preco_setup || selectedProduct.valor_implementacao || 0) : 0
   const entradaObrigatoria = setupTotal * 0.5
-  const mensalidade = selectedProduct?.valor_mensalidade || 0
+  const mensalidade = selectedProduct ? (selectedProduct.preco_mensal || selectedProduct.valor_mensalidade || 0) : 0
 
   if (!isOpen) return null
 

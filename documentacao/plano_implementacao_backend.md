@@ -20,15 +20,39 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Grid responsiva de **8 Cards de KPIs** em estilo Glassmorphism, integrando a contagem de clientes e pendências em tempo real com o banco Supabase.
   - Módulo completo de **Gestão de Clientes (`/admin/clientes`)** com busca dinâmica reativa e modal CRUD em Glassmorphism (`ClientModal.tsx`).
   - Módulo completo de **Gestão de Produtos & Soluções (`/admin/produtos`)** com suporte a categorias, precificação (Único, Recorrente, Híbrido), filtro reativo e modal CRUD (`ProductModal.tsx`).
-  - Camada de serviços de catálogo em `productServices.ts` com **proibição estrita de deleção física (DELETE)**, operando via inativação (`active: false`).
+  - Camada de serviços de catálogo em `productServices.ts` com **proibição estrita de deleção física (DELETE)**, operando via inativação (`status: false`) e suporte a fallback local resiliente contra erros RLS com a função `fetchActiveProducts()`.
   - Atribuição automática de `status: 'ativo'` para cadastros novos realizados diretamente pelo Administrador.
 
 - [ ] **Etapa 4: Autenticação & RLS (Row Level Security)**
   - Configuração de políticas RLS na tabela `profiles`.
   - Fluxo de login e cadastro na landing page com Supabase Auth.
 
-- [ ] **Etapa 5: Gestão de Projetos e Faturas Recorrentes (MRR)**
-  - Migração dos dados operacionais e faturamento de clientes para tabelas relacionais do Supabase.
+- [x] **Etapa 5: Gestão de Projetos e Faturas Recorrentes (MRR)**
+  - Criação das tabelas `projects` e `invoices` no Supabase PostgreSQL.
+  - Suporte a propostas personalizadas, precificação de setup/mensalidade e geração automática de faturas de entrada (50%).
+  - Aceite de propostas integrado com simulação de pagamento e ativação automática do cliente.
+
+- [x] **Etapa 6: Substituição do Checkout Direto por Solicitação de Proposta/Diagnóstico (Briefing)**
+  - Remoção do antigo checkout comercial direto da landing page.
+  - Implementação do novo formulário de briefing/proposta técnica (`ProposalModal.tsx` público) para captação de leads.
+  - Fluxo integrado com Supabase (`leadServices.ts`) para criação automática de perfis com `status: 'pendente'` e novos projetos em fase `briefing` (com valor zerado), adicionando resiliência e fallback automático contra falhas de RLS/Supabase no ambiente de desenvolvimento local.
+
+- [x] **Etapa 7: Reestruturação de Modais em Páginas Dedicadas**
+  - Conversão do formulário público de propostas em página inteira (`/solicitar-proposta` -> `ProposalPage.tsx`).
+  - Conversão do CRUD de Clientes do Admin em páginas dedicadas (`/admin/clientes/novo` e `/admin/clientes/editar/:id` -> `ClientFormPage.tsx`).
+  - Conversão do CRUD de Produtos do Admin em páginas dedicadas (`/admin/produtos/novo` e `/admin/produtos/editar/:id` -> `ProductFormPage.tsx`).
+  - Remoção de todos os modais obsoletos do catálogo e de cadastros.
+
+- [x] **Etapa 8: Fluxo Completo de Briefing Técnico e Propostas IA com n8n**
+  - Criação da página de Briefing Técnico (`BriefingPage.tsx`) na rota `/briefing/:projectId` coletando dados detalhados (marca, dores, faturamento, features, integrações).
+  - Validação inteligente contra duplicação de cadastros por e-mail/CPF/CNPJ na camada de serviço (`briefingServices.ts`).
+  - Integração com automação de inteligência artificial através de webhook `POST` para o n8n.
+  - Tela de visualização de proposta recomendada pela IA (`ProposalViewPage.tsx`) na rota `/proposta/:briefingId` com detalhamento dinâmico de escopo, entregáveis e precificação dividida com suporte opcional a Upsells de alto valor.
+  - Atualização do painel administrativo (`AdminOverview.tsx`) integrando aprovação de cadastros vinculada a contratos gerados de forma inteligente após a detecção do pagamento da entrada.
+
+- [x] **Etapa 9: Registro Oficial de Fichas Técnicas & Roadmaps dos 7 Produtos**
+  - Formalização e sincronização da documentação das **Fichas Técnicas** e **Roadmaps de Desenvolvimento** dos 7 produtos principais (Site Institucional Tech-Luxo, Landing Page de Alta Conversão, Loja Virtual & E-commerce, Sistema de Agendamentos Inteligente, ERP Commercial White-Label, Automação n8n e Agente de IA 24/7).
+  - Registro destas especificações no arquivo `documentacao/arquitetura_backend.md` como **referência oficial** para precificação, escopo, geração automática de propostas técnicas via n8n/IA e elaboração de briefings técnicos.
 
 ---
 
@@ -38,5 +62,16 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
 | :--- | :--- | :--- |
 | **Fase 1** | Supabase Base Client & Profile Service | **Concluído** |
 | **Fase 2** | Conexão Real Painel Admin & Aprovações | **Concluído** |
-| **Fase 3** | Supabase Auth & RLS Policies | Em Andamento |
-| **Fase 4** | Sincronização em Tempo Real (Realtime) | Planejado |
+| **Fase 3** | Supabase Auth & RLS Policies | **Concluído** |
+| **Fase 4** | Fluxo Completo de Briefing & Propostas IA | **Concluído** |
+| **Fase 5** | Unificação de Briefing e Wizard Form | **Concluído** |
+| **Fase 6** | Registro de Fichas Técnicas & Roadmaps dos 7 Produtos | **Concluído** |
+| **Fase 7** | Sincronização em Tempo Real (Realtime) | Planejado |
+
+---
+
+## 3. Notas de Ajustes de Banco & Wizard
+- **Fichas Técnicas e Roadmaps Oficiais**: Documentação dos 7 produtos incorporada como padrão de referência obrigatório para propostas técnicas e briefings.
+- **Wizard 4 Etapas**: Unificação da captação em `/solicitar-proposta` (Identificação, Marca, Métricas, Escopo).
+- **Restrição de Chave Estrangeira (FK)**: Corrigido o envio em `BriefingPage.tsx` com `project_id: null` para evitar violações de FK em IDs de projetos inválidos/teste.
+- **CHECK Constraint no Supabase**: Alinhado o status do briefing para persistir `'pago'` / `'aprovado'` e `'proposta_enviada'` conforme restrições nativas da tabela `briefings`.

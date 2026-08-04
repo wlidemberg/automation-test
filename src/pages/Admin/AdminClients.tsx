@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { 
   Users, 
   Search, 
@@ -16,14 +17,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   fetchAllProfiles, 
-  updateProfileStatus, 
-  createAdminClient, 
-  updateClientProfile 
+  updateProfileStatus 
 } from '../../services/profileServices'
 import type { Profile, UserStatus } from '../../types/database'
 import AdminSidebar from '../../components/Admin/AdminSidebar'
 import AdminHeader from '../../components/Admin/AdminHeader'
-import ClientModal from '../../components/Admin/ClientModal'
+import ProposalModal from '../../components/Admin/ProposalModal'
 
 export default function AdminClients() {
   // Sidebar State
@@ -36,10 +35,10 @@ export default function AdminClients() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
+  const navigate = useNavigate()
+
   // Modal State
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-  const [editingClient, setEditingClient] = useState<Profile | null>(null)
-  const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState<boolean>(false)
 
   // Load profiles from Supabase
   const loadProfiles = async () => {
@@ -112,49 +111,13 @@ export default function AdminClients() {
     }
   }
 
-  // Handle Create / Edit Save
-  const handleSaveClient = async (clientData: Partial<Profile>) => {
-    setIsSaving(true)
-    try {
-      if (editingClient?.id) {
-        // Edit existing client
-        const updated = await updateClientProfile(editingClient.id, clientData)
-        if (updated) {
-          showToast('DADOS DO CLIENTE ATUALIZADOS COM SUCESSO!', 'success')
-          setIsModalOpen(false)
-          setEditingClient(null)
-          await loadProfiles()
-        } else {
-          showToast('ERRO AO ATUALIZAR DADOS DO CLIENTE.', 'error')
-        }
-      } else {
-        // Create new client by Admin
-        const created = await createAdminClient(clientData)
-        if (created) {
-          showToast('NOVO CLIENTE CADASTRADO E ATIVADO COM SUCESSO!', 'success')
-          setIsModalOpen(false)
-          setEditingClient(null)
-          await loadProfiles()
-        } else {
-          showToast('ERRO AO CADASTRAR NOVO CLIENTE NO BANCO DE DADOS.', 'error')
-        }
-      }
-    } catch (err) {
-      console.error(err)
-      showToast('FALHA AO PROCESSAR OPERAÇÃO DE CADASTRO.', 'error')
-    } finally {
-      setIsSaving(false)
-    }
+  // Redirect to Dedicated Pages
+  const handleOpenCreatePage = () => {
+    navigate('/admin/clientes/novo')
   }
 
-  const handleOpenCreateModal = () => {
-    setEditingClient(null)
-    setIsModalOpen(true)
-  }
-
-  const handleOpenEditModal = (client: Profile) => {
-    setEditingClient(client)
-    setIsModalOpen(true)
+  const handleOpenEditPage = (client: Profile) => {
+    navigate(`/admin/clientes/editar/${client.id}`)
   }
 
   return (
@@ -216,14 +179,22 @@ export default function AdminClients() {
             </p>
           </div>
 
-          {/* Action Button: + NOVO CLIENTE */}
-          <button
-            onClick={handleOpenCreateModal}
-            className="px-5 py-3 bg-brand-neon text-black rounded text-xs font-mono font-extrabold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4" />
-            + NOVO CLIENTE
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setIsProposalModalOpen(true)}
+              className="px-5 py-3 border border-[#CCFF00] text-[#CCFF00] hover:bg-[#CCFF00]/10 rounded text-xs font-mono font-extrabold tracking-wider transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4" />
+              + NOVA PROPOSTA
+            </button>
+            <button
+              onClick={handleOpenCreatePage}
+              className="px-5 py-3 bg-brand-neon text-black rounded text-xs font-mono font-extrabold tracking-wider hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300 uppercase flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4" />
+              + NOVO CLIENTE
+            </button>
+          </div>
         </div>
 
         {/* Search Bar Input (Glassmorphism) */}
@@ -389,7 +360,7 @@ export default function AdminClients() {
                             
                             {/* Botão EDITAR */}
                             <button
-                              onClick={() => handleOpenEditModal(profile)}
+                              onClick={() => handleOpenEditPage(profile)}
                               disabled={isUpdating}
                               className="px-2.5 py-1.5 text-[9px] font-mono font-bold tracking-wider rounded uppercase bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1"
                               title="Editar dados cadastrais"
@@ -449,13 +420,12 @@ export default function AdminClients() {
         </div>
       </main>
 
-      {/* Modal CRUD Tech-Luxo */}
-      <ClientModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveClient}
-        initialData={editingClient}
-        isSaving={isSaving}
+
+
+      {/* Proposal Modal component */}
+      <ProposalModal
+        isOpen={isProposalModalOpen}
+        onClose={() => setIsProposalModalOpen(false)}
       />
     </div>
   )

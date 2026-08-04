@@ -196,6 +196,9 @@ O Painel Administrativo adota uma navegação por **Sidebar Retrátil** estrutur
 - **`Ativo`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30`
 - **`Inativo`**: `bg-zinc-800 text-gray-400 border border-zinc-700`
 
+### Resiliência e Fallback do Catálogo
+Em cenários de indisponibilidade do banco de dados, falha de rede ou restrições de RLS (Row Level Security), o catálogo de produtos utiliza a função `fetchActiveProducts()` para realizar uma captura suave do erro operacional, efetuando o fallback de forma transparente para a lista estática local de `productsData.ts`, mantendo a integridade visual da interface de vendas.
+
 ---
 
 ## 9. Componente de Resumo Financeiro no Checkout
@@ -231,4 +234,57 @@ Para assegurar a legibilidade e usabilidade de modais volumosos (como o checkout
 *   **Botão de Fechar Absoluto (Fixo e Não-Rolável)**:
     *   Declarado como o primeiro filho direto do Card do modal (fora das colunas) para que nunca suma da viewport ao realizar scroll.
     *   **Estilo**: Círculo de alto contraste (`bg-zinc-900/90 hover:bg-zinc-800`), borda cinza proeminente (`border border-zinc-700/60`), preenchimento confortável (`p-2`) e ícone `X` (`w-5 h-5`) com transição suave (`text-zinc-400 hover:text-white transition-all`).
+
+---
+
+## 11. Modais de Propostas Comerciais (Admin vs Público) e Badges de Status de Projetos
+
+### Modal de Envio de Proposta Comercial (`Admin/ProposalModal.tsx`)
+- **Estilo Geral**: Construído seguindo o padrão de Glassmorphism com fundo `bg-zinc-900/90 backdrop-blur-lg` e linha superior fina gradiente neon (`bg-gradient-to-r from-transparent via-[#CCFF00]/60 to-transparent`).
+- **Campos e Seletores**: Dropdowns e campos de input integrados de forma limpa, com bordas finas contrastantes `border border-white/10` e foco interativo em verde neon `focus:border-[#CCFF00]`.
+- **Botão de Envio**: Em destaque total e em caixa alta (`ENVIAR PROPOSTA AO CLIENTE`) estilizado com cor verde neon pura (`bg-[#CCFF00] text-black font-bold`).
+
+### Página Dedicada de Solicitação de Proposta Técnica/Briefing Público (`pages/ProposalPage.tsx`)
+- **Substituição do Checkout**: Substitui por completo o antigo modal de checkout direto (`AuthModal` público) da landing page por uma rota dedicada (`/solicitar-proposta`).
+- **Visual**: Grid responsiva com painel esquerdo informativo sobre a Automation Test e painel direito em Glassmorphism contendo o formulário de captação de briefing.
+- **Campos**: Alternador dinâmico de tipo de pessoa (PF/PJ), nome/razão social, e-mail corporativo, telefone/WhatsApp, seletor de solução e campo de descrição das necessidades.
+- **Botão**: Caixa alta (`ENVIAR BRIEFING DE PROPOSTA`) em verde neon com brilho no hover.
+
+### Badges de Fases e Status de Projetos (`ProjectPhase`)
+- **`briefing`**: `bg-zinc-800 text-gray-400 border border-zinc-700` (Cinza Briefing).
+- **`proposta_pendente`**: `bg-amber-500/10 text-amber-400 border border-amber-500/20` (Amarelo Alerta).
+- **`proposta_enviada`**: `bg-cyan-500/10 text-cyan-400 border border-cyan-500/20` (Azul Tech).
+- **`em_desenvolvimento`**: `bg-[#a3e635]/10 text-[#a3e635] border border-[#a3e635]/30` (Verde Neon).
+
+---
+
+## 12. Padrão de Formulários de Página Inteira (Tech-Luxo)
+
+Com a substituição de modais por páginas dedicadas, os formulários do Admin e Públicos seguem os seguintes padrões visuais de alta fidelidade:
+
+- **Breadcrumbs Discretos**: No topo de cada página administrativa, exibe-se a trilha de navegação em fonte mono em escala micro (`text-[10px] font-mono tracking-widest text-gray-500 uppercase`) para orientar a navegação e a hierarquia espacial.
+- **Estruturação em Seções/Blocos**: Os formulários volumosos são divididos em cartões de Glassmorphism independentes (`bg-brand-gray/90 border border-brand-gray shadow-xl rounded-lg p-6 sm:p-8`), com uma linha de destaque superior em gradiente neon.
+- **Grids Responsivas**: Agrupamento lógico de campos em layouts flexíveis (`grid grid-cols-1 sm:grid-cols-12` ou `sm:grid-cols-3 gap-5`) que se adaptam perfeitamente a dispositivos móveis e desktops de alta resolução.
+- **Ações de Formulário**: Botões de ação em UPPERCASE (`SALVAR CLIENTE`, `SALVAR PRODUTO`, `CANCELAR`) que usam fonte mono e sombra de brilho (glow) em verde neon (`bg-brand-neon`) sob foco/hover.
+
+---
+
+## 13. Especificações Visuais do Fluxo de Briefing & Propostas IA
+
+As novas interfaces dedicadas ao fluxo de briefing e propostas comerciais utilizam as diretrizes Tech-Luxo para manter a coerência de alta fidelidade visual:
+
+### Página de Briefing do Cliente (`pages/BriefingPage.tsx`)
+* **Layout**: Centrado em formulário estruturado de Glassmorphism com fundos `bg-brand-gray/90` e contorno de `1px` em `border-brand-gray`. Glow superior em gradiente neon em cada bloco do formulário.
+* **Componentes**:
+  - *Seletores de Cor Hexadecimal*: Inputs nativos de paleta integrados de forma sutil com inputs de texto mono.
+  - *Funcionalidades e Integrações*: Renderizados em grids com botões interativos de seleção dupla, apresentando bordas verdes neon (`border-brand-neon`) e preenchimento leve (`bg-brand-neon/10`) quando ativos.
+  - *Botão de Envio*: Caixa alta (`ENVIAR BRIEFING PARA ANÁLISE IA`) estilizada em cor neon sólida (`bg-brand-neon text-black`) com efeito de sombra glow no foco.
+
+### Página de Visualização de Proposta IA (`pages/ProposalViewPage.tsx`)
+* **Layout**: Apresentação de dados em cascata de blocos glassmorphism.
+* **Componentes**:
+  - *Aguarde da IA*: Loader de rotação contínua e texto em fonte mono sinalizando a análise automatizada. Botão secundário de simulação de retorno em fonte mono.
+  - *Bloco de Proposta*: Escopo estruturado e entregáveis mapeados individualmente com ícones de raio (`Zap`) em verde neon.
+  - *Seletor de Upsells*: Cards clicáveis que calculam dinamicamente a precificação total e o valor da entrada de 50% em tempo real.
+  - *Botão de Pagamento*: Caixa alta (`EFETUAR PAGAMENTO DA ENTRADA (50%)`) de largura cheia com destaque verde neon e glow de alta tecnologia.
 

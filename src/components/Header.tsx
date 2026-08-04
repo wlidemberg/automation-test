@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Terminal, Menu, X, ArrowUpRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 // Custom SVG Brand Icons since Lucide v0.400+ removed them
 const GithubIcon = () => (
@@ -28,6 +28,7 @@ const InstagramIcon = () => (
 )
 
 export default function Header() {
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
 
   const navLinks = [
@@ -66,18 +67,18 @@ export default function Header() {
 
         {/* Desktop CTA Button (Right) */}
         <div className="hidden md:flex items-center">
-          <motion.a
+          <motion.button
             whileHover={{ 
               scale: 1.02, 
               boxShadow: "0 0 15px rgba(204, 255, 0, 0.4)" 
             }}
             whileTap={{ scale: 0.98 }}
-            href="/#contato"
-            className="px-5 py-2.5 bg-transparent border border-brand-neon text-brand-neon font-medium rounded text-sm flex items-center gap-2 transition-shadow duration-300"
+            onClick={() => navigate('/solicitar-proposta')}
+            className="px-5 py-2.5 bg-transparent border border-brand-neon text-brand-neon font-medium rounded text-sm flex items-center gap-2 transition-shadow duration-300 cursor-pointer"
           >
             Solicitar Orçamento
             <ArrowUpRight className="w-4 h-4" />
-          </motion.a>
+          </motion.button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -114,13 +115,15 @@ export default function Header() {
                 ))}
               </nav>
               <div className="pt-4 flex flex-col gap-6">
-                <a
-                  href="/#contato"
-                  onClick={() => setIsOpen(false)}
-                  className="w-full text-center py-3 bg-brand-neon text-black font-semibold rounded text-sm hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-shadow duration-300"
+                <button
+                  onClick={() => {
+                    setIsOpen(false)
+                    navigate('/solicitar-proposta')
+                  }}
+                  className="w-full text-center py-3 bg-brand-neon text-black font-semibold rounded text-sm hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-shadow duration-300 cursor-pointer"
                 >
                   Solicitar Orçamento
-                </a>
+                </button>
                 
                 {/* Mobile Socials */}
                 <div className="flex justify-center gap-6 text-gray-400">

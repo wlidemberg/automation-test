@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { productsData } from '../data/productsData';
 import type { Product } from '../types/database';
 
 /**
@@ -175,11 +176,36 @@ export const toggleProductStatus = async (
   return updateProduct(id, { status: !currentStatus });
 };
 
+export async function fetchActiveProducts(): Promise<Partial<Product>[]> {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('status', true)
+      .order('nome', { ascending: true });
+
+    if (error) {
+      console.warn('Aviso: Erro ao buscar produtos do Supabase (usando fallback local):', error.message);
+      return productsData as unknown as Partial<Product>[];
+    }
+
+    if (!data || data.length === 0) {
+      return productsData as unknown as Partial<Product>[];
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Falha na busca de produtos:', err);
+    return productsData as unknown as Partial<Product>[];
+  }
+}
+
 export const productServices = {
   fetchAllProducts,
   createProduct,
   updateProduct,
   toggleProductStatus,
+  fetchActiveProducts,
 };
 
 export default productServices;
