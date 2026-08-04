@@ -435,22 +435,99 @@ export const productsData: Product[] = [
   }
 ]
 
-// Mapeamento de slugs legados/alternativos para garantir busca resiliente
+// Mapeamento amplo e resiliente de aliases e abreviações de URLs para garantir busca sem erros
 const slugAliases: Record<string, string> = {
-  'sites-institucionais': 'site-institucional',
-  'landing-pages': 'landing-page',
-  'lojas-virtuais': 'ecommerce',
-  'agendamentos': 'agendamento-inteligente',
-  'erp-saas': 'erp-commercial',
-  'automacoes': 'automacao-n8n',
+  // Agente de IA 24/7
+  'agente-ia': 'agente-ia-247',
+  'agente-ia-247': 'agente-ia-247',
   'agentes-de-ia-para-atendimento': 'agente-ia-247',
-  'agentes-de-ia-especificos': 'agente-ia-247'
+  'agentes-de-ia-especificos': 'agente-ia-247',
+  'agente-de-ia': 'agente-ia-247',
+  'agentes-de-ia': 'agente-ia-247',
+  'ia-247': 'agente-ia-247',
+  'ia': 'agente-ia-247',
+
+  // Site Institucional
+  'site-institucional': 'site-institucional',
+  'sites-institucionais': 'site-institucional',
+  'site': 'site-institucional',
+  'sites': 'site-institucional',
+  'site-institucionais': 'site-institucional',
+
+  // Landing Page
+  'landing-page': 'landing-page',
+  'landing-pages': 'landing-page',
+  'landing': 'landing-page',
+  'landings': 'landing-page',
+
+  // E-Commerce
+  'ecommerce': 'ecommerce',
+  'e-commerce': 'ecommerce',
+  'lojas-virtuais': 'ecommerce',
+  'loja-virtual': 'ecommerce',
+  'loja': 'ecommerce',
+  'lojas': 'ecommerce',
+
+  // Sistema de Agendamento Inteligente
+  'agendamento-inteligente': 'agendamento-inteligente',
+  'agendamentos': 'agendamento-inteligente',
+  'agendamento': 'agendamento-inteligente',
+  'agendamento-online': 'agendamento-inteligente',
+
+  // ERP Commercial SaaS
+  'erp-commercial': 'erp-commercial',
+  'erp-saas': 'erp-commercial',
+  'erp': 'erp-commercial',
+  'sistemas-erp': 'erp-commercial',
+  'erp-comercial': 'erp-commercial',
+
+  // Automação de Processos com n8n
+  'automacao-n8n': 'automacao-n8n',
+  'automacoes': 'automacao-n8n',
+  'automacao': 'automacao-n8n',
+  'n8n': 'automacao-n8n',
+  'automacao-de-processos': 'automacao-n8n'
 }
 
 /**
- * Busca dados locais de produto pelo slug (suporta slugs exatos ou aliases legados)
+ * Busca dados locais de produto pelo slug com busca inteligente em 3 estágios
  */
 export function getLocalProductBySlug(slug: string): Product | undefined {
-  const targetSlug = slugAliases[slug] || slug
-  return productsData.find(p => p.slug === targetSlug)
+  if (!slug) return undefined
+  const normalized = slug.toLowerCase().trim()
+
+  // Estágio 1: Match direto pelo slug original ou pelo mapeador estrito de aliases
+  const targetSlug = slugAliases[normalized] || normalized
+  const exact = productsData.find(p => p.slug === targetSlug)
+  if (exact) return exact
+
+  // Estágio 2: Busca por palavras-chave centrais na URL digitada pelo usuário
+  if (normalized.includes('ia') || normalized.includes('agente') || normalized.includes('bot')) {
+    return productsData.find(p => p.slug === 'agente-ia-247')
+  }
+  if (normalized.includes('site')) {
+    return productsData.find(p => p.slug === 'site-institucional')
+  }
+  if (normalized.includes('landing')) {
+    return productsData.find(p => p.slug === 'landing-page')
+  }
+  if (normalized.includes('ecom') || normalized.includes('loja')) {
+    return productsData.find(p => p.slug === 'ecommerce')
+  }
+  if (normalized.includes('agend')) {
+    return productsData.find(p => p.slug === 'agendamento-inteligente')
+  }
+  if (normalized.includes('erp') || normalized.includes('saas')) {
+    return productsData.find(p => p.slug === 'erp-commercial')
+  }
+  if (normalized.includes('auto') || normalized.includes('n8n')) {
+    return productsData.find(p => p.slug === 'automacao-n8n')
+  }
+
+  // Estágio 3: Busca por inclusão parcial em qualquer slug ou id do produto
+  return productsData.find(p => 
+    p.slug.includes(normalized) || 
+    normalized.includes(p.slug) ||
+    p.id.includes(normalized)
+  )
 }

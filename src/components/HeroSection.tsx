@@ -31,7 +31,7 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[calc(100vh-80px)] w-full flex flex-col items-center justify-center bg-brand-dark px-6 overflow-hidden">
-      
+
       {/* Interactive Constellation Particle Background */}
       <ParticlesBackground />
 
@@ -48,7 +48,7 @@ export default function HeroSection() {
         className="relative z-10 max-w-5xl mx-auto flex flex-col items-center text-center space-y-8"
       >
         {/* Micro-Mono Subtitle */}
-        <motion.div 
+        <motion.div
           variants={itemVariants}
           className="inline-flex items-center gap-2 bg-brand-gray/80 border border-brand-gray px-4 py-2 rounded-full backdrop-blur-sm"
         >
@@ -59,11 +59,11 @@ export default function HeroSection() {
         </motion.div>
 
         {/* Monumental Title */}
-        <motion.h1 
+        <motion.h1
           variants={itemVariants}
           className="text-4xl sm:text-6xl md:text-8xl font-sans font-extrabold tracking-tight leading-[1.05] text-white flex flex-col"
         >
-          <span>DESENVOLVEMOS SITES</span>
+          <span>DESENVOLVEMOS PROJETOS</span>
           <span className="text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.35)] [text-stroke:1px_rgba(255,255,255,0.35)]">
             QUE GERAM
           </span>
@@ -73,7 +73,7 @@ export default function HeroSection() {
         </motion.h1>
 
         {/* Supporting Text */}
-        <motion.p 
+        <motion.p
           variants={itemVariants}
           className="font-sans text-gray-400 text-base sm:text-xl max-w-2xl mx-auto font-light leading-relaxed"
         >
@@ -81,14 +81,14 @@ export default function HeroSection() {
         </motion.p>
 
         {/* Call to Action Buttons */}
-        <motion.div 
+        <motion.div
           variants={itemVariants}
           className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4 w-full sm:w-auto"
         >
           <motion.a
-            whileHover={{ 
+            whileHover={{
               scale: 1.03,
-              boxShadow: "0 0 25px rgba(204, 255, 0, 0.4)" 
+              boxShadow: "0 0 25px rgba(204, 255, 0, 0.4)"
             }}
             whileTap={{ scale: 0.98 }}
             href="#portfolio"
@@ -124,9 +124,9 @@ export default function HeroSection() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 0.6, y: 10 }}
-        transition={{ 
-          repeat: Infinity, 
-          repeatType: "reverse", 
+        transition={{
+          repeat: Infinity,
+          repeatType: "reverse",
           duration: 1.5,
           ease: "easeInOut",
           delay: 1.5
