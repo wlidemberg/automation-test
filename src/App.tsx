@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
-import ProductPage from './pages/ProductPage'
+import ProductDetailPage from './pages/ProductDetailPage'
 import Login from './pages/Login'
 import DashboardLayout from './layouts/DashboardLayout'
 import Overview from './pages/Dashboard/Overview'
@@ -50,7 +50,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/produtos/:slug" element={<ProductPage />} />
+          <Route path="/produtos/:slug" element={<ProductDetailPage />} />
           <Route path="/solicitar-proposta" element={<ProposalPage />} />
           <Route path="/briefing/:projectId" element={<BriefingPage />} />
           <Route path="/proposta/:briefingId" element={<ProposalViewPage />} />

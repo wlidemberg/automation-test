@@ -160,10 +160,11 @@ export default function ProductsSection() {
                 <motion.div
                   key={product.id || index}
                   variants={cardVariants}
-                  className="group bg-zinc-900/40 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:border-brand-neon/30 hover:bg-zinc-900/60 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden backdrop-blur-sm"
+                  onClick={() => navigate(`/produtos/${product.slug}`)}
+                  className="group bg-zinc-900/40 border border-white/10 p-8 rounded-lg flex flex-col justify-between hover:border-brand-neon/40 hover:bg-zinc-900/60 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden backdrop-blur-sm cursor-pointer"
                 >
                   {/* Visual card hover light effect */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-neon/[0.015] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-neon/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   <div className="space-y-6">
                     {/* Icon and badge */}
@@ -191,7 +192,7 @@ export default function ProductsSection() {
                       <div className="flex-1 bg-brand-gray/60 border border-white/5 rounded py-3 px-4 backdrop-blur-sm flex items-center justify-between">
                         <span className="text-[9px] uppercase tracking-widest text-gray-500 font-semibold">VALOR DA SOLUÇÃO</span>
                         <span className="text-[10px] uppercase tracking-wider font-extrabold text-[#CCFF00] bg-[#CCFF00]/10 border border-[#CCFF00]/20 px-2.5 py-1 rounded">
-                          {product.slug === 'sites-institucionais' || product.slug === 'landing-pages' ? 'SOB CONSULTA' : 'SOB MEDIDA'}
+                          {product.slug === 'site-institucional' || product.slug === 'landing-page' || product.slug === 'sites-institucionais' || product.slug === 'landing-pages' ? 'SOB CONSULTA' : 'SOB MEDIDA'}
                         </span>
                       </div>
                     </div>
@@ -199,17 +200,21 @@ export default function ProductsSection() {
 
                   <div className="pt-8 mt-auto flex flex-wrap gap-x-6 gap-y-2 items-center">
                     <button
-                      onClick={() => navigate(`/solicitar-proposta?produto=${product.slug}`)}
-                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 group-hover:text-brand-neon transition-colors duration-300 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/solicitar-proposta?produto=${product.slug}`)
+                      }}
+                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-400 hover:text-brand-neon transition-colors duration-300 cursor-pointer"
                     >
                       SOLICITAR PROPOSTA
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </button>
                     <Link
                       to={`/produtos/${product.slug}`}
-                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-gray-500 hover:text-white transition-colors duration-300"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-xs uppercase tracking-wider font-semibold text-brand-neon hover:text-white transition-colors duration-300"
                     >
-                      SABER MAIS
+                      VER DETALHES
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
