@@ -129,6 +129,22 @@ CREATE TABLE IF NOT EXISTS public.invoices (
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 7. TABELA LEADS
+CREATE TABLE IF NOT EXISTS public.leads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  produto_slug TEXT NOT NULL,
+  categoria_produto product_category NOT NULL,
+  razao_social_nome TEXT NOT NULL,
+  cpf_cnpj TEXT,
+  email TEXT NOT NULL,
+  telefone TEXT NOT NULL,
+  faturamento_mensal TEXT,
+  porte_empresa TEXT,
+  dores_principais TEXT NOT NULL,
+  dados_especificos_categoria JSONB DEFAULT '{}'::jsonb NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- ==============================================================================
 -- AUTOMATIC TRIGGER: CRIAÇÃO AUTOMÁTICA DE PERFIL AO REGISTRAR NO AUTH.USERS
 -- ==============================================================================
@@ -163,6 +179,7 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.briefings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
 
 -- Policy Profiles: Usuários leem seu próprio perfil; Admins leem tudo
 DROP POLICY IF EXISTS "Leitura de Perfis" ON public.profiles;
@@ -192,3 +209,12 @@ CREATE POLICY "Leitura de Briefings" ON public.briefings
 DROP POLICY IF EXISTS "Leitura de Faturas" ON public.invoices;
 CREATE POLICY "Leitura de Faturas" ON public.invoices
   FOR SELECT USING (client_id = auth.uid() OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- Policy Leads: Inserção pública permitida; Leitura restrita a Admins
+DROP POLICY IF EXISTS "Inserção pública de leads" ON public.leads;
+CREATE POLICY "Inserção pública de leads" ON public.leads
+  FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Leitura de leads para admins" ON public.leads;
+CREATE POLICY "Leitura de leads para admins" ON public.leads
+  FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));

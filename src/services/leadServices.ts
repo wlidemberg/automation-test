@@ -1,6 +1,19 @@
 import { supabase } from '../lib/supabase';
 import { createBriefing, triggerN8NBriefingWebhook } from './briefingServices';
 
+export interface LeadPayload {
+  produtoSlug: string;
+  categoriaProduto: 'design_web' | 'desenvolvimento' | 'erp_saas' | 'automacao' | 'ia';
+  razaoSocialNome: string;
+  cpfCnpj?: string;
+  email: string;
+  telefone: string;
+  faturamentoMensal?: string;
+  porteEmpresa?: string;
+  doresPrincipais: string;
+  dadosEspecificosCategoria: Record<string, any>;
+}
+
 export interface ProposalPayload {
   tipoPessoa: 'PF' | 'PJ';
   nomeRazao: string;
@@ -21,6 +34,62 @@ export interface ProposalPayload {
   integracoesNecessarias?: string[];
 }
 
+/**
+ * Insere um novo registro de lead na tabela public.leads no Supabase.
+ * Trata erros de inserção com mensagens amigáveis e exibe logs detalhados no console em modo DEV.
+ * Mantém suporte a RLS habilitado na tabela leads.
+ */
+export async function createLead(payload: LeadPayload) {
+  if (import.meta.env.DEV) {
+    console.log('[leadServices] Registrando novo lead:', payload);
+  }
+
+  try {
+    const cleanedCpfCnpj = payload.cpfCnpj ? payload.cpfCnpj.replace(/[^\d]/g, '') : null;
+
+    const record = {
+      produto_slug: payload.produtoSlug,
+      categoria_produto: payload.categoriaProduto,
+      razao_social_nome: payload.razaoSocialNome,
+      cpf_cnpj: cleanedCpfCnpj,
+      email: payload.email.trim().toLowerCase(),
+      telefone: payload.telefone.trim(),
+      faturamento_mensal: payload.faturamentoMensal || null,
+      porte_empresa: payload.porteEmpresa || null,
+      dores_principais: payload.doresPrincipais,
+      dados_especificos_categoria: payload.dadosEspecificosCategoria || {}
+    };
+
+    const { data, error } = await supabase
+      .from('leads')
+      .insert([record])
+      .select()
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) {
+        console.error('[leadServices] Erro de inserção na tabela leads:', error);
+      }
+      throw new Error(`Falha ao registrar seu interesse: ${error.message || 'Erro de conexão com o banco de dados.'}`);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('[leadServices] Lead salvo com sucesso no banco de dados:', data);
+    }
+
+    return { success: true, data };
+  } catch (err: any) {
+    if (import.meta.env.DEV) {
+      console.error('[leadServices] Exceção em createLead:', err);
+    }
+    const friendlyError = err?.message || 'Não foi possível enviar sua solicitação neste momento. Por favor, tente novamente.';
+    throw new Error(friendlyError);
+  }
+}
+
+/**
+ * Submete uma solicitação unificada de proposta (cria perfil, projeto e briefing)
+ */
 export async function submitProposalRequest(payload: ProposalPayload) {
   try {
     // 1. Busca se já existe um perfil com o e-mail informado

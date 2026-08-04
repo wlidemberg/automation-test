@@ -22,6 +22,21 @@ export type InvoiceStatus = 'pendente' | 'pago' | 'cancelado';
 export type InvoiceType = 'entrada' | 'mensalidade' | 'avulso';
 export type BriefingStatus = 'pendente' | 'em_analise_ia' | 'proposta_enviada' | 'pago' | 'aprovado';
 
+export interface Lead {
+  id: string;
+  produto_slug: string;
+  categoria_produto: ProductCategory;
+  razao_social_nome: string;
+  cpf_cnpj?: string | null;
+  email: string;
+  telefone: string;
+  faturamento_mensal?: string | null;
+  porte_empresa?: string | null;
+  dores_principais: string;
+  dados_especificos_categoria: Record<string, any>;
+  created_at?: string;
+}
+
 export interface Address {
   cep?: string;
   logradouro?: string;
