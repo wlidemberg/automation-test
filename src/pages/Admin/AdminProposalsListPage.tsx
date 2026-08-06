@@ -221,18 +221,17 @@ export default function AdminProposalsListPage() {
                   <div className="space-y-4">
                     
                     {/* Card Header */}
-                    <div className="flex items-start justify-between border-b border-white/10 pb-4">
-                      <div>
-                        <span className="text-[9px] font-mono uppercase text-brand-neon font-bold tracking-widest block">
-                          {lead?.categoria_produto || 'SOLUÇÃO TÉCNICA'}
-                        </span>
-                        <h3 className="text-base font-space font-bold uppercase text-white truncate max-w-[200px] group-hover:text-brand-neon transition-colors">
-                          {lead?.razao_social_nome || 'Lead Sem Nome'}
-                        </h3>
+                    <div className="border-b border-white/10 pb-4 space-y-2">
+                      <span className="text-[9px] font-mono uppercase text-brand-neon font-bold tracking-widest block">
+                        {lead?.categoria_produto || 'SOLUÇÃO TÉCNICA'}
+                      </span>
+                      <h3 className="text-base font-space font-bold uppercase text-white group-hover:text-brand-neon transition-colors leading-tight">
+                        {lead?.razao_social_nome || 'Lead Sem Nome'}
+                      </h3>
+                      {/* Badge Status posicionado ABAIXO do nome do cliente */}
+                      <div className="pt-1">
+                        <StatusBadge status={proposal.pagamento_confirmado ? 'contrato_ativo' : proposal.status} />
                       </div>
-
-                      {/* Badge Status com Tooltip Interativo de Pendencia */}
-                      <StatusBadge status={proposal.status} />
                     </div>
 
                     {/* Dores & Detalhes Principais */}
@@ -261,34 +260,19 @@ export default function AdminProposalsListPage() {
                       </div>
                     )}
 
-                    {/* ALERTA DE PROPOSTA ACEITA AGUARDANDO ENTRADA */}
-                    {(proposal.status_proposta === 'aceita' || proposal.status === 'aceita') && !proposal.pagamento_confirmado && (
-                      <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center justify-between font-mono text-[11px] text-yellow-400">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-                          <span className="font-semibold uppercase">PROPOSTA ACEITA PELO CLIENTE — AGUARDANDO ENTRADA (50%)</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* ALERTA DE CONTRATO ATIVO / PAGAMENTO CONFIRMADO */}
-                    {proposal.pagamento_confirmado && (
-                      <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between font-mono text-xs text-emerald-400">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                          <span className="font-bold">✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO</span>
-                        </div>
-                        {proposal.pago_em && (
-                          <span className="text-[10px] text-zinc-400">
-                            {new Date(proposal.pago_em).toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                        )}
+                    {/* DETALHE DO PAGAMENTO QUANDO CONTRATO ESTIVER ATIVO */}
+                    {proposal.pagamento_confirmado && proposal.pago_em && (
+                      <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[10px] font-mono text-emerald-400 flex items-center justify-between">
+                        <span>Entrada Paga em:</span>
+                        <span className="font-bold">
+                          {new Date(proposal.pago_em).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
                     )}
 

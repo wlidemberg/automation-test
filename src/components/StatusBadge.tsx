@@ -70,6 +70,17 @@ export function getStatusConfig(status: ProposalStatusType) {
         pendencyDescription: 'A proposta foi revisada e aprovada pela engenharia e está pronta para o envio oficial ao cliente.',
         type: 'success'
       }
+    case 'contrato_ativo':
+    case 'pago':
+      return {
+        label: 'CONTRATO ATIVO • ENTRADA PAGA',
+        shortLabel: 'CONTRATO ATIVO',
+        badgeBg: 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 font-bold',
+        icon: CheckCircle2,
+        pendencyTitle: 'Contrato Ativo - Entrada Paga (50%)',
+        pendencyDescription: 'O pagamento do sinal de 50% foi confirmado e o contrato do projeto está ativo.',
+        type: 'success'
+      }
     case 'aceita':
     case 'aprovada_lead':
       return {
