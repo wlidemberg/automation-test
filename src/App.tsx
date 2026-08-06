@@ -8,6 +8,8 @@ import ProjectDetail from './pages/Dashboard/ProjectDetail'
 import AdminOverview from './pages/Admin/AdminOverview'
 import AdminClients from './pages/Admin/AdminClients'
 import AdminProducts from './pages/Admin/AdminProducts'
+import AdminProposalsListPage from './pages/Admin/AdminProposalsListPage'
+import AdminProposalDetailPage from './pages/Admin/AdminProposalDetailPage'
 import ProposalPage from './pages/ProposalPage'
 import ClientFormPage from './pages/Admin/ClientFormPage'
 import ProductFormPage from './pages/Admin/ProductFormPage'
@@ -58,6 +60,8 @@ function App() {
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminOverview />} />
+          <Route path="/admin/propostas" element={<AdminProposalsListPage />} />
+          <Route path="/admin/propostas/:id" element={<AdminProposalDetailPage />} />
           <Route path="/admin/clientes" element={<AdminClients />} />
           <Route path="/admin/clientes/novo" element={<ClientFormPage />} />
           <Route path="/admin/clientes/editar/:id" element={<ClientFormPage />} />

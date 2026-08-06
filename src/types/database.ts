@@ -156,25 +156,66 @@ export interface ProjectRoadmap {
 }
 
 
-export interface Invoice {
-  id: string;
-  project_id: string;
-  client_id: string;
-  valor: number;
-  vencimento: string;
-  tipo: InvoiceType;
-  status: InvoiceStatus;
-  payload_pagamento?: Record<string, any> | null;
-  created_at?: string;
+export type ProposalStatus = 
+  | 'pendente_aprovacao_admin'
+  | 'em_analise_ia'
+  | 'enviada_lead'
+  | 'aprovada_lead'
+  | 'recusada_lead';
+
+export interface ProposalAiContent {
+  resumo_executivo?: string;
+  valor_setup?: number;
+  parcela_entrada?: number;
+  valor_mensal?: number;
+  entregaveis?: string[];
+  modulos_upsell?: Array<{ titulo: string; descricao: string; preco?: number }>;
+  dicas_engenharia?: string[];
+  [key: string]: any;
 }
 
-export interface ProjectRoadmap {
+export interface Proposal {
   id: string;
-  project_id: string;
-  nome_fase: string;
-  status: 'done' | 'current' | 'pending';
-  descricao_fase?: string | null;
-  ordem: number;
+  lead_id?: string | null;
+  briefing_id?: string | null;
+  project_id?: string | null;
+  status: ProposalStatus;
+  status_proposta?: ProposalStatus | string;
+  proposta_ia: ProposalAiContent;
+  orientacao_admin?: string | null;
+  orientacoes_admin?: string | null;
+  observacoes_admin?: string | null;
+  contador_recriacoes: number;
+  magic_link?: string | null;
+  lead?: Lead | null;
   created_at?: string;
+  updated_at?: string;
+}
+
+export type ContractStatus = 'aguardando_pagamento_entrada' | 'pago' | 'ativo' | 'cancelado';
+
+export interface AcceptContractPayload {
+  proposalId: string;
+  leadId: string;
+  valorSetupBase: number;
+  modulosUpsellSelecionados: Array<{ nome_modulo: string; valor_adicional: number }>;
+  valorTotalContrato: number;
+  valorEntrada50: number;
+  mensalidadeRecorrente: number;
+}
+
+export interface Contract {
+  id: string;
+  proposal_id: string;
+  lead_id: string;
+  valor_setup_base: number;
+  modulos_upsell: Array<{ nome_modulo: string; valor_adicional: number }>;
+  valor_total_contrato: number;
+  valor_entrada_50: number;
+  mensalidade_recorrente: number;
+  status_contrato: ContractStatus | string;
+  token_acesso?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 

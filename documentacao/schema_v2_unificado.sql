@@ -218,3 +218,54 @@ CREATE POLICY "Inserção pública de leads" ON public.leads
 DROP POLICY IF EXISTS "Leitura de leads para admins" ON public.leads;
 CREATE POLICY "Leitura de leads para admins" ON public.leads
   FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- 8. TABELA CONTRACTS
+CREATE TABLE IF NOT EXISTS public.contracts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  proposal_id UUID NOT NULL,
+  lead_id UUID NOT NULL,
+  valor_setup_base DECIMAL(10,2) DEFAULT 0.00 NOT NULL,
+  modulos_upsell JSONB DEFAULT '[]'::jsonb NOT NULL,
+  valor_total_contrato DECIMAL(10,2) DEFAULT 0.00 NOT NULL,
+  valor_entrada_50 DECIMAL(10,2) DEFAULT 0.00 NOT NULL,
+  mensalidade_recorrente DECIMAL(10,2) DEFAULT 0.00 NOT NULL,
+  status_contrato TEXT DEFAULT 'aguardando_pagamento_entrada' NOT NULL,
+  token_acesso TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.contracts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Inserção e Leitura de Contratos" ON public.contracts;
+CREATE POLICY "Inserção e Leitura de Contratos" ON public.contracts
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- 9. TABELA PROPOSALS
+CREATE TABLE IF NOT EXISTS public.proposals (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  lead_id UUID REFERENCES public.leads(id) ON DELETE SET NULL,
+  briefing_id UUID REFERENCES public.briefings(id) ON DELETE SET NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  status TEXT DEFAULT 'pendente_aprovacao_admin' NOT NULL,
+  status_proposta TEXT DEFAULT 'pendente_aprovacao_admin',
+  proposta_ia JSONB DEFAULT '{}'::jsonb NOT NULL,
+  orientacao_admin TEXT DEFAULT '',
+  orientacoes_admin TEXT DEFAULT '',
+  observacoes_admin TEXT DEFAULT '',
+  contador_recriacoes INTEGER DEFAULT 0 NOT NULL,
+  magic_link TEXT,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.proposals ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Leitura de Propostas" ON public.proposals;
+CREATE POLICY "Leitura de Propostas" ON public.proposals FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Inserção de Propostas" ON public.proposals;
+CREATE POLICY "Inserção de Propostas" ON public.proposals FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Atualização de Propostas" ON public.proposals;
+CREATE POLICY "Atualização de Propostas" ON public.proposals FOR UPDATE USING (true) WITH CHECK (true);

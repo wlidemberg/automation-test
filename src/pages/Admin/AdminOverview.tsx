@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { 
   Users, 
   Package, 
@@ -15,7 +16,9 @@ import {
   Building2, 
   Save, 
   Plus, 
-  X
+  X,
+  FileText,
+  ArrowUpRight
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchAllProfiles, updateProfileStatus } from '../../services/profileServices'
@@ -25,6 +28,7 @@ import AdminSidebar from '../../components/Admin/AdminSidebar'
 import AdminHeader from '../../components/Admin/AdminHeader'
 import ProposalModal from '../../components/Admin/ProposalModal'
 import { fetchClientProposals, acceptProposalAndPayEntry } from '../../services/proposalServices'
+import { listPendingProposals } from '../../services/proposalAdminServices'
 import { supabase } from '../../lib/supabase'
 
 interface ClienteInfo {
@@ -54,6 +58,7 @@ export default function AdminOverview() {
   // Supabase Proposals State
   const [proposals, setProposals] = useState<any[]>([])
   const [briefings, setBriefings] = useState<any[]>([])
+  const [pendingProposalsCount, setPendingProposalsCount] = useState<number>(0)
   const [loadingProposals, setLoadingProposals] = useState<boolean>(true)
   const [isProposalModalOpen, setIsProposalModalOpen] = useState<boolean>(false)
 
@@ -143,6 +148,8 @@ export default function AdminOverview() {
     try {
       const data = await fetchClientProposals()
       setProposals(data)
+      const pendingList = await listPendingProposals()
+      setPendingProposalsCount(pendingList.length)
     } catch (err) {
       console.error('Erro ao carregar propostas:', err)
       showToast('FALHA AO CARREGAR PROPOSTAS.', 'error')
@@ -433,19 +440,25 @@ export default function AdminOverview() {
             </div>
           </div>
 
-          {/* Card 4: Pendências (Supabase dynamic) */}
-          <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
+          {/* Card 4: Propostas Aguardando Aprovação (Link para /admin/propostas) */}
+          <Link 
+            to="/admin/propostas" 
+            className="bg-brand-gray/90 border border-brand-neon/40 hover:border-brand-neon rounded-md p-5 transition-all shadow-lg flex flex-col justify-between group cursor-pointer hover:shadow-[0_0_20px_rgba(204,255,0,0.15)]"
+          >
             <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wider">Pendências</span>
-              <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20">
-                <AlertCircle className={`w-5 h-5 ${solicitacoesPendentes > 0 ? 'text-amber-400 animate-pulse' : 'text-amber-400'}`} />
+              <span className="text-xs font-sans font-semibold text-brand-neon uppercase tracking-wider">Propostas a Aprovar</span>
+              <div className="p-2 rounded bg-brand-neon/10 border border-brand-neon/20 group-hover:bg-brand-neon group-hover:text-black transition-colors">
+                <FileText className="w-5 h-5 text-brand-neon group-hover:text-black transition-colors" />
               </div>
             </div>
             <div>
-              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white">{solicitacoesPendentes}</div>
-              <span className="text-[10px] font-mono text-rose-400 mt-1 block font-semibold">-2 vs. mês anterior</span>
+              <div className="text-2xl sm:text-3xl font-space font-extrabold text-white flex items-center justify-between">
+                <span>{pendingProposalsCount}</span>
+                <ArrowUpRight className="w-5 h-5 text-brand-neon group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </div>
+              <span className="text-[10px] font-mono text-brand-neon mt-1 block font-semibold">Ver propostas para revisão →</span>
             </div>
-          </div>
+          </Link>
 
           {/* Card 5: Compromissos hoje */}
           <div className="bg-brand-gray/90 border border-brand-gray rounded-md p-5 hover:border-brand-neon/50 transition-colors shadow-lg flex flex-col justify-between">
