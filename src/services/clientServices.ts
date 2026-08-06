@@ -30,10 +30,10 @@ export async function provisionClientAccount({
     throw new Error('Não foi possível obter o ID do Lead ou Proposta para provisionamento.')
   }
 
-  // 1. Busca os dados completos do Lead vinculado (com suporte a fallback se passar proposalId)
+  // 1. Busca os dados completos do Lead vinculado
   let lead: Lead | null = null
 
-  // Tentativa 1: Busca em leads pelo leadId
+  // Tentativa 1: Busca na tabela leads diretamente por leadId
   if (leadId) {
     const { data: leadData } = await supabase
       .from('leads')
@@ -46,18 +46,16 @@ export async function provisionClientAccount({
     }
   }
 
-  // Tentativa 2: Se não encontrou por leadId, busca na tabela proposals para obter o lead_id correto
+  // Tentativa 2: Se não encontrou por leadId, busca na tabela proposals para pegar lead_id
   if (!lead && (proposalId || leadId)) {
     const searchId = proposalId || leadId
     const { data: propData } = await supabase
       .from('proposals')
-      .select('lead_id, lead:leads(*)')
+      .select('id, lead_id')
       .eq('id', searchId)
       .maybeSingle()
 
-    if (propData?.lead) {
-      lead = propData.lead as Lead
-    } else if (propData?.lead_id) {
+    if (propData?.lead_id) {
       const { data: leadById } = await supabase
         .from('leads')
         .select('*')
@@ -70,7 +68,7 @@ export async function provisionClientAccount({
   }
 
   if (!lead) {
-    throw new Error('Não foi possível obter os dados do Lead para provisionamento.')
+    throw new Error('Não foi possível localizar o Lead vinculado a esta proposta no banco de dados.')
   }
 
   // 2. Determina Tipo de Pessoa e Documento (CPF vs CNPJ)
@@ -83,9 +81,21 @@ export async function provisionClientAccount({
   const linkDefinirSenha = 'https://automation-test-sepia.vercel.app/definir-senha'
   let userId: string = lead.id
 
-  // 3. Dispara o envio de Magic Link via Supabase Auth (Client-side resiliência)
+  // 3. Tenta localizar se já existe um perfil com o mesmo e-mail em public.profiles
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('email', lead.email)
+    .maybeSingle()
+
+  if (existingProfile?.id) {
+    userId = existingProfile.id
+  }
+
+  // 4. Autenticação e Convite no Supabase Auth
   try {
-    const { data: authOtpData, error: authOtpErr } = await supabase.auth.signInWithOtp({
+    // A) Envia Magic Link / OTP de primeiro acesso
+    const { error: authOtpErr } = await supabase.auth.signInWithOtp({
       email: lead.email,
       options: {
         emailRedirectTo: linkDefinirSenha,
@@ -98,11 +108,9 @@ export async function provisionClientAccount({
 
     if (authOtpErr) {
       console.warn('[clientServices] Aviso signInWithOtp:', authOtpErr.message)
-    } else {
-      console.log('[clientServices] E-mail com link de primeiro acesso enviado via Supabase Auth para:', lead.email)
     }
 
-    // Tenta também convite direto via admin se chave de serviço estiver ativa no ambiente
+    // B) Tenta convite direto via admin API (se Service Role ativa)
     const { data: authAdminData } = await supabase.auth.admin.inviteUserByEmail(
       lead.email,
       {
@@ -118,11 +126,11 @@ export async function provisionClientAccount({
       userId = authAdminData.user.id
     }
   } catch (authCatchErr: any) {
-    console.warn('[clientServices] Aviso ao disparar convite no Auth:', authCatchErr.message || authCatchErr)
+    console.warn('[clientServices] Aviso no Supabase Auth:', authCatchErr.message || authCatchErr)
   }
 
-  // 4. Preenche/Atualiza a tabela public.profiles com fallbacks resilientes
-  const profileData: Partial<Profile> = {
+  // 5. Preenche/Atualiza a tabela public.profiles
+  const profilePayload: Partial<Profile> = {
     id: userId,
     email: lead.email,
     role: 'client',
@@ -137,46 +145,52 @@ export async function provisionClientAccount({
 
   let savedProfile: Profile | null = null
 
-  // Tentativa A: Upsert especificando conflito no email
-  const { data: pA, error: errA } = await supabase
-    .from('profiles')
-    .upsert(profileData, { onConflict: 'email' })
-    .select()
-    .maybeSingle()
-
-  if (pA) {
-    savedProfile = pA as Profile
-  } else {
-    if (errA) console.warn('[clientServices] Upsert onConflict email:', errA.message)
-
-    // Tentativa B: Upsert no ID
-    const { data: pB, error: errB } = await supabase
+  // Estratégia 1: Se já existe um perfil para esse email, atualiza por email
+  if (existingProfile) {
+    const { data: pUpdated, error: uErr } = await supabase
       .from('profiles')
-      .upsert(profileData)
+      .update(profilePayload)
+      .eq('email', lead.email)
       .select()
       .maybeSingle()
 
-    if (pB) {
-      savedProfile = pB as Profile
-    } else {
-      if (errB) console.warn('[clientServices] Upsert padrão:', errB.message)
+    if (pUpdated) {
+      savedProfile = pUpdated as Profile
+    } else if (uErr) {
+      console.warn('[clientServices] Erro ao atualizar perfil existente:', uErr.message)
+    }
+  }
 
-      // Tentativa C: Insert direto
-      const { data: pC, error: errC } = await supabase
+  // Estratégia 2: Upsert por ID se não salvou ainda
+  if (!savedProfile) {
+    const { data: pUpsert, error: upErr } = await supabase
+      .from('profiles')
+      .upsert(profilePayload)
+      .select()
+      .maybeSingle()
+
+    if (pUpsert) {
+      savedProfile = pUpsert as Profile
+    } else if (upErr) {
+      console.warn('[clientServices] Erro upsert padrao:', upErr.message)
+
+      // Estratégia 3: Insert direto sem especificar ID gerado se houver conflito de FK
+      const fallbackPayload = { ...profilePayload }
+      const { data: pIns, error: insErr } = await supabase
         .from('profiles')
-        .insert([profileData])
+        .insert([fallbackPayload])
         .select()
         .maybeSingle()
 
-      if (pC) {
-        savedProfile = pC as Profile
-      } else if (errC) {
-        console.error('[clientServices] Insert na tabela profiles falhou:', errC.message)
+      if (pIns) {
+        savedProfile = pIns as Profile
+      } else if (insErr) {
+        console.error('[clientServices] Erro final ao salvar em public.profiles:', insErr.message)
       }
     }
   }
 
-  // 5. Dispara Webhook do n8n para envio de e-mail customizado SMTP/Resend
+  // 6. Dispara Webhook do n8n para envio de e-mail customizado SMTP/Resend
   try {
     await fetch(N8N_PROVISION_CLIENT_WEBHOOK, {
       method: 'POST',
@@ -203,7 +217,7 @@ export async function provisionClientAccount({
     email: lead.email,
     linkDefinirSenha,
     profile: savedProfile,
-    message: 'Conta do cliente provisionada e perfil cadastrado em public.profiles!'
+    message: 'Conta do cliente provisionada e perfil salvo na tabela public.profiles!'
   }
 }
 
@@ -242,19 +256,17 @@ export async function processAllAcceptedProposals(): Promise<BatchProvisionResul
   let successCount = 0
   let failedCount = 0
 
-  // 1. Busca propostas que atendem aos requisitos (status_proposta aceita, status aceita ou pagamento_confirmado true)
+  // 1. Busca todas as propostas
   const { data: proposals, error } = await supabase
     .from('proposals')
-    .select('*, lead:leads(*)')
-    .or('status_proposta.eq.aceita,status.eq.aceita,pagamento_confirmado.eq.true')
+    .select('*')
 
   if (error) {
-    console.error('[clientServices] Erro ao buscar propostas aceitas para lote:', error.message)
-    throw new Error('Falha ao consultar propostas aceitas no Supabase.')
+    console.error('[clientServices] Erro ao listar propostas:', error.message)
+    throw new Error('Falha ao consultar a tabela public.proposals no Supabase: ' + error.message)
   }
 
   if (!proposals || proposals.length === 0) {
-    console.log('[clientServices] Nenhuma proposta aceita encontrada para lote.')
     return {
       totalProcessed: 0,
       successCount: 0,
@@ -263,33 +275,42 @@ export async function processAllAcceptedProposals(): Promise<BatchProvisionResul
     }
   }
 
-  // 2. Itera e executa o provisionamento para cada proposta encontrada
-  for (const proposal of proposals) {
-    const leadId = proposal.lead_id || proposal.lead?.id
-    const leadEmail = proposal.lead?.email || 'N/A'
+  // 2. Filtra propostas aceitas ou com pagamento confirmado
+  const targetProposals = proposals.filter(p => 
+    p.status_proposta === 'aceita' || 
+    p.status === 'aceita' || 
+    p.pagamento_confirmado === true
+  )
 
+  if (targetProposals.length === 0) {
+    return {
+      totalProcessed: 0,
+      successCount: 0,
+      failedCount: 0,
+      details: []
+    }
+  }
+
+  // 3. Itera e executa o provisionamento para cada proposta aceita
+  for (const proposal of targetProposals) {
     try {
-      if (!leadId) {
-        throw new Error('Proposta sem lead_id vinculado.')
-      }
-
-      await provisionClientAccount({
-        leadId,
+      const result = await provisionClientAccount({
+        leadId: proposal.lead_id,
         proposalId: proposal.id
       })
 
       successCount++
       details.push({
         proposalId: proposal.id,
-        leadEmail,
+        leadEmail: result.email,
         status: 'success',
-        message: 'Perfil preenchido e e-mail de primeiro acesso disparado!'
+        message: 'Perfil preenchido em public.profiles e e-mail de acesso disparado!'
       })
     } catch (err: any) {
       failedCount++
       details.push({
         proposalId: proposal.id,
-        leadEmail,
+        leadEmail: 'N/A',
         status: 'failed',
         message: err.message || 'Falha ao processar'
       })
@@ -297,7 +318,7 @@ export async function processAllAcceptedProposals(): Promise<BatchProvisionResul
   }
 
   return {
-    totalProcessed: proposals.length,
+    totalProcessed: targetProposals.length,
     successCount,
     failedCount,
     details
