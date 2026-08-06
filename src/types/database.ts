@@ -158,10 +158,14 @@ export interface ProjectRoadmap {
 
 export type ProposalStatus = 
   | 'pendente_aprovacao_admin'
+  | 'aprovada_admin'
   | 'em_analise_ia'
   | 'enviada_lead'
   | 'aprovada_lead'
-  | 'recusada_lead';
+  | 'aceita'
+  | 'recusada'
+  | 'recusada_lead'
+  | string;
 
 export interface ProposalAiContent {
   resumo_executivo?: string;

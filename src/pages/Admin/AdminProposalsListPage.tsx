@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { listPendingProposals } from '../../services/proposalAdminServices'
 import type { Proposal } from '../../types/database'
+import StatusBadge from '../../components/StatusBadge'
 
 export default function AdminProposalsListPage() {
   const navigate = useNavigate()
@@ -24,7 +25,8 @@ export default function AdminProposalsListPage() {
     async function loadData() {
       setLoading(true)
       try {
-        const data = await listPendingProposals(statusFilter)
+        // Carrega todas as propostas para permitir calculos de metricas completos no header
+        const data = await listPendingProposals('todos')
         setProposals(data)
       } catch (err) {
         console.error('Erro ao carregar propostas:', err)
@@ -33,9 +35,24 @@ export default function AdminProposalsListPage() {
       }
     }
     loadData()
-  }, [statusFilter])
+  }, [])
 
+  // Filtragem em memoria dinâmica
   const filteredProposals = proposals.filter((p) => {
+    if (statusFilter !== 'todos') {
+      if (statusFilter === 'pendentes' || statusFilter === 'pendente_aprovacao_admin') {
+        if (p.status !== 'pendente_aprovacao_admin' && p.status !== 'em_analise_ia') return false
+      } else if (statusFilter === 'enviadas' || statusFilter === 'enviada_lead') {
+        if (p.status !== 'enviada_lead' && p.status !== 'aprovada_admin') return false
+      } else if (statusFilter === 'aceitas' || statusFilter === 'aceita') {
+        if (p.status !== 'aceita' && p.status !== 'aprovada_lead') return false
+      } else if (statusFilter === 'recusadas' || statusFilter === 'recusada') {
+        if (p.status !== 'recusada') return false
+      } else if (p.status !== statusFilter) {
+        return false
+      }
+    }
+
     if (!searchTerm.trim()) return true
     const term = searchTerm.toLowerCase()
     const leadName = p.lead?.razao_social_nome?.toLowerCase() || ''
@@ -47,7 +64,7 @@ export default function AdminProposalsListPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-brand-neon selection:text-black">
       
-      {/* Navigation Topbar */}
+      {/* Topbar de Navegacao */}
       <div className="border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -91,28 +108,28 @@ export default function AdminProposalsListPage() {
             <span className="text-[10px] text-gray-400 block">Propostas no sistema</span>
           </div>
 
-          <div className="bg-zinc-900/40 border border-brand-neon/30 p-5 rounded-xl space-y-1">
-            <span className="text-[10px] uppercase text-brand-neon block">PENDENTES APROVAÇÃO</span>
-            <p className="text-2xl font-space font-extrabold text-brand-neon">
-              {proposals.filter(p => p.status === 'pendente_aprovacao_admin').length}
-            </p>
-            <span className="text-[10px] text-gray-400 block">Requer revisão humana</span>
-          </div>
-
           <div className="bg-zinc-900/40 border border-amber-500/30 p-5 rounded-xl space-y-1">
-            <span className="text-[10px] uppercase text-amber-400 block">EM ANÁLISE IA</span>
+            <span className="text-[10px] uppercase text-amber-400 block">PENDENTES REVISÃO</span>
             <p className="text-2xl font-space font-extrabold text-amber-400">
-              {proposals.filter(p => p.status === 'em_analise_ia').length}
+              {proposals.filter(p => p.status === 'pendente_aprovacao_admin' || p.status === 'em_analise_ia').length}
             </p>
-            <span className="text-[10px] text-gray-400 block">Em ciclo de re-criação</span>
+            <span className="text-[10px] text-gray-400 block">Requer atenção admin/IA</span>
           </div>
 
-          <div className="bg-zinc-900/40 border border-emerald-500/30 p-5 rounded-xl space-y-1">
-            <span className="text-[10px] uppercase text-emerald-400 block">ENVIADAS AO LEAD</span>
-            <p className="text-2xl font-space font-extrabold text-emerald-400">
-              {proposals.filter(p => p.status === 'enviada_lead').length}
+          <div className="bg-zinc-900/40 border border-cyan-500/30 p-5 rounded-xl space-y-1">
+            <span className="text-[10px] uppercase text-cyan-400 block">ENVIADAS AO LEAD</span>
+            <p className="text-2xl font-space font-extrabold text-cyan-400">
+              {proposals.filter(p => p.status === 'enviada_lead' || p.status === 'aprovada_admin').length}
             </p>
-            <span className="text-[10px] text-gray-400 block">Disparadas por e-mail</span>
+            <span className="text-[10px] text-gray-400 block">Aguardando aceite cliente</span>
+          </div>
+
+          <div className="bg-zinc-900/40 border border-brand-neon/30 p-5 rounded-xl space-y-1">
+            <span className="text-[10px] uppercase text-brand-neon block">ACEITAS / PAGAMENTO</span>
+            <p className="text-2xl font-space font-extrabold text-brand-neon">
+              {proposals.filter(p => p.status === 'aceita' || p.status === 'aprovada_lead').length}
+            </p>
+            <span className="text-[10px] text-gray-400 block">Contrato aceito</span>
           </div>
 
         </div>
@@ -124,9 +141,10 @@ export default function AdminProposalsListPage() {
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 font-mono text-xs">
             {[
               { id: 'todos', label: 'TODAS' },
-              { id: 'pendente_aprovacao_admin', label: 'PENDENTES' },
-              { id: 'em_analise_ia', label: 'EM ANÁLISE IA' },
-              { id: 'enviada_lead', label: 'ENVIADAS' }
+              { id: 'pendentes', label: 'PENDENTES ADMIN' },
+              { id: 'enviadas', label: 'ENVIADAS AO CLIENTE' },
+              { id: 'aceitas', label: 'ACEITAS / PAGAMENTO' },
+              { id: 'recusadas', label: 'RECUSADAS' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -167,7 +185,7 @@ export default function AdminProposalsListPage() {
             <FileText className="w-12 h-12 text-gray-600 mx-auto" />
             <h3 className="text-lg font-space font-bold uppercase text-white">Nenhuma proposta encontrada</h3>
             <p className="font-sans text-xs text-gray-400 max-w-sm mx-auto">
-              Não há solicitações cadastradas correspondentes ao filtro ou termo pesquisado.
+              Não há solicitações cadastradas correspondentes ao filtro selecionado ou termo pesquisado.
             </p>
           </div>
         ) : (
@@ -195,16 +213,8 @@ export default function AdminProposalsListPage() {
                         </h3>
                       </div>
 
-                      {/* Badge Status */}
-                      <span className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold uppercase border shrink-0 ${
-                        proposal.status === 'enviada_lead'
-                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                          : proposal.status === 'em_analise_ia'
-                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                          : 'bg-brand-neon/10 border-brand-neon/30 text-brand-neon'
-                      }`}>
-                        {proposal.status === 'enviada_lead' ? 'ENVIADA' : proposal.status === 'em_analise_ia' ? 'REVISÃO IA' : 'PENDENTE'}
-                      </span>
+                      {/* Badge Status com Tooltip Interativo de Pendencia */}
+                      <StatusBadge status={proposal.status} />
                     </div>
 
                     {/* Dores & Detalhes Principais */}
@@ -218,7 +228,7 @@ export default function AdminProposalsListPage() {
                         <span className="text-brand-neon font-semibold uppercase">{lead?.produto_slug || 'N/A'}</span>
                       </div>
                       <div className="flex items-center justify-between text-gray-400">
-                        <span>Valor Setup IA:</span>
+                        <span>Valor Setup:</span>
                         <span className="text-white font-bold">
                           R$ {Number(propostaIa.valor_setup || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </span>
