@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { background-color: #050505; color: #FFFFFF; font-family: 'Space Grotesk', sans-serif, Arial; margin: 0; padding: 40px 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #111111; border: 1px solid #222222; border-radius: 12px; padding: 32px; }
+    .logo { color: #CCFF00; font-size: 20px; font-weight: bold; letter-spacing: -0.5px; margin-bottom: 24px; }
+    h1 { font-size: 24px; font-weight: 800; color: #FFFFFF; margin-bottom: 16px; }
+    p { color: #A1A1AA; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
+    .btn { display: inline-block; background-color: #CCFF00; color: #000000; font-weight: 900; text-transform: uppercase; font-size: 13px; padding: 14px 28px; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px; }
+    .footer { margin-top: 32px; border-top: 1px solid #222222; padding-top: 20px; font-size: 12px; color: #52525B; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">&gt;_ AUTOMATION TEST</div>
+    <h1>Seja bem-vindo ao seu Painel de Projetos! 🚀</h1>
+    <p>O seu pagamento foi confirmado com sucesso e o seu contrato já está ativo. Para começar a acompanhar os roadmaps e entregáveis do seu projeto em tempo real, defina a sua primeira senha de acesso clicando no botão abaixo:</p>
+    <a href="{{ $json.action_url || 'https://automation-test-sepia.vercel.app/definir-senha' }}" class="btn" target="_blank">CRIAR MINHA SENHA DE ACESSO ➔</a>
+    <div class="footer">
+      Se você não solicitou este acesso, ignore este e-mail. <br>
+      Automation Test — Engenharia de Processos &amp; IA.
+    </div>
+  </div>
+</body>
+</html>
