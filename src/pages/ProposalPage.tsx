@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useSearchParams, useNavigate, Link } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { 
   CheckCircle2, 
   Loader2, 
@@ -7,10 +7,8 @@ import {
   ArrowLeft, 
   Send, 
   Check, 
-  Star,
-  Sparkles
+  Star
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/Layout'
 import { productsData, getLocalProductBySlug } from '../data/productsData'
 import { createLead, type LeadPayload } from '../services/leadServices'

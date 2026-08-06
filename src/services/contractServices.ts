@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { getProposalWithLead } from './proposalAdminServices'
-import type { Proposal, Contract, AcceptContractPayload } from '../types/database'
+import type { Proposal, AcceptContractPayload } from '../types/database'
 
 /**
  * Busca os dados de uma proposta e Lead associado a partir do token de acesso ou ID da proposta.
@@ -119,7 +119,7 @@ export async function acceptProposalAndCreateContract(
 
     // 4. Cadastra ou atualiza fatura de entrada na tabela `invoices`
     const invoiceId = crypto.randomUUID()
-    await supabase
+    const { error: invErr } = await supabase
       .from('invoices')
       .insert([{
         id: invoiceId,
@@ -135,7 +135,10 @@ export async function acceptProposalAndCreateContract(
           valor_entrada: payload.valorEntrada50
         }
       }])
-      .catch(err => console.warn('[contractServices] Registro de fatura fallback:', err))
+
+    if (invErr) {
+      console.warn('[contractServices] Registro de fatura fallback:', invErr.message)
+    }
 
     return {
       success: true,

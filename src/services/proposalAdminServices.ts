@@ -11,7 +11,6 @@ export function ensureValidProposalAiContent(raw: any, lead?: Lead | null) {
   const cat = lead?.categoria_produto || 'automacao'
   const nome = lead?.razao_social_nome || 'Cliente Corporativo'
   const dor = lead?.dores_principais || 'otimização de processos e escala de vendas'
-  const prodSlug = lead?.produto_slug || 'solucao-tecnica'
 
   // Preços padrão por categoria se zerados
   let defaultSetup = 4500
@@ -187,7 +186,7 @@ async function updateOrUpsertProposal(
     aprovada_lead: 'aprovado'
   }
 
-  await supabase
+  const { error: bErr } = await supabase
     .from('briefings')
     .update({
       status_briefing: briefingStatusMap[newStatus] || newStatus,
@@ -195,7 +194,10 @@ async function updateOrUpsertProposal(
       updated_at: new Date().toISOString()
     })
     .eq('id', proposalId)
-    .catch((err) => console.warn('[proposalAdminServices] Aviso ao atualizar briefings:', err))
+
+  if (bErr) {
+    console.warn('[proposalAdminServices] Aviso ao atualizar briefings:', bErr.message)
+  }
 }
 
 /**

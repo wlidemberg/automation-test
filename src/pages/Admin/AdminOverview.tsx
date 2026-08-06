@@ -4,7 +4,6 @@ import {
   Users, 
   Package, 
   Wallet, 
-  AlertCircle, 
   Calendar, 
   LifeBuoy, 
   FolderKanban, 
@@ -325,7 +324,6 @@ export default function AdminOverview() {
   // Metric values derived from Supabase & KPIs
   const totalClientes = profiles.length
   const totalProdutos = products.length
-  const solicitacoesPendentes = profiles.filter(p => p.status === 'pendente').length
 
   return (
     <div className="min-h-screen bg-brand-dark text-white font-sans relative overflow-x-hidden">

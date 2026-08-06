@@ -4,20 +4,13 @@ import { motion } from 'framer-motion'
 import { 
   FileText, 
   Search, 
-  Filter, 
   ArrowLeft, 
-  ChevronRight, 
   Loader2, 
-  Sparkles, 
-  Clock, 
-  CheckCircle2, 
-  RefreshCw, 
-  UserCheck, 
   ArrowUpRight,
   Plus
 } from 'lucide-react'
 import { listPendingProposals } from '../../services/proposalAdminServices'
-import type { Proposal, ProposalStatus } from '../../types/database'
+import type { Proposal } from '../../types/database'
 
 export default function AdminProposalsListPage() {
   const navigate = useNavigate()
