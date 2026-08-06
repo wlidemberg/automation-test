@@ -23,7 +23,7 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Camada de serviços de catálogo em `productServices.ts` com **proibição estrita de deleção física (DELETE)**, operando via inativação (`status: false`) e suporte a fallback local resiliente contra erros RLS com a função `fetchActiveProducts()`.
   - Atribuição automática de `status: 'ativo'` para cadastros novos realizados diretamente pelo Administrador.
 
-- [ ] **Etapa 4: Autenticação & RLS (Row Level Security)**
+- [x] **Etapa 4: Autenticação & RLS (Row Level Security)**
   - Configuração de políticas RLS na tabela `profiles`.
   - Fluxo de login e cadastro na landing page com Supabase Auth.
 
@@ -48,11 +48,17 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
   - Validação inteligente contra duplicação de cadastros por e-mail/CPF/CNPJ na camada de serviço (`briefingServices.ts`).
   - Integração com automação de inteligência artificial através de webhook `POST` para o n8n.
   - Tela de visualização de proposta recomendada pela IA (`ProposalViewPage.tsx`) na rota `/proposta/:briefingId` com detalhamento dinâmico de escopo, entregáveis e precificação dividida com suporte opcional a Upsells de alto valor.
-  - Atualização do painel administrativo (`AdminOverview.tsx`) integrando aprovação de cadastros vinculada a contratos gerados de forma inteligente após a detecção do pagamento da entrada.
 
 - [x] **Etapa 9: Registro Oficial de Fichas Técnicas & Roadmaps dos 7 Produtos**
   - Formalização e sincronização da documentação das **Fichas Técnicas** e **Roadmaps de Desenvolvimento** dos 7 produtos principais (Site Institucional Tech-Luxo, Landing Page de Alta Conversão, Loja Virtual & E-commerce, Sistema de Agendamentos Inteligente, ERP Commercial White-Label, Automação n8n e Agente de IA 24/7).
   - Registro destas especificações no arquivo `documentacao/arquitetura_backend.md` como **referência oficial** para precificação, escopo, geração automática de propostas técnicas via n8n/IA e elaboração de briefings técnicos.
+
+- [x] **Etapa 10: Esteira Comercial de Propostas IA, Tooltips Interativos e Deploy na Vercel**
+  - Implementação da lista e filtros por status no admin (`AdminProposalsListPage.tsx`).
+  - Criação do componente `StatusBadge.tsx` com caixa explicativa em hover detalhando a pendência exata em tempo real.
+  - Alinhamento do Supabase com a DDL oficial da tabela `public.proposals` (`token_acesso`, `resumo_executivo`, `valor_total_setup`, `valor_entrada_50`, `prazo_estimado_dias`, `entregaveis_principais`).
+  - Suporte à busca por `token_acesso` ou ID na rota `/proposta/:token` para o aceite seguro de propostas pelo cliente.
+  - Deploy em produção na Vercel com suporte a SPA via `vercel.json`.
 
 ---
 
@@ -66,12 +72,5 @@ Este documento especifica o plano de execução e o status atual da infraestrutu
 | **Fase 4** | Fluxo Completo de Briefing & Propostas IA | **Concluído** |
 | **Fase 5** | Unificação de Briefing e Wizard Form | **Concluído** |
 | **Fase 6** | Registro de Fichas Técnicas & Roadmaps dos 7 Produtos | **Concluído** |
-| **Fase 7** | Sincronização em Tempo Real (Realtime) | Planejado |
-
----
-
-## 3. Notas de Ajustes de Banco & Wizard
-- **Fichas Técnicas e Roadmaps Oficiais**: Documentação dos 7 produtos incorporada como padrão de referência obrigatório para propostas técnicas e briefings.
-- **Wizard 4 Etapas**: Unificação da captação em `/solicitar-proposta` (Identificação, Marca, Métricas, Escopo).
-- **Restrição de Chave Estrangeira (FK)**: Corrigido o envio em `BriefingPage.tsx` com `project_id: null` para evitar violações de FK em IDs de projetos inválidos/teste.
-- **CHECK Constraint no Supabase**: Alinhado o status do briefing para persistir `'pago'` / `'aprovado'` e `'proposta_enviada'` conforme restrições nativas da tabela `briefings`.
+| **Fase 7** | Esteira Comercial, Tooltips de Pendências & Deploy Vercel | **Concluído** |
+| **Fase 8** | Sincronização em Tempo Real (Realtime Subscriptions) | Planejado |

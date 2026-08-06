@@ -43,375 +43,102 @@ CREATE TABLE public.profiles (
 
 ---
 
-## 3. Fluxo de Transição de Estado de Cadastro (`lead` ➔ `pendente` ➔ `ativo`/`recusado`/`inativo`)
+## 3. Esquema Oficial da Tabela `public.proposals`
 
-O ciclo de vida do perfil de usuário segue um fluxo atômico controlado pela esteira comercial e pelo Administrador:
-
-```mermaid
-stateDiagram-v2
-    [*] --> Lead: Usuário cria conta ou preenche solicitação
-    Lead --> Pendente: Envia briefing para análise
-    Pendente --> Ativo: Pagamento de entrada confirmado / Aprovação Admin
-    Pendente --> Recusado: Proposta recusada / cancelada
-    Ativo --> Inativo: Suspensão contratual via Admin
-    Inativo --> Ativo: Reativação via Admin
-```
-
-### Detalhamento dos Estados:
-
-1. **`pendente` (Solicitação Inicial)**: Cadastro realizado pelo cliente no site público (badge Amarelo Alerta).
-2. **`ativo` (Conta Liberada)**: Acesso total liberado (badge Verde Neon `#a3e635`). Cadastros criados diretamente pelo Administrador no módulo `/admin/clientes` recebem automaticamente o status `ativo`.
-3. **`recusado` (Solicitação Negada)**: Acesso bloqueado (badge Vermelho Rosé).
-4. **`inativo` (Conta Desativada)**: Conta suspensa operacionalmente (badge Cinza Muted).
-
----
-
-## 4. Regras de Negócio de Gestão de Clientes e CRUD
-
-* **Regra de Proibição Absoluta de Deleção Física (No-DELETE Policy)**:
-  - É estritamente proibida a remoção física de registros da tabela `profiles`.
-  - A desativação de clientes é feita exclusivamente através da alteração do status para `inativo` (`updateProfileStatus(id, 'inativo')`), preservando o histórico de dados e integridade referencial.
-* **Atribuição Automática de Status via Admin**:
-  - Quando um novo cliente é cadastrado pelo Administrador no formulário `ClientFormPage.tsx`, a função `createAdminClient` atribui automaticamente os campos `role: 'client'` e `status: 'ativo'`.
-
----
-
-## 5. Camada de Serviços de Perfis (`src/services/profileServices.ts`)
-
-* `fetchAllProfiles()`: Busca todos os perfis ordenados pela data de criação.
-* `getPendingProfiles()`: Retorna exclusivamente cadastros com `status === 'pendente'`.
-* `updateProfileStatus(id, status)`: Atualiza o status (`pendente` | `ativo` | `recusado` | `inativo`).
-* `createAdminClient(data)`: Inserção de novo cliente com status `ativo`.
-* `updateClientProfile(id, data)`: Edição dos dados cadastrais (Nome/Razão Social, Documento, E-mail, Telefone).
-
----
-
-## 6. Catálogo de Produtos & Escopo Técnico
-
-A plataforma **Automation Test** possui 7 produtos oficiais cadastrados no banco de dados e expostos no portal Tech-Luxo. Cada produto conta com uma ficha técnica oficial delimitando seu escopo funcional, a composição dos entregáveis e seu roadmap de desenvolvimento padronizado em 6 etapas.
-
-### 6.1. Esquema da Tabela `products` (Supabase / PostgreSQL)
-
-A tabela `products` armazena as soluções tecnológicas oferecidas pela plataforma e seus respectivos modelos de precificação.
+A tabela `public.proposals` é o núcleo da esteira comercial de Inteligência Artificial e aprovação humana do admin.
 
 ```sql
-CREATE TYPE product_category AS ENUM (
-  'design_web', 'desenvolvimento', 'erp_saas', 'automacao', 'ia'
-);
-
-CREATE TYPE pricing_type AS ENUM ('unico', 'recorrente', 'hibrido');
-
-CREATE TABLE public.products (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  nome TEXT NOT NULL,
-  slug TEXT NOT NULL UNIQUE,
-  rotulo TEXT,
-  categoria product_category NOT NULL,
-  tipo_cobranca pricing_type DEFAULT 'unico'::pricing_type NOT NULL,
-  preco_setup DECIMAL(10,2) DEFAULT 0.00,
-  preco_mensal DECIMAL(10,2) DEFAULT 0.00,
-  descricao_curta TEXT NOT NULL,
-  descricao_completa TEXT,
-  recursos JSONB DEFAULT '[]'::jsonb,
-  icone TEXT DEFAULT 'Package',
-  status BOOLEAN DEFAULT true NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+create table public.proposals (
+  id uuid not null default gen_random_uuid (),
+  lead_id uuid not null,
+  token_acesso text not null default encode(extensions.gen_random_bytes (24), 'hex'::text),
+  resumo_executivo text not null,
+  valor_total_setup numeric(10, 2) not null,
+  valor_entrada_50 numeric(10, 2) not null,
+  mensalidade_recorrente numeric(10, 2) null default 0.00,
+  prazo_estimado_dias integer not null,
+  entregaveis_principais jsonb not null default '[]'::jsonb,
+  sugestoes_upsell jsonb null default '[]'::jsonb,
+  dicas_engenharia text null,
+  status_proposta text null default 'pendente_aprovacao_admin'::text,
+  observacoes_admin text null,
+  contador_recriacoes integer null default 1,
+  created_at timestamp with time zone not null default timezone ('utc'::text, now()),
+  updated_at timestamp with time zone not null default timezone ('utc'::text, now()),
+  orientacao_admin_refazer text null,
+  constraint proposals_pkey primary key (id),
+  constraint proposals_token_acesso_key unique (token_acesso),
+  constraint proposals_lead_id_fkey foreign KEY (lead_id) references leads (id) on delete CASCADE,
+  constraint proposals_status_proposta_check check (
+    status_proposta = any (array['pendente_aprovacao_admin'::text, 'aprovada_admin'::text, 'enviada_lead'::text, 'aceita'::text, 'recusada'::text])
+  )
 );
 ```
 
-### 6.2. Fichas Técnicas Detalhadas e Roadmaps dos 7 Produtos
-
-#### 🎨 1. Site Institucional Tech-Luxo (`design_web`)
-* **Descrição**: Website corporativo de alta performance desenvolvido para posicionar marcas no mercado B2B e B2C com autoridade, elegância e design moderno. Focado em credibilidade, velocidade de navegação e conversão de visitantes em clientes.
-* **O que compõe**:
-  * Layout Exclusivo e Responsivo
-  * Estrutura de Páginas Institucionais (Home, Sobre Nós, Serviços, Casos de Sucesso, Contato)
-  * Captura de Contatos via WhatsApp e Painel
-  * Painel Administrativo para Conteúdo
-  * Otimização de Carregamento e SEO
-* **Roadmap de Desenvolvimento**:
-  1. Briefing & Levantamento de Marca
-  2. Arquitetura de Informação & Wireframe
-  3. Design de Interface (UI) e Experiência (UX)
-  4. Desenvolvimento Front-end e Back-end
-  5. Garantia de Qualidade (QA) & Testes
-  6. Lançamento & Treinamento
-
 ---
 
-#### 🎯 2. Landing Page de Alta Conversão (`design_web`)
-* **Descrição**: Página única (One-Page) de alta intensidade comercial, projetada especificamente para campanhas de tráfego pago, lançamento de produtos ou captação massiva de leads qualificados.
-* **O que compõe**:
-  * Seção Hero de Alto Impacto
-  * Blocos de Quebra de Objeções (dor, solução, prova social, garantia)
-  * Formulário de Captação Direta
-  * Integração de Rastreamento (pixels e eventos)
-  * Versão Ultra-Mobile
-* **Roadmap de Desenvolvimento**:
-  1. Alinhamento da Oferta
-  2. Redação Comercial (Copywriting)
-  3. Design da Interface
-  4. Desenvolvimento e Conexão de Eventos
-  5. Testes de Conversão e Responsividade
-  6. Publicação e Conexão de Tráfego
+## 4. Esquema da Tabela `public.contracts`
 
----
+Registra o aceite oficial do contrato comercial realizado pelo cliente.
 
-#### 🛒 3. Loja Virtual & E-commerce (`desenvolvimento`)
-* **Descrição**: Plataforma completa de vendas online desenvolvida para empresas que precisam comercializar produtos físicos ou digitais com segurança, controle de estoque e experiência de compra fluida.
-* **O que compõe**:
-  * Catálogo Organizado de Produtos
-  * Checkout Limpo e Transparente
-  * Integração com Meios de Pagamento (PIX, Cartão, Boleto)
-  * Cálculo de Frete e Entrega por CEP
-  * Painel de Gestão de Pedidos
-* **Roadmap de Desenvolvimento**:
-  1. Mapeamento do Catálogo e Regras Comerciais
-  2. Prototipagem da Jornada de Compra
-  3. Construção da Plataforma
-  4. Integração dos Gateways Financeiros e Logísticos
-  5. Testes de Segurança e Transações
-  6. Migração de Produtos e Go-Live
-
----
-
-#### 📅 4. Sistema de Agendamentos Inteligente (`desenvolvimento`)
-* **Descrição**: Solução para prestadores de serviços e clínicas que precisam automatizar a marcação de horários, eliminando conflitos de agenda e reduzindo o índice de faltas com lembretes automáticos.
-* **O que compõe**:
-  * Grade de Horários Dinâmica
-  * Seleção de Profissionais e Serviços
-  * Lembretes e Confirmações Automáticas
-  * Sincronização de Calendário
-  * Pagamento de Sinal/Reserva
-* **Roadmap de Desenvolvimento**:
-  1. Levantamento da Operação de Atendimento
-  2. Design da Interface do Cliente e Atendente
-  3. Desenvolvimento do Motor de Agendamento
-  4. Conexão de Canais de Notificação
-  5. Validação de Cenários (QA)
-  6. Implantação e Treinamento
-
----
-
-#### 🏢 5. Sistema ERP Commercial White-Label (`erp_saas`)
-* **Descrição**: Plataforma corporativa de gestão empresarial projetada para centralizar o controle financeiro, operacional, emissão fiscal e gestão de clientes em um ambiente seguro e personalizado com a marca da empresa.
-* **O que compõe**:
-  * Módulo Financeiro (A pagar/receber, DRE, caixa)
-  * Módulo Fiscal e Faturamento (Notas e importação XML)
-  * Gestão de Clientes e Fornecedores (CRM Base)
-  * Painel Executivo (Dashboard em tempo real)
-  * Personalização White-Label
-* **Roadmap de Desenvolvimento**:
-  1. Diagnóstico dos Processos Operacionais
-  2. Modelagem do Banco de Dados e Permissões
-  3. Construção dos Módulos Principais
-  4. Integração de Módulos de Cobrança e Fiscal
-  5. Auditoria de Segurança e Dados
-  6. Homologação, Carga de Dados e Treinamento
-
----
-
-#### ⚡ 6. Automação de Processos & API (n8n) (`automacao`)
-* **Descrição**: Engenharia de integração de sistemas e eliminação de tarefas manuais repetitivas. Conecta ferramentas desconectadas para criar fluxos de trabalho inteligentes que funcionam 24/7 sem intervenção humana.
-* **O que compõe**:
-  * Mapeamento e Desenho de Fluxos (Workflows)
-  * Conectores de API e Webhooks
-  * Tratamento e Transformação de Dados
-  * Alertas de Erro e Logs de Execução
-  * Automação Financeira e Administrativa
-* **Roadmap de Desenvolvimento**:
-  1. Mapeamento de Gargalos (Workflow Mapping)
-  2. Arquitetura das Integrações
-  3. Construção das Rotinas Automáticas
-  4. Testes de Estresse e Exceções
-  5. Implantação do Monitoramento
-  6. Handover e Documentação de Fluxos
-
----
-
-#### 🤖 7. Agente de IA Atendimento 24/7 (`ia`)
-* **Descrição**: Funcionalidade de atendimento e vendas autônomo. Um agente virtual treinado especificamente com a base de conhecimento do negócio para qualificar leads, responder dúvidas técnicas e direcionar oportunidades.
-* **O que compõe**:
-  * Base de Conhecimento Treinada
-  * Qualificação Automática de Leads
-  * Integração com Canais de Atendimento
-  * Escalonamento Humano Inteligente
-  * Personalidade e Tom de Voz Customizados
-* **Roadmap de Desenvolvimento**:
-  1. Curadoria da Base de Conhecimento
-  2. Engenharia de Prompt e Personalidade
-  3. Conexão com Infraestrutura de Mensagens
-  4. Treinamento de Cenários e Ajuste Fino (Fine-Tuning)
-  5. Piloto Controlado
-  6. Liberação Definitiva e Monitoramento
-
----
-
-## 7. Camada de Serviços de Produtos (`src/services/productServices.ts`)
-
-* `fetchAllProducts()`: Lista todos os produtos da tabela `products` ordenados por data.
-* `fetchActiveProducts()`: Busca produtos ativos (`status === true`) do Supabase, aplicando tratamento de erro resiliente com fallback local para `productsData.ts` caso haja falha de RLS ou indisponibilidade.
-* `createProduct(data)`: Inserção de novos produtos no catálogo.
-* `updateProduct(id, data)`: Atualização dos dados de um produto existente (Preço, Categoria, Recursos).
-* `toggleProductStatus(id, currentStatus)`: Alterna o status `active` (`true` / `false`).
-* **Regra de Inativação sem Deleção**: Exclusões físicas via `DELETE` são desabilitadas; desativações ocorrem alterando `active` para `false`.
-
----
-
-## 8. Ciclo de Atualização Reativa das Métricas do Painel Admin
-
-No componente `AdminOverview.tsx`, as métricas operacionais superiores são calculadas dinamicamente sobre o estado local `profiles`, sincronizado com a consulta direta ao Supabase:
-
-1. **Inicialização (`useEffect`)**:
-   - Invocação da função `loadProfiles()`, executando `fetchAllProfiles()` para obter o array completo de perfis cadastrados no PostgreSQL.
-2. **Cálculo Derivado de Métricas**:
-   - **Total de Clientes Ativos**: Calculado via `profiles.filter(p => p.status === 'ativo').length`.
-   - **Solicitações Pendentes**: Calculado via `profiles.filter(p => p.status === 'pendente').length`.
-3. **Ciclo de Atualização Reativa (`handleStatusChange`)**:
-   - Ao acionar os botões `APROVAR`, `RECUSAR`, `INATIVAR` ou `ATIVAR`, a função `updateProfileStatus(userId, newStatus)` executa a alteração atômica no banco de dados.
-   - Em caso de sucesso, `loadProfiles()` é invocado novamente para recarregar o estado `profiles`, recomputando instantaneamente os contadores e atualizando a interface gráfica com feedback visual (Toast).
-
----
-
-## 9. Tabelas de Projetos e Faturas (`projects` e `invoices`)
-
-### Tabela `projects`
 ```sql
-CREATE TYPE project_phase AS ENUM (
-  'proposta_pendente', 'proposta_enviada', 'aguardando_pagamento',
-  'em_desenvolvimento', 'homologacao', 'concluido', 'recusado'
-);
-
-CREATE TABLE public.projects (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-  nome TEXT NOT NULL,
-  descricao TEXT,
-  data_inicio TEXT,
-  previsao_entrega TEXT,
-  fase_atual project_phase DEFAULT 'proposta_pendente'::project_phase NOT NULL,
-  proxima_entrega TEXT,
-  status_pagamento TEXT,
-  status_geral TEXT,
-  url_projeto TEXT,
-  btn_online_label TEXT,
-  btn_gerenciar_label TEXT,
-  progresso INTEGER,
-  ativo BOOLEAN DEFAULT true NOT NULL,
-  valor_setup DECIMAL(10,2) DEFAULT 0.00,
-  valor_mensalidade DECIMAL(10,2) DEFAULT 0.00,
-  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-```
-
-### Tabela `invoices`
-```sql
-CREATE TYPE invoice_status AS ENUM ('pendente', 'pago', 'cancelado');
-CREATE TYPE invoice_type AS ENUM ('entrada', 'mensalidade', 'avulso');
-
-CREATE TABLE public.invoices (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
-  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-  valor DECIMAL(10,2) NOT NULL,
-  vencimento DATE NOT NULL,
-  tipo invoice_type NOT NULL,
-  status invoice_status DEFAULT 'pendente'::invoice_status NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+create table public.contracts (
+  id uuid not null default gen_random_uuid (),
+  proposal_id uuid not null,
+  lead_id uuid not null,
+  valor_setup_base numeric(10, 2) not null,
+  modulos_upsell_selecionados jsonb null default '[]'::jsonb,
+  valor_total_contrato numeric(10, 2) not null,
+  valor_entrada_50 numeric(10, 2) not null,
+  mensalidade_recorrente numeric(10, 2) null default 0.00,
+  status_contrato text null default 'aguardando_pagamento_entrada'::text,
+  token_acesso text null,
+  data_aceite timestamp with time zone not null default timezone ('utc'::text, now()),
+  created_at timestamp with time zone not null default timezone ('utc'::text, now()),
+  updated_at timestamp with time zone not null default timezone ('utc'::text, now()),
+  constraint contracts_pkey primary key (id),
+  constraint contracts_proposal_id_fkey foreign key (proposal_id) references proposals (id) on delete cascade
 );
 ```
 
 ---
 
-## 10. Fluxo Comercial Completo da Proposta
+## 5. Fluxo Comercial Completo da Proposta com Magic Link
 
 ```mermaid
 sequenceDiagram
-    participant C as Cliente
-    participant A as Admin (Painel)
+    participant Lead as Lead / Cliente
+    participant Admin as Admin (/admin/propostas)
+    participant N8N as Workflow n8n / IA
     participant DB as Supabase DB
 
-    A->>DB: Criar proposta/projeto ('proposta_pendente')
-    A->>DB: sendProposalToClient(projectId, valorSetup, valorMensal, escopo)
-    Note over DB: Atualiza fase_atual para 'proposta_enviada'<br/>Gera fatura de entrada (50% do setup)
-    C->>A: Visualiza proposta e fatura pendente
-    C->>A: Realiza pagamento (simulado/real)
-    A->>DB: acceptProposalAndPayEntry(projectId, invoiceId)
-    Note over DB: Atualiza fatura para 'pago'<br/>Altera fase_atual para 'em_desenvolvimento'<br/>Altera status do cliente para 'ativo'
-    DB-->>A: Dashboard recarrega em tempo real
+    Lead->>DB: Preenche Wizard (/solicitar-proposta)
+    DB-->>Admin: Notifica Proposta Pendente
+    Admin->>N8N: Aprova ou Pede Ajustes da IA
+    N8N->>Lead: Envia E-mail com Magic Link (/proposta/:token_acesso)
+    Lead->>DB: Abre Proposta e Clica em Aceitar
+    DB-->>Admin: Registra Contrato (status_proposta: 'aceita')
 ```
 
 ---
 
-## 11. Captação de Leads e Solicitação de Proposta (Briefing)
+## 6. Rotas de Navegação SPA & Suporte Vercel (`vercel.json`)
 
-O fluxo público de captação de leads substitui a compra direta e integra o cadastro de briefing ao banco de dados:
+Para evitar erros de HTTP 404 em navegações diretas da SPA no deploy da Vercel, o arquivo `vercel.json` na raiz da aplicação reescreve todas as chamadas para `index.html`:
 
-1. **Entrada do Lead (`leadServices.ts` ➔ `submitProposalRequest`)**:
-   - Cria ou atualiza um registro na tabela `profiles` com `status = 'pendente'`.
-   - Cria um registro associado na tabela `projects` com a fase inicial `fase_atual = 'briefing'` (ou `'proposta_pendente'` como fallback) e valores comerciais zerados (`valor_setup = 0`, `valor_mensalidade = 0`).
-   - **Mecanismo de Resiliência Local**: O fluxo é desenhado para capturar erros de RLS ou ausência de tabelas no Supabase, logando o aviso no console e retornando um estado de sucesso (`success: true, isFallback: true`) para assegurar o funcionamento da navegação do usuário localmente.
-2. **Ciclo de Conversão**:
-    - O projeto entra na fila de análise da administração.
-    - O Administrador revisa as necessidades e precifica o projeto enviando a proposta, migrando a fase do projeto para `'proposta_enviada'` e gerando a fatura de 50% de entrada.
-
----
-
-## 12. Fluxo de Briefing Técnico e Propostas com Inteligência Artificial (N8N)
-
-Para suportar o fluxo operacional do diagrama de negócios, foi adicionada a tabela de briefings técnicos conectando clientes, projetos, webhook do N8N e o modelo de propostas autogeradas.
-
-### Tabela `briefings`
-```sql
-CREATE TABLE public.briefings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
-  nome_projeto TEXT NOT NULL,
-  logo_url TEXT,
-  cor_primaria TEXT,
-  cor_secundaria TEXT,
-  tom_de_voz TEXT,
-  faturamento_mensal TEXT,
-  qtd_funcionarios INTEGER DEFAULT 1 NOT NULL,
-  qtd_socios INTEGER DEFAULT 1 NOT NULL,
-  publico_alvo TEXT,
-  dores_principais TEXT NOT NULL,
-  funcionalidades_esperadas TEXT[] DEFAULT '{}'::text[] NOT NULL,
-  integracoes_necessarias TEXT[] DEFAULT '{}'::text[] NOT NULL,
-  proposta_ia JSONB,
-  link_pagamento_entrada TEXT,
-  status_briefing TEXT DEFAULT 'pendente' NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
 ```
 
-### Validação de Duplicidade de Cadastro
-Antes da inserção de um briefing, a API executa a checagem na tabela `public.profiles` para garantir que o `email`, o `cpf` ou o `cnpj` inseridos não pertençam a contas preexistentes de outros clientes. Isso preserva a integridade cadastral e evita redundâncias de dados de faturamento.
-
-### Integração com Webhook N8N
-Ao salvar um briefing com status `'em_analise_ia'`, um disparo HTTP `POST` assíncrono é enviado para `VITE_N8N_BRIEFING_WEBHOOK` com os metadados do projeto. O workflow do n8n processa estes dados com LLMs e atualiza a coluna `proposta_ia` com o escopo e precificação sugeridos, mudando o status para `'proposta_gerada'`.
-
-### Manutenção do RLS (Row Level Security) Compatível
-* As políticas de RLS das tabelas de `briefings`, `projects` e `profiles` permitem que usuários públicos (`anon`) façam inserções em novos registros de briefing técnico contanto que sigam a integridade relacional.
-* Consultas privadas e atualizações de status são restritas para proprietários autorizados (`auth.uid() = client_id`) e administradores do sistema (`role = 'admin'`), evitando vazamento de propostas sensíveis.
-
----
-
-## 13. Rotas de Navegação Dedicadas (React Router)
-
-A reestruturação arquitetural substitui o fluxo de modais por páginas e rotas dedicadas no React Router:
-
-### Rotas Públicas
-- `/solicitar-proposta`: Página inteira para recepção de briefing de leads. Oferece suporte opcional ao parâmetro `?produto=slug` na query-string para carregar a intenção inicial de compra.
-- `/briefing/:projectId`: Página estruturada em padrão Tech-Luxo para envio dos dados da marca, métricas de negócio e necessidades técnicas adicionais.
-- `/proposta/:briefingId`: Tela dinâmica de visualização do escopo, entregáveis e opções de upsells calculados pela inteligência artificial.
-
-### Rotas do Painel Administrativo
-- `/admin`: Tela principal de consolidação de métricas operacionais e aprovação de cadastros. Agora com botão dinâmico para gerar contratos e liberar acesso instantaneamente ao detectar propostas pagas.
-- `/admin/clientes/novo`: Tela exclusiva para cadastrar e ativar perfis de clientes diretamente pelo administrador.
-- `/admin/clientes/editar/:id`: Tela para alteração de dados cadastrais de um cliente selecionado, incluindo a estruturação do endereço de faturamento (`endereco` JSONB).
-- `/admin/produtos/novo`: Tela exclusiva para cadastrar novas soluções tecnológicas no catálogo de produtos.
-- `/admin/produtos/editar/:id`: Tela para alteração de parâmetros comerciais (Setup, MRR, recursos e tags) de uma solução já existente.
+### Rotas Ativas
+- `/solicitar-proposta`: Wizard de captação de leads.
+- `/admin/propostas`: Painel da esteira comercial com filtros e contadores.
+- `/admin/propostas/:id`: Detalhe da proposta para aprovação humana e recriação IA.
+- `/proposta/:token`: Visualização da proposta pública pelo cliente usando `token_acesso`.
