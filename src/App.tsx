@@ -17,6 +17,8 @@ import BriefingPage from './pages/BriefingPage'
 import ProposalViewPage from './pages/ProposalViewPage'
 import { AuthProvider } from './contexts/AuthContext'
 
+import SetPasswordPage from './pages/SetPasswordPage'
+
 // Premium placeholder component for dashboard sections in development
 function DashboardPlaceholder({ title }: { title: string }) {
   return (
@@ -56,6 +58,7 @@ function App() {
           <Route path="/solicitar-proposta" element={<ProposalPage />} />
           <Route path="/briefing/:projectId" element={<BriefingPage />} />
           <Route path="/proposta/:briefingId" element={<ProposalViewPage />} />
+          <Route path="/definir-senha" element={<SetPasswordPage />} />
           <Route path="/login" element={<Login />} />
           
           {/* Admin Routes */}

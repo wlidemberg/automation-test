@@ -18,6 +18,7 @@ import {
   CreditCard
 } from 'lucide-react'
 import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
+import { promoverLeadParaCliente } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -32,22 +33,48 @@ export default function AdminProposalDetailPage() {
   const [orientacaoAdmin, setOrientacaoAdmin] = useState<string>('')
   const [isSubmittingRevision, setIsSubmittingRevision] = useState<boolean>(false)
   const [isSubmittingApproval, setIsSubmittingApproval] = useState<boolean>(false)
-  const [isConfirmingPayment, setIsConfirmingPayment] = useState<boolean>(false)
-  const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [promotionModalData, setPromotionModalData] = useState<{
+    show: boolean
+    clientName: string
+    clientEmail: string
+    linkDefinirSenha: string
+  } | null>(null)
 
   const handleConfirmarPagamento = async () => {
     if (!proposal) return
     setIsConfirmingPayment(true)
     setFeedbackMessage(null)
     try {
+      // 1. Confirma pagamento e ativa contrato
       const updated = await confirmarPagamentoProposta(proposal.id)
       if (updated) {
         setProposal(updated)
-        setFeedbackMessage({ type: 'success', text: 'Pagamento de entrada confirmado e contrato ativado com sucesso!' })
       }
+
+      // 2. Promove lead para cliente no Supabase Auth e public.profiles
+      const targetLeadId = proposal.lead_id || proposal.lead?.id || proposal.id
+      let passwordLink = `${window.location.origin}/definir-senha`
+      let name = proposal.lead?.razao_social_nome || 'Cliente'
+      let email = proposal.lead?.email || 'N/A'
+
+      if (targetLeadId) {
+        const promotion = await promoverLeadParaCliente(targetLeadId, proposal.id)
+        if (promotion.linkDefinirSenha) {
+          passwordLink = promotion.linkDefinirSenha
+        }
+      }
+
+      setPromotionModalData({
+        show: true,
+        clientName: name,
+        clientEmail: email,
+        linkDefinirSenha: passwordLink
+      })
+
+      setFeedbackMessage({ type: 'success', text: 'Pagamento de entrada (50%) registrado, contrato ativado e lead promovido a cliente com sucesso!' })
     } catch (err: any) {
       console.error(err)
-      setFeedbackMessage({ type: 'error', text: 'Falha ao confirmar pagamento da proposta.' })
+      setFeedbackMessage({ type: 'error', text: err.message || 'Falha ao confirmar pagamento da proposta.' })
     } finally {
       setIsConfirmingPayment(false)
     }
@@ -639,6 +666,64 @@ export default function AdminProposalDetailPage() {
         </section>
 
       </main>
+
+      {/* Modal de Sucesso Tech-Luxo ao Confirmar Pagamento e Promover Lead */}
+      {promotionModalData?.show && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-[#09090b] border border-brand-neon/40 rounded-2xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-[0_0_50px_rgba(204,255,0,0.15)] relative">
+            <button
+              onClick={() => setPromotionModalData(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer font-mono"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-brand-neon/10 border border-brand-neon/30 flex items-center justify-center text-brand-neon shrink-0">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono text-brand-neon uppercase font-bold tracking-widest block">
+                  ESTEIRA CONCLUÍDA COM SUCESSO
+                </span>
+                <h3 className="font-space font-extrabold text-white text-lg uppercase">
+                  PAGAMENTO REGISTRADO & CLIENTE ATIVADO
+                </h3>
+              </div>
+            </div>
+
+            <div className="space-y-3 font-mono text-xs text-gray-300">
+              <div className="p-3.5 bg-zinc-900/80 border border-white/10 rounded-xl space-y-1">
+                <span className="text-gray-500 block text-[10px]">CLIENTE PROMOVIDO NO SISTEMA:</span>
+                <span className="font-bold text-white text-sm block">{promotionModalData.clientName}</span>
+                <span className="text-brand-neon block">{promotionModalData.clientEmail}</span>
+              </div>
+
+              <div className="p-3.5 bg-brand-neon/5 border border-brand-neon/20 rounded-xl space-y-1 text-emerald-400">
+                <span className="font-bold block">✓ Pagamento de Entrada de 50% Confirmado</span>
+                <span className="font-bold block">✓ Contrato alterado para o status 'ATIVO'</span>
+                <span className="font-bold block">✓ Perfil de Cliente gerado na tabela public.profiles</span>
+              </div>
+
+              <div className="pt-2 space-y-1">
+                <span className="text-[10px] text-gray-400 block">LINK DE DEFINIÇÃO DE SENHA GERADO:</span>
+                <div className="p-3 bg-black/80 border border-white/10 rounded-lg text-[11px] font-mono text-brand-neon truncate selection:bg-brand-neon selection:text-black">
+                  {promotionModalData.linkDefinirSenha}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setPromotionModalData(null)}
+                className="px-6 py-3 bg-brand-neon text-black font-space font-extrabold text-xs uppercase tracking-wider rounded hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all cursor-pointer font-mono"
+              >
+                CONCLUIR E FECHAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

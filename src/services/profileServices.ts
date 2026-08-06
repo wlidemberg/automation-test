@@ -90,7 +90,6 @@ export const createAdminClient = async (clientData: Partial<Profile>): Promise<P
     id: clientData.id || crypto.randomUUID(),
     email: clientData.email || '',
     role: 'client',
-    status: 'ativo', // Atribuição automática de status ativo para cadastros do Admin
     tipo_pessoa: clientData.tipo_pessoa || 'PF',
     nome_completo: clientData.nome_completo || null,
     cpf: clientData.cpf || null,

@@ -9,9 +9,12 @@ import {
   ArrowUpRight,
   Plus,
   CreditCard,
-  Eye
+  Eye,
+  CheckCircle2,
+  X
 } from 'lucide-react'
 import { listPendingProposals, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
+import { promoverLeadParaCliente } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -23,17 +26,44 @@ export default function AdminProposalsListPage() {
   const [statusFilter, setStatusFilter] = useState<string>('todos')
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [promotionModalData, setPromotionModalData] = useState<{
+    show: boolean
+    clientName: string
+    clientEmail: string
+    linkDefinirSenha: string
+  } | null>(null)
 
-  const handleConfirmarPagamento = async (proposalId: string) => {
+  const handleConfirmarPagamento = async (proposalId: string, leadId?: string | null) => {
     setConfirmingId(proposalId)
     try {
+      // 1. Confirma pagamento da entrada (50%) e ativa contrato
       const updated = await confirmarPagamentoProposta(proposalId)
       if (updated) {
         setProposals(prev => prev.map(p => p.id === proposalId ? updated : p))
       }
-    } catch (err) {
+
+      // 2. Promove o lead para cliente no Supabase Auth e public.profiles
+      const targetLeadId = leadId || updated?.lead_id || updated?.lead?.id || proposalId
+      let passwordLink = `${window.location.origin}/definir-senha`
+      let name = updated?.lead?.razao_social_nome || 'Cliente'
+      let email = updated?.lead?.email || 'N/A'
+
+      if (targetLeadId) {
+        const promotion = await promoverLeadParaCliente(targetLeadId, proposalId)
+        if (promotion.linkDefinirSenha) {
+          passwordLink = promotion.linkDefinirSenha
+        }
+      }
+
+      setPromotionModalData({
+        show: true,
+        clientName: name,
+        clientEmail: email,
+        linkDefinirSenha: passwordLink
+      })
+    } catch (err: any) {
       console.error(err)
-      alert('Falha ao confirmar pagamento da proposta.')
+      alert('Falha ao confirmar pagamento e promover lead: ' + (err.message || ''))
     } finally {
       setConfirmingId(null)
     }
@@ -295,7 +325,7 @@ export default function AdminProposalsListPage() {
                           <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleConfirmarPagamento(proposal.id)}
+                          onClick={() => handleConfirmarPagamento(proposal.id, proposal.lead_id)}
                           disabled={confirmingId === proposal.id}
                           className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-neon hover:bg-[#b8e600] text-black font-space font-extrabold text-xs uppercase tracking-wider rounded shadow-[0_0_15px_rgba(204,255,0,0.3)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] transition-all duration-300 cursor-pointer font-mono"
                         >
@@ -331,6 +361,64 @@ export default function AdminProposalsListPage() {
         )}
 
       </main>
+
+      {/* Modal de Sucesso Tech-Luxo ao Confirmar Pagamento e Promover Lead */}
+      {promotionModalData?.show && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-[#09090b] border border-brand-neon/40 rounded-2xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-[0_0_50px_rgba(204,255,0,0.15)] relative">
+            <button
+              onClick={() => setPromotionModalData(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-brand-neon/10 border border-brand-neon/30 flex items-center justify-center text-brand-neon shrink-0">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono text-brand-neon uppercase font-bold tracking-widest block">
+                  ESTEIRA CONCLUÍDA COM SUCESSO
+                </span>
+                <h3 className="font-space font-extrabold text-white text-lg uppercase">
+                  PAGAMENTO REGISTRADO & CLIENTE ATIVADO
+                </h3>
+              </div>
+            </div>
+
+            <div className="space-y-3 font-mono text-xs text-gray-300">
+              <div className="p-3.5 bg-zinc-900/80 border border-white/10 rounded-xl space-y-1">
+                <span className="text-gray-500 block text-[10px]">CLIENTE PROMOVIDO NO SISTEMA:</span>
+                <span className="font-bold text-white text-sm block">{promotionModalData.clientName}</span>
+                <span className="text-brand-neon block">{promotionModalData.clientEmail}</span>
+              </div>
+
+              <div className="p-3.5 bg-brand-neon/5 border border-brand-neon/20 rounded-xl space-y-1 text-emerald-400">
+                <span className="font-bold block">✓ Pagamento de Entrada de 50% Confirmado</span>
+                <span className="font-bold block">✓ Contrato alterado para o status 'ATIVO'</span>
+                <span className="font-bold block">✓ Perfil de Cliente gerado na tabela public.profiles</span>
+              </div>
+
+              <div className="pt-2 space-y-1">
+                <span className="text-[10px] text-gray-400 block">LINK DE DEFINIÇÃO DE SENHA GERADO:</span>
+                <div className="p-3 bg-black/80 border border-white/10 rounded-lg text-[11px] font-mono text-brand-neon truncate selection:bg-brand-neon selection:text-black">
+                  {promotionModalData.linkDefinirSenha}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setPromotionModalData(null)}
+                className="px-6 py-3 bg-brand-neon text-black font-space font-extrabold text-xs uppercase tracking-wider rounded hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all cursor-pointer font-mono"
+              >
+                CONCLUIR E FECHAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

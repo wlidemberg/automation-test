@@ -51,12 +51,12 @@ export interface Profile {
   id: string;
   email: string;
   role: UserRole;
-  status: UserStatus;
   tipo_pessoa: TipoPessoa;
   razao_social?: string | null;
   cnpj?: string | null;
   nome_completo?: string | null;
   cpf?: string | null;
+  data_nascimento?: string | null;
   telefone?: string | null;
   endereco?: Address | Record<string, any> | null;
   created_at?: string;
