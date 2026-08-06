@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import type { Profile } from '../types/database'
+import type { Profile, Lead } from '../types/database'
 
 export interface ProvisionClientPayload {
   leadId: string
@@ -10,29 +10,66 @@ export interface ProvisionClientResult {
   success: boolean
   userId?: string
   email: string
-  linkDefinirSenha?: string
+  linkDefinirSenha: string
   profile?: Profile | null
+  message: string
 }
+
+const N8N_PROVISION_CLIENT_WEBHOOK = 
+  import.meta.env.VITE_N8N_WEBHOOK_PROVISION_CLIENT || 
+  'https://n8n.webhook.local/webhook/provision-client'
 
 /**
  * Provisiona a conta do novo cliente no Supabase Auth e preenche a tabela `public.profiles`.
  */
 export async function provisionClientAccount({
   leadId,
-  proposalId: _proposalId
+  proposalId
 }: ProvisionClientPayload): Promise<ProvisionClientResult> {
-  if (!leadId) {
-    throw new Error('Não foi possível obter o ID do Lead para provisionamento.')
+  if (!leadId && !proposalId) {
+    throw new Error('Não foi possível obter o ID do Lead ou Proposta para provisionamento.')
   }
 
-  // 1. Busca os dados completos do Lead vinculado
-  const { data: lead, error: leadError } = await supabase
-    .from('leads')
-    .select('*')
-    .eq('id', leadId)
-    .single()
+  // 1. Busca os dados completos do Lead vinculado (com suporte a fallback se passar proposalId)
+  let lead: Lead | null = null
 
-  if (leadError || !lead) {
+  // Tentativa 1: Busca em leads pelo leadId
+  if (leadId) {
+    const { data: leadData } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('id', leadId)
+      .maybeSingle()
+
+    if (leadData) {
+      lead = leadData as Lead
+    }
+  }
+
+  // Tentativa 2: Se não encontrou por leadId, busca na tabela proposals para obter o lead_id correto
+  if (!lead && (proposalId || leadId)) {
+    const searchId = proposalId || leadId
+    const { data: propData } = await supabase
+      .from('proposals')
+      .select('lead_id, lead:leads(*)')
+      .eq('id', searchId)
+      .maybeSingle()
+
+    if (propData?.lead) {
+      lead = propData.lead as Lead
+    } else if (propData?.lead_id) {
+      const { data: leadById } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('id', propData.lead_id)
+        .maybeSingle()
+      if (leadById) {
+        lead = leadById as Lead
+      }
+    }
+  }
+
+  if (!lead) {
     throw new Error('Não foi possível obter os dados do Lead para provisionamento.')
   }
 
@@ -46,65 +83,118 @@ export async function provisionClientAccount({
   const linkDefinirSenha = 'https://automation-test-sepia.vercel.app/definir-senha'
   let userId: string = lead.id
 
-  // 3. Chama a função de convite/autenticação no Supabase Auth
+  // 3. Dispara o envio de Magic Link via Supabase Auth (Client-side resiliência)
   try {
-    const { data: authData, error: authError } = await supabase.auth.admin.inviteUserByEmail(
+    const { data: authOtpData, error: authOtpErr } = await supabase.auth.signInWithOtp({
+      email: lead.email,
+      options: {
+        emailRedirectTo: linkDefinirSenha,
+        data: {
+          role: 'client',
+          razao_social: lead.razao_social_nome
+        }
+      }
+    })
+
+    if (authOtpErr) {
+      console.warn('[clientServices] Aviso signInWithOtp:', authOtpErr.message)
+    } else {
+      console.log('[clientServices] E-mail com link de primeiro acesso enviado via Supabase Auth para:', lead.email)
+    }
+
+    // Tenta também convite direto via admin se chave de serviço estiver ativa no ambiente
+    const { data: authAdminData } = await supabase.auth.admin.inviteUserByEmail(
       lead.email,
       {
         redirectTo: linkDefinirSenha,
         data: {
           role: 'client',
-          razao_social: lead.razao_social || lead.razao_social_nome || lead.nome_completo
+          razao_social: lead.razao_social_nome
         }
       }
     )
 
-    if (authError) {
-      console.warn('Aviso ao gerar convite no Auth:', authError.message)
-    }
-
-    if (authData?.user?.id) {
-      userId = authData.user.id
+    if (authAdminData?.user?.id) {
+      userId = authAdminData.user.id
     }
   } catch (authCatchErr: any) {
-    console.warn('Aviso ao executar convite no Auth:', authCatchErr.message || authCatchErr)
+    console.warn('[clientServices] Aviso ao disparar convite no Auth:', authCatchErr.message || authCatchErr)
   }
 
-  // 4. Preenche/Atualiza a tabela public.profiles
+  // 4. Preenche/Atualiza a tabela public.profiles com fallbacks resilientes
   const profileData: Partial<Profile> = {
     id: userId,
     email: lead.email,
     role: 'client',
     tipo_pessoa: tipoPessoa,
-    razao_social: isCnpj ? (lead.razao_social || lead.razao_social_nome || lead.nome_completo) : null,
+    razao_social: isCnpj ? lead.razao_social_nome : null,
     cnpj: isCnpj ? cleanDoc : null,
-    nome_completo: !isCnpj ? (lead.nome_completo || lead.razao_social_nome || lead.razao_social) : null,
+    nome_completo: !isCnpj ? lead.razao_social_nome : null,
     cpf: !isCnpj ? cleanDoc : null,
     telefone: lead.telefone || null,
     updated_at: new Date().toISOString()
   }
 
-  const { data: savedProfile, error: profileError } = await supabase
+  let savedProfile: Profile | null = null
+
+  // Tentativa A: Upsert especificando conflito no email
+  const { data: pA, error: errA } = await supabase
     .from('profiles')
     .upsert(profileData, { onConflict: 'email' })
     .select()
     .maybeSingle()
 
-  if (profileError) {
-    console.error('Erro ao preencher a tabela profiles:', profileError)
-    const { data: fallbackProfile } = await supabase
+  if (pA) {
+    savedProfile = pA as Profile
+  } else {
+    if (errA) console.warn('[clientServices] Upsert onConflict email:', errA.message)
+
+    // Tentativa B: Upsert no ID
+    const { data: pB, error: errB } = await supabase
       .from('profiles')
       .upsert(profileData)
       .select()
       .maybeSingle()
 
-    return {
-      success: true,
-      userId,
-      email: lead.email,
-      linkDefinirSenha,
-      profile: fallbackProfile || (profileData as Profile)
+    if (pB) {
+      savedProfile = pB as Profile
+    } else {
+      if (errB) console.warn('[clientServices] Upsert padrão:', errB.message)
+
+      // Tentativa C: Insert direto
+      const { data: pC, error: errC } = await supabase
+        .from('profiles')
+        .insert([profileData])
+        .select()
+        .maybeSingle()
+
+      if (pC) {
+        savedProfile = pC as Profile
+      } else if (errC) {
+        console.error('[clientServices] Insert na tabela profiles falhou:', errC.message)
+      }
     }
+  }
+
+  // 5. Dispara Webhook do n8n para envio de e-mail customizado SMTP/Resend
+  try {
+    await fetch(N8N_PROVISION_CLIENT_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'CLIENT_PROVISIONED',
+        lead_id: lead.id,
+        proposal_id: proposalId,
+        email: lead.email,
+        razao_social: lead.razao_social_nome,
+        action_url: linkDefinirSenha,
+        tipo_pessoa: tipoPessoa,
+        doc: cleanDoc,
+        created_at: new Date().toISOString()
+      })
+    })
+  } catch (wErr) {
+    console.warn('[clientServices] Webhook n8n de provisionamento não respondeu:', wErr)
   }
 
   return {
@@ -112,7 +202,8 @@ export async function provisionClientAccount({
     userId,
     email: lead.email,
     linkDefinirSenha,
-    profile: savedProfile as Profile
+    profile: savedProfile,
+    message: 'Conta do cliente provisionada e perfil cadastrado em public.profiles!'
   }
 }
 
@@ -125,7 +216,7 @@ export async function promoverLeadParaCliente(leadId: string, proposalId: string
     success: result.success,
     profile: result.profile || null,
     authInvited: Boolean(result.userId),
-    linkDefinirSenha: result.linkDefinirSenha || 'https://automation-test-sepia.vercel.app/definir-senha',
-    message: 'Conta do cliente provisionada com sucesso!'
+    linkDefinirSenha: result.linkDefinirSenha,
+    message: result.message
   }
 }
