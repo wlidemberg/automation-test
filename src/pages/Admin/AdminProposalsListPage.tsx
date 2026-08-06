@@ -11,10 +11,11 @@ import {
   CreditCard,
   Eye,
   CheckCircle2,
-  X
+  X,
+  Zap
 } from 'lucide-react'
 import { listPendingProposals, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
-import { promoverLeadParaCliente } from '../../services/clientServices'
+import { promoverLeadParaCliente, processAllAcceptedProposals, type BatchProvisionResult } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -26,12 +27,29 @@ export default function AdminProposalsListPage() {
   const [statusFilter, setStatusFilter] = useState<string>('todos')
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [isProcessingBatch, setIsProcessingBatch] = useState<boolean>(false)
+  const [batchModalResult, setBatchModalResult] = useState<BatchProvisionResult | null>(null)
   const [promotionModalData, setPromotionModalData] = useState<{
     show: boolean
     clientName: string
     clientEmail: string
     linkDefinirSenha: string
   } | null>(null)
+
+  const handleProcessBatch = async () => {
+    setIsProcessingBatch(true)
+    try {
+      const result = await processAllAcceptedProposals()
+      setBatchModalResult(result)
+      const freshData = await listPendingProposals('todos')
+      setProposals(freshData)
+    } catch (err: any) {
+      console.error(err)
+      alert('Falha ao processar lote de propostas: ' + (err.message || ''))
+    } finally {
+      setIsProcessingBatch(false)
+    }
+  }
 
   const handleConfirmarPagamento = async (proposalId: string, leadId?: string | null) => {
     setConfirmingId(proposalId)
@@ -133,6 +151,25 @@ export default function AdminProposalsListPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleProcessBatch}
+              disabled={isProcessingBatch}
+              title="Processa em lote todas as propostas aceitas, preenche a tabela public.profiles e envia os e-mails de acesso"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500/20 text-amber-400 border border-amber-500/40 font-space font-bold text-xs uppercase tracking-wider rounded hover:bg-amber-500 hover:text-black transition-all duration-300 cursor-pointer font-mono disabled:opacity-50"
+            >
+              {isProcessingBatch ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  PROCESSANDO LOTE...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 stroke-[2.5]" />
+                  PROCESSAR CLIENTES ACEITOS
+                </>
+              )}
+            </button>
+
             <Link
               to="/solicitar-proposta"
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-neon text-black font-space font-bold text-xs uppercase tracking-wider rounded hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300"
@@ -414,6 +451,86 @@ export default function AdminProposalsListPage() {
                 className="px-6 py-3 bg-brand-neon text-black font-space font-extrabold text-xs uppercase tracking-wider rounded hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all cursor-pointer font-mono"
               >
                 CONCLUIR E FECHAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Relatório de Processamento em Lote */}
+      {batchModalResult && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-[#09090b] border border-amber-500/40 rounded-2xl p-6 sm:p-8 max-w-xl w-full space-y-6 shadow-[0_0_50px_rgba(245,158,11,0.15)] relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setBatchModalResult(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer font-mono"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <Zap className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono text-amber-400 uppercase font-bold tracking-widest block">
+                  PROCESSAMENTO EM LOTE CONCLUÍDO
+                </span>
+                <h3 className="font-space font-extrabold text-white text-lg uppercase">
+                  PROVISIONAMENTO DE CLIENTES ACEITOS
+                </h3>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 font-mono text-center">
+              <div className="p-3 bg-zinc-900 border border-white/10 rounded-lg">
+                <span className="text-[10px] text-gray-400 block">TOTAL ENCONTRADO</span>
+                <span className="font-bold text-white text-lg">{batchModalResult.totalProcessed}</span>
+              </div>
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400">
+                <span className="text-[10px] block">SUCESSO</span>
+                <span className="font-bold text-lg">{batchModalResult.successCount}</span>
+              </div>
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
+                <span className="text-[10px] block">FALHAS</span>
+                <span className="font-bold text-lg">{batchModalResult.failedCount}</span>
+              </div>
+            </div>
+
+            {batchModalResult.details.length > 0 ? (
+              <div className="space-y-2 font-mono text-xs max-h-60 overflow-y-auto pr-1">
+                <span className="text-[10px] text-gray-400 block uppercase">DETALHES DA EXECUÇÃO:</span>
+                {batchModalResult.details.map((item, idx) => (
+                  <div 
+                    key={idx}
+                    className={`p-3 rounded-lg border flex items-center justify-between gap-3 text-[11px] ${
+                      item.status === 'success' 
+                        ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300' 
+                        : 'bg-red-500/5 border-red-500/20 text-red-300'
+                    }`}
+                  >
+                    <div className="truncate">
+                      <span className="font-bold block text-white truncate">{item.leadEmail}</span>
+                      <span className="text-[10px] opacity-80">{item.message}</span>
+                    </div>
+                    <span className="font-bold text-[10px] uppercase shrink-0">
+                      {item.status === 'success' ? '✓ OK' : '✕ ERRO'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-zinc-900 border border-white/10 rounded-lg text-center font-mono text-xs text-gray-400">
+                Nenhuma proposta aceita pendente de processamento foi encontrada.
+              </div>
+            )}
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setBatchModalResult(null)}
+                className="px-6 py-3 bg-brand-neon text-black font-space font-extrabold text-xs uppercase tracking-wider rounded hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all cursor-pointer font-mono"
+              >
+                ENTENDIDO E CONCLUIR
               </button>
             </div>
           </div>

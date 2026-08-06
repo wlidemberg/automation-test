@@ -220,3 +220,86 @@ export async function promoverLeadParaCliente(leadId: string, proposalId: string
     message: result.message
   }
 }
+
+export interface BatchProvisionResult {
+  totalProcessed: number
+  successCount: number
+  failedCount: number
+  details: Array<{
+    proposalId: string
+    leadEmail: string
+    status: 'success' | 'failed'
+    message: string
+  }>
+}
+
+/**
+ * Busca todas as propostas aceitas/pagas no Supabase, preenche a tabela `public.profiles`
+ * para cada cliente vinculado e dispara os e-mails com link de primeiro acesso.
+ */
+export async function processAllAcceptedProposals(): Promise<BatchProvisionResult> {
+  const details: BatchProvisionResult['details'] = []
+  let successCount = 0
+  let failedCount = 0
+
+  // 1. Busca propostas que atendem aos requisitos (status_proposta aceita, status aceita ou pagamento_confirmado true)
+  const { data: proposals, error } = await supabase
+    .from('proposals')
+    .select('*, lead:leads(*)')
+    .or('status_proposta.eq.aceita,status.eq.aceita,pagamento_confirmado.eq.true')
+
+  if (error) {
+    console.error('[clientServices] Erro ao buscar propostas aceitas para lote:', error.message)
+    throw new Error('Falha ao consultar propostas aceitas no Supabase.')
+  }
+
+  if (!proposals || proposals.length === 0) {
+    console.log('[clientServices] Nenhuma proposta aceita encontrada para lote.')
+    return {
+      totalProcessed: 0,
+      successCount: 0,
+      failedCount: 0,
+      details: []
+    }
+  }
+
+  // 2. Itera e executa o provisionamento para cada proposta encontrada
+  for (const proposal of proposals) {
+    const leadId = proposal.lead_id || proposal.lead?.id
+    const leadEmail = proposal.lead?.email || 'N/A'
+
+    try {
+      if (!leadId) {
+        throw new Error('Proposta sem lead_id vinculado.')
+      }
+
+      await provisionClientAccount({
+        leadId,
+        proposalId: proposal.id
+      })
+
+      successCount++
+      details.push({
+        proposalId: proposal.id,
+        leadEmail,
+        status: 'success',
+        message: 'Perfil preenchido e e-mail de primeiro acesso disparado!'
+      })
+    } catch (err: any) {
+      failedCount++
+      details.push({
+        proposalId: proposal.id,
+        leadEmail,
+        status: 'failed',
+        message: err.message || 'Falha ao processar'
+      })
+    }
+  }
+
+  return {
+    totalProcessed: proposals.length,
+    successCount,
+    failedCount,
+    details
+  }
+}
