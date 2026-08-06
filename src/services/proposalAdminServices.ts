@@ -206,12 +206,27 @@ async function updateOrUpsertProposal(
  */
 export async function getProposalWithLead(proposalId: string): Promise<Proposal | null> {
   try {
-    // 1. Tenta buscar na tabela `proposals`
-    const { data: proposalData } = await supabase
-      .from('proposals')
-      .select('*, lead:leads(*)')
-      .eq('id', proposalId)
-      .maybeSingle()
+    // 1. Tenta buscar na tabela `proposals` por id (se for UUID) ou por token_acesso
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(proposalId)
+    
+    let proposalData = null
+    if (isUuid) {
+      const { data } = await supabase
+        .from('proposals')
+        .select('*, lead:leads(*)')
+        .eq('id', proposalId)
+        .maybeSingle()
+      proposalData = data
+    }
+
+    if (!proposalData) {
+      const { data } = await supabase
+        .from('proposals')
+        .select('*, lead:leads(*)')
+        .eq('token_acesso', proposalId)
+        .maybeSingle()
+      proposalData = data
+    }
 
     if (proposalData) {
       let leadObj = proposalData.lead || null
