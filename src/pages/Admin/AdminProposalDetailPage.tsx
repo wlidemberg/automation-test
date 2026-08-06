@@ -14,7 +14,8 @@ import {
   Code2, 
   Layers, 
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  CreditCard
 } from 'lucide-react'
 import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
 import type { Proposal } from '../../types/database'
@@ -201,9 +202,10 @@ export default function AdminProposalDetailPage() {
             <button
               onClick={handleConfirmarPagamento}
               disabled={isConfirmingPayment}
-              className="w-full sm:w-auto px-5 py-2.5 bg-[#CCFF00] hover:bg-[#b8e600] text-black font-extrabold text-xs uppercase rounded transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg font-mono cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 bg-brand-neon hover:bg-[#b8e600] text-black font-space font-extrabold text-xs uppercase tracking-wider rounded shadow-[0_0_15px_rgba(204,255,0,0.3)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] transition-all duration-300 flex items-center justify-center gap-2 font-mono cursor-pointer"
             >
-              {isConfirmingPayment ? 'Confirmando...' : '[SIMULAR: PAGAMENTO CONFIRMADO 💳]'}
+              <CreditCard className="w-4 h-4 stroke-[2.5]" />
+              {isConfirmingPayment ? 'CONFIRMANDO...' : 'SIMULAR PAGAMENTO'}
             </button>
           </div>
         )}

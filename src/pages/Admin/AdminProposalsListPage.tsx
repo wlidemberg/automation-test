@@ -7,7 +7,9 @@ import {
   ArrowLeft, 
   Loader2, 
   ArrowUpRight,
-  Plus
+  Plus,
+  CreditCard,
+  Eye
 } from 'lucide-react'
 import { listPendingProposals, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
 import type { Proposal } from '../../types/database'
@@ -259,36 +261,25 @@ export default function AdminProposalsListPage() {
                       </div>
                     )}
 
-                    {/* CONDICIONAL 1: ACEITA AGUARDANDO PAGAMENTO */}
+                    {/* ALERTA DE PROPOSTA ACEITA AGUARDANDO ENTRADA */}
                     {(proposal.status_proposta === 'aceita' || proposal.status === 'aceita') && !proposal.pagamento_confirmado && (
-                      <div className="mt-4 p-3 border border-yellow-500/30 bg-yellow-500/10 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center justify-between font-mono text-[11px] text-yellow-400">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-                          <span className="text-[11px] text-yellow-400 font-mono font-semibold">
-                            PROPOSTA ACEITA PELO CLIENTE — AGUARDANDO ENTRADA (50%)
-                          </span>
+                          <span className="font-semibold uppercase">PROPOSTA ACEITA PELO CLIENTE — AGUARDANDO ENTRADA (50%)</span>
                         </div>
-                        <button
-                          onClick={() => handleConfirmarPagamento(proposal.id)}
-                          disabled={confirmingId === proposal.id}
-                          className="w-full sm:w-auto px-4 py-2 bg-[#CCFF00] hover:bg-[#b8e600] text-black font-extrabold text-xs uppercase rounded transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg font-mono cursor-pointer"
-                        >
-                          {confirmingId === proposal.id ? 'Confirmando...' : '[SIMULAR: PAGAMENTO CONFIRMADO 💳]'}
-                        </button>
                       </div>
                     )}
 
-                    {/* CONDICIONAL 2: PAGAMENTO CONFIRMADO & CONTRATO ATIVO */}
+                    {/* ALERTA DE CONTRATO ATIVO / PAGAMENTO CONFIRMADO */}
                     {proposal.pagamento_confirmado && (
-                      <div className="mt-4 p-3 border border-emerald-500/30 bg-emerald-500/10 rounded-lg flex items-center justify-between">
+                      <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between font-mono text-xs text-emerald-400">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                          <span className="text-xs text-emerald-400 font-mono font-bold">
-                            ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO
-                          </span>
+                          <span className="font-bold">✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO</span>
                         </div>
                         {proposal.pago_em && (
-                          <span className="text-[11px] text-zinc-400 font-mono">
+                          <span className="text-[10px] text-zinc-400">
                             {new Date(proposal.pago_em).toLocaleDateString('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
@@ -309,13 +300,44 @@ export default function AdminProposalsListPage() {
                       {proposal.created_at ? new Date(proposal.created_at).toLocaleDateString('pt-BR') : 'Recente'}
                     </span>
 
-                    <button
-                      onClick={() => navigate(`/admin/propostas/${proposal.id}`)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-neon text-black font-space font-bold text-xs uppercase tracking-wider rounded group-hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300 cursor-pointer"
-                    >
-                      REVISAR PROPOSTA
-                      <ArrowUpRight className="w-3.5 h-3.5 stroke-[3]" />
-                    </button>
+                    {(proposal.status_proposta === 'aceita' || proposal.status === 'aceita') && !proposal.pagamento_confirmado ? (
+                      /* QUANDO ACEITA: BOTÃO SIMULAR PAGAMENTO SUBSTITUI REVISAR PROPOSTA */
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigate(`/admin/propostas/${proposal.id}`)}
+                          title="Ver detalhes da proposta"
+                          className="p-2.5 bg-black/40 text-gray-400 hover:text-white border border-white/10 rounded transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleConfirmarPagamento(proposal.id)}
+                          disabled={confirmingId === proposal.id}
+                          className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-neon hover:bg-[#b8e600] text-black font-space font-extrabold text-xs uppercase tracking-wider rounded shadow-[0_0_15px_rgba(204,255,0,0.3)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] transition-all duration-300 cursor-pointer font-mono"
+                        >
+                          <CreditCard className="w-3.5 h-3.5 stroke-[2.5]" />
+                          {confirmingId === proposal.id ? 'CONFIRMANDO...' : 'SIMULAR PAGAMENTO'}
+                        </button>
+                      </div>
+                    ) : proposal.pagamento_confirmado ? (
+                      /* QUANDO PAGAMENTO CONFIRMADO: BOTÃO VER CONTRATO */
+                      <button
+                        onClick={() => navigate(`/admin/propostas/${proposal.id}`)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-space font-bold text-xs uppercase tracking-wider rounded hover:bg-emerald-500 hover:text-black transition-all duration-300 cursor-pointer"
+                      >
+                        VER CONTRATO
+                        <ArrowUpRight className="w-3.5 h-3.5 stroke-[3]" />
+                      </button>
+                    ) : (
+                      /* DEMAIS STATUS: BOTÃO REVISAR PROPOSTA */
+                      <button
+                        onClick={() => navigate(`/admin/propostas/${proposal.id}`)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-neon text-black font-space font-bold text-xs uppercase tracking-wider rounded group-hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all duration-300 cursor-pointer"
+                      >
+                        REVISAR PROPOSTA
+                        <ArrowUpRight className="w-3.5 h-3.5 stroke-[3]" />
+                      </button>
+                    )}
                   </div>
 
                 </motion.div>
