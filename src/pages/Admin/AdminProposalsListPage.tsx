@@ -9,7 +9,7 @@ import {
   ArrowUpRight,
   Plus
 } from 'lucide-react'
-import { listPendingProposals } from '../../services/proposalAdminServices'
+import { listPendingProposals, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -20,6 +20,22 @@ export default function AdminProposalsListPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [statusFilter, setStatusFilter] = useState<string>('todos')
   const [searchTerm, setSearchTerm] = useState<string>('')
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+
+  const handleConfirmarPagamento = async (proposalId: string) => {
+    setConfirmingId(proposalId)
+    try {
+      const updated = await confirmarPagamentoProposta(proposalId)
+      if (updated) {
+        setProposals(prev => prev.map(p => p.id === proposalId ? updated : p))
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Falha ao confirmar pagamento da proposta.')
+    } finally {
+      setConfirmingId(null)
+    }
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -240,6 +256,48 @@ export default function AdminProposalsListPage() {
                       <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded text-[10px] font-mono text-amber-400 flex items-center justify-between">
                         <span>Ciclos de Revisão IA:</span>
                         <span className="font-bold">Contador: {proposal.contador_recriacoes}</span>
+                      </div>
+                    )}
+
+                    {/* CONDICIONAL 1: ACEITA AGUARDANDO PAGAMENTO */}
+                    {(proposal.status_proposta === 'aceita' || proposal.status === 'aceita') && !proposal.pagamento_confirmado && (
+                      <div className="mt-4 p-3 border border-yellow-500/30 bg-yellow-500/10 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                          <span className="text-[11px] text-yellow-400 font-mono font-semibold">
+                            PROPOSTA ACEITA PELO CLIENTE — AGUARDANDO ENTRADA (50%)
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleConfirmarPagamento(proposal.id)}
+                          disabled={confirmingId === proposal.id}
+                          className="w-full sm:w-auto px-4 py-2 bg-[#CCFF00] hover:bg-[#b8e600] text-black font-extrabold text-xs uppercase rounded transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg font-mono cursor-pointer"
+                        >
+                          {confirmingId === proposal.id ? 'Confirmando...' : '[SIMULAR: PAGAMENTO CONFIRMADO 💳]'}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* CONDICIONAL 2: PAGAMENTO CONFIRMADO & CONTRATO ATIVO */}
+                    {proposal.pagamento_confirmado && (
+                      <div className="mt-4 p-3 border border-emerald-500/30 bg-emerald-500/10 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                          <span className="text-xs text-emerald-400 font-mono font-bold">
+                            ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO
+                          </span>
+                        </div>
+                        {proposal.pago_em && (
+                          <span className="text-[11px] text-zinc-400 font-mono">
+                            {new Date(proposal.pago_em).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        )}
                       </div>
                     )}
 

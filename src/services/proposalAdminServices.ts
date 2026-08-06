@@ -262,6 +262,8 @@ export async function getProposalWithLead(proposalId: string): Promise<Proposal 
         orientacoes_admin: obs,
         observacoes_admin: obs,
         contador_recriacoes: proposalData.contador_recriacoes || 0,
+        pagamento_confirmado: Boolean(proposalData.pagamento_confirmado),
+        pago_em: proposalData.pago_em || null,
         magic_link: proposalData.magic_link || `/proposta/${proposalData.id}`,
         lead: leadObj,
         created_at: proposalData.created_at,
@@ -407,6 +409,8 @@ export async function listPendingProposals(statusFilter?: string): Promise<Propo
           orientacoes_admin: obs,
           observacoes_admin: obs,
           contador_recriacoes: p.contador_recriacoes || 0,
+          pagamento_confirmado: Boolean(p.pagamento_confirmado),
+          pago_em: p.pago_em || null,
           magic_link: p.magic_link || `/proposta/${p.id}`,
           lead: leadObj,
           created_at: p.created_at,
@@ -538,7 +542,48 @@ export const proposalAdminServices = {
   getProposalWithLead,
   listPendingProposals,
   requestAiRevision,
-  approveAndSendProposal
+  approveAndSendProposal,
+  confirmarPagamentoProposta
+}
+
+/**
+ * Confirma manualmente o pagamento da entrada de uma proposta no Supabase.
+ * Atualiza public.proposals (pagamento_confirmado = true, pago_em = now) e public.contracts (status_contrato = 'ativo')
+ */
+export async function confirmarPagamentoProposta(proposalId: string): Promise<Proposal | null> {
+  try {
+    // 1. Atualiza a tabela proposals
+    const { error: proposalError } = await supabase
+      .from('proposals')
+      .update({ 
+        pagamento_confirmado: true,
+        pago_em: new Date().toISOString()
+      })
+      .eq('id', proposalId)
+
+    if (proposalError) {
+      console.error('Erro ao atualizar pagamento em proposals:', proposalError.message)
+      throw proposalError
+    }
+
+    // 2. Atualiza a tabela contracts vinculada
+    const { error: contractError } = await supabase
+      .from('contracts')
+      .update({ 
+        status_contrato: 'ativo',
+        updated_at: new Date().toISOString()
+      })
+      .eq('proposal_id', proposalId)
+
+    if (contractError) {
+      console.warn('Aviso ao atualizar contrato vinculado:', contractError.message)
+    }
+
+    return await getProposalWithLead(proposalId)
+  } catch (err) {
+    console.error('Erro ao confirmar pagamento da proposta:', err)
+    throw err
+  }
 }
 
 export default proposalAdminServices

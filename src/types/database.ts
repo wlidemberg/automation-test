@@ -190,6 +190,8 @@ export interface Proposal {
   orientacoes_admin?: string | null;
   observacoes_admin?: string | null;
   contador_recriacoes: number;
+  pagamento_confirmado?: boolean;
+  pago_em?: string | null;
   magic_link?: string | null;
   lead?: Lead | null;
   created_at?: string;

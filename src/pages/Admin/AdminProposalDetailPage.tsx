@@ -16,7 +16,7 @@ import {
   AlertCircle,
   ExternalLink
 } from 'lucide-react'
-import { getProposalWithLead, requestAiRevision, approveAndSendProposal } from '../../services/proposalAdminServices'
+import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -31,7 +31,26 @@ export default function AdminProposalDetailPage() {
   const [orientacaoAdmin, setOrientacaoAdmin] = useState<string>('')
   const [isSubmittingRevision, setIsSubmittingRevision] = useState<boolean>(false)
   const [isSubmittingApproval, setIsSubmittingApproval] = useState<boolean>(false)
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState<boolean>(false)
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const handleConfirmarPagamento = async () => {
+    if (!proposal) return
+    setIsConfirmingPayment(true)
+    setFeedbackMessage(null)
+    try {
+      const updated = await confirmarPagamentoProposta(proposal.id)
+      if (updated) {
+        setProposal(updated)
+        setFeedbackMessage({ type: 'success', text: 'Pagamento de entrada confirmado e contrato ativado com sucesso!' })
+      }
+    } catch (err: any) {
+      console.error(err)
+      setFeedbackMessage({ type: 'error', text: 'Falha ao confirmar pagamento da proposta.' })
+    } finally {
+      setIsConfirmingPayment(false)
+    }
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -169,6 +188,48 @@ export default function AdminProposalDetailPage() {
 
       {/* Main Content Container */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+        {/* CONDICIONAL 1: ACEITA AGUARDANDO PAGAMENTO */}
+        {(proposal.status_proposta === 'aceita' || proposal.status === 'aceita') && !proposal.pagamento_confirmado && (
+          <div className="p-4 border border-yellow-500/30 bg-yellow-500/10 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse shrink-0"></span>
+              <span className="text-xs text-yellow-400 font-mono font-semibold">
+                PROPOSTA ACEITA PELO CLIENTE — AGUARDANDO ENTRADA (50%)
+              </span>
+            </div>
+            <button
+              onClick={handleConfirmarPagamento}
+              disabled={isConfirmingPayment}
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#CCFF00] hover:bg-[#b8e600] text-black font-extrabold text-xs uppercase rounded transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg font-mono cursor-pointer"
+            >
+              {isConfirmingPayment ? 'Confirmando...' : '[SIMULAR: PAGAMENTO CONFIRMADO 💳]'}
+            </button>
+          </div>
+        )}
+
+        {/* CONDICIONAL 2: PAGAMENTO CONFIRMADO & CONTRATO ATIVO */}
+        {proposal.pagamento_confirmado && (
+          <div className="p-4 border border-emerald-500/30 bg-emerald-500/10 rounded-xl flex items-center justify-between shadow-xl">
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full bg-emerald-400 shrink-0"></span>
+              <span className="text-xs text-emerald-400 font-mono font-bold">
+                ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO
+              </span>
+            </div>
+            {proposal.pago_em && (
+              <span className="text-xs text-zinc-400 font-mono">
+                {new Date(proposal.pago_em).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Feedback Alert Banner */}
         {feedbackMessage && (
