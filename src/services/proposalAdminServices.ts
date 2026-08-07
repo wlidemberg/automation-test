@@ -179,7 +179,6 @@ async function updateOrUpsertProposal(
     }
   }
 
-  // 3. Sincroniza status com a tabela `briefings` se aplicável
   const briefingStatusMap: Record<string, string> = {
     enviada_lead: 'proposta_enviada',
     em_analise_ia: 'em_analise_ia',
@@ -190,7 +189,6 @@ async function updateOrUpsertProposal(
     .from('briefings')
     .update({
       status_briefing: briefingStatusMap[newStatus] || newStatus,
-      link_pagamento: extraData.magic_link || undefined,
       updated_at: new Date().toISOString()
     })
     .eq('id', proposalId)
@@ -555,17 +553,46 @@ export async function processarConfirmacaoPagamentoEPromocao(proposalId: string,
     throw new Error(`Falha ao atualizar proposta: ${proposalError.message}`);
   }
 
-  // PASSO 2: Ativa o contrato vinculado
-  const { error: contractError } = await supabase
+  // PASSO 2: Ativa o contrato vinculado ou cria se não existir
+  const { data: existingContract } = await supabase
     .from('contracts')
-    .update({
-      status_contrato: 'ativo',
-      updated_at: new Date().toISOString()
-    })
-    .eq('proposal_id', proposalId);
+    .select('id')
+    .eq('proposal_id', proposalId)
+    .maybeSingle();
 
-  if (contractError) {
-    console.warn('Aviso ao atualizar contrato:', contractError.message);
+  if (existingContract) {
+    const { error: contractError } = await supabase
+      .from('contracts')
+      .update({
+        status_contrato: 'ativo',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', existingContract.id);
+      
+    if (contractError) console.warn('Aviso ao atualizar contrato:', contractError.message);
+  } else {
+    // Contract does not exist, let's create it
+    const currentProp = await getProposalWithLead(proposalId);
+    const validAi = currentProp?.proposta_ia || {};
+    
+    const { error: contractError } = await supabase
+      .from('contracts')
+      .insert([{
+        id: crypto.randomUUID(),
+        proposal_id: proposalId,
+        lead_id: leadId,
+        valor_setup_base: Number(validAi.valor_setup || 4500),
+        modulos_upsell: validAi.modulos_upsell || [],
+        valor_total_contrato: Number(validAi.valor_setup || 4500), 
+        valor_entrada_50: Number(validAi.parcela_entrada || 2250),
+        mensalidade_recorrente: Number(validAi.valor_mensal || 590),
+        status_contrato: 'ativo',
+        token_acesso: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }]);
+      
+    if (contractError) console.warn('Aviso ao criar contrato:', contractError.message);
   }
 
   // PASSO 3: Busca os dados do Lead para popular a tabela public.profiles
@@ -585,23 +612,34 @@ export async function processarConfirmacaoPagamentoEPromocao(proposalId: string,
   const isCnpj = rawDoc.length > 11;
   const tipoPessoa = isCnpj ? 'PJ' : 'PF';
 
+  let profileId = crypto.randomUUID();
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', lead.email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    profileId = existingProfile.id;
+  }
+
   const profilePayload = {
-    id: crypto.randomUUID(),
+    id: profileId,
     email: lead.email,
     role: 'client' as const,
     tipo_pessoa: tipoPessoa as 'PJ' | 'PF',
-    razao_social: isCnpj ? (lead.razao_social || lead.nome_completo || null) : null,
+    razao_social: isCnpj ? lead.razao_social_nome : null,
     cnpj: isCnpj ? rawDoc : null,
-    nome_completo: !isCnpj ? (lead.nome_completo || lead.razao_social || null) : null,
+    nome_completo: !isCnpj ? lead.razao_social_nome : null,
     cpf: !isCnpj ? rawDoc : null,
     telefone: lead.telefone || null,
     updated_at: new Date().toISOString()
   };
 
-  // Upsert na tabela profiles evitando duplicidade por email
+  // Upsert na tabela profiles pelo ID
   const { data: profileData, error: profileError } = await supabase
     .from('profiles')
-    .upsert(profilePayload, { onConflict: 'email' })
+    .upsert(profilePayload)
     .select();
 
   if (profileError) {
