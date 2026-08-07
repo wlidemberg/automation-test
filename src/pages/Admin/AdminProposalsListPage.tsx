@@ -14,8 +14,8 @@ import {
   X,
   Zap
 } from 'lucide-react'
-import { listPendingProposals, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao, gerarContratoDaProposta, gerarUsuarioDoLead } from '../../services/proposalAdminServices'
-import { promoverLeadParaCliente, processAllAcceptedProposals, type BatchProvisionResult } from '../../services/clientServices'
+import { listPendingProposals, processarConfirmacaoPagamentoEPromocao, gerarContratoDaProposta, gerarUsuarioDoLead } from '../../services/proposalAdminServices'
+import { processAllAcceptedProposals, type BatchProvisionResult } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -83,7 +83,7 @@ export default function AdminProposalsListPage() {
     setGeneratingUserId(proposalId)
     try {
       const res = await gerarUsuarioDoLead(leadId)
-      alert(`Sucesso! Usuário criado em profiles. ID: ${res.profile?.id}`)
+      alert(`Sucesso! Usuário criado em profiles. ID: ${res.profile?.[0]?.id}`)
     } catch (err: any) {
       console.error(err)
       alert('Falha ao gerar usuário: ' + (err.message || ''))
@@ -406,7 +406,7 @@ export default function AdminProposalsListPage() {
                         </div>
                         <div className="flex gap-2 mt-1">
                           <button
-                            onClick={() => handleGerarUsuario(proposal.id, proposal.lead_id)}
+                            onClick={() => handleGerarUsuario(proposal.id, proposal.lead_id || proposal.id)}
                             disabled={generatingUserId === proposal.id}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50"
                           >
@@ -414,7 +414,7 @@ export default function AdminProposalsListPage() {
                             Gerar Usuário
                           </button>
                           <button
-                            onClick={() => handleGerarContrato(proposal.id, proposal.lead_id)}
+                            onClick={() => handleGerarContrato(proposal.id, proposal.lead_id || proposal.id)}
                             disabled={generatingContractId === proposal.id}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-neon/20 hover:bg-brand-neon/30 text-brand-neon border border-brand-neon/30 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50"
                           >

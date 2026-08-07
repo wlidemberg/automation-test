@@ -17,8 +17,7 @@ import {
   ExternalLink,
   CreditCard
 } from 'lucide-react'
-import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao, gerarContratoDaProposta, gerarUsuarioDoLead } from '../../services/proposalAdminServices'
-import { promoverLeadParaCliente } from '../../services/clientServices'
+import { getProposalWithLead, requestAiRevision, approveAndSendProposal, processarConfirmacaoPagamentoEPromocao, gerarContratoDaProposta, gerarUsuarioDoLead } from '../../services/proposalAdminServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -75,7 +74,7 @@ export default function AdminProposalDetailPage() {
     try {
       const targetLeadId = proposal.lead_id || proposal.lead?.id || proposal.id
       const res = await gerarUsuarioDoLead(targetLeadId)
-      setFeedbackMessage({ type: 'success', text: `Sucesso! Usuário criado em profiles. ID: ${res.profile?.id}` })
+      setFeedbackMessage({ type: 'success', text: `Sucesso! Usuário criado em profiles. ID: ${res.profile?.[0]?.id}` })
     } catch (err: any) {
       console.error(err)
       setFeedbackMessage({ type: 'error', text: 'Falha ao gerar usuário: ' + (err.message || '') })

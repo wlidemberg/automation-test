@@ -10,6 +10,7 @@ export interface Profile {
   data_nascimento?: string | null;
   telefone?: string | null;
   endereco?: Record<string, any> | null;
+  status?: 'lead' | 'pendente' | 'ativo' | 'recusado' | 'inativo';
   created_at?: string;
   updated_at?: string;
 }
