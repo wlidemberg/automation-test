@@ -14,7 +14,7 @@ import {
   X,
   Zap
 } from 'lucide-react'
-import { listPendingProposals, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
+import { listPendingProposals, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao } from '../../services/proposalAdminServices'
 import { promoverLeadParaCliente, processAllAcceptedProposals, type BatchProvisionResult } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
@@ -54,34 +54,24 @@ export default function AdminProposalsListPage() {
   const handleConfirmarPagamento = async (proposalId: string, leadId?: string | null) => {
     setConfirmingId(proposalId)
     try {
-      // 1. Confirma pagamento da entrada (50%) e ativa contrato
-      const updated = await confirmarPagamentoProposta(proposalId)
-      if (updated) {
-        setProposals(prev => prev.map(p => p.id === proposalId ? updated : p))
-      }
+      const targetLeadId = leadId || proposals.find(p => p.id === proposalId)?.lead_id || proposalId
+      await processarConfirmacaoPagamentoEPromocao(proposalId, targetLeadId)
 
-      // 2. Promove o lead para cliente no Supabase Auth e public.profiles
-      const targetLeadId = leadId || updated?.lead_id || updated?.lead?.id || proposalId
-      let passwordLink = `${window.location.origin}/definir-senha`
-      let name = updated?.lead?.razao_social_nome || 'Cliente'
-      let email = updated?.lead?.email || 'N/A'
-
-      if (targetLeadId) {
-        const promotion = await promoverLeadParaCliente(targetLeadId, proposalId)
-        if (promotion.linkDefinirSenha) {
-          passwordLink = promotion.linkDefinirSenha
+      // Atualiza o estado local reativamente sem recarregar a página
+      setProposals(prev => prev.map(p => {
+        if (p.id === proposalId) {
+          return {
+            ...p,
+            pagamento_confirmado: true,
+            pago_em: new Date().toISOString(),
+            status: 'pago'
+          }
         }
-      }
-
-      setPromotionModalData({
-        show: true,
-        clientName: name,
-        clientEmail: email,
-        linkDefinirSenha: passwordLink
-      })
+        return p
+      }))
     } catch (err: any) {
       console.error(err)
-      alert('Falha ao confirmar pagamento e promover lead: ' + (err.message || ''))
+      alert('Falha ao confirmar pagamento e promover perfil: ' + (err.message || ''))
     } finally {
       setConfirmingId(null)
     }
@@ -366,19 +356,25 @@ export default function AdminProposalsListPage() {
                           disabled={confirmingId === proposal.id}
                           className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-neon hover:bg-[#b8e600] text-black font-space font-extrabold text-xs uppercase tracking-wider rounded shadow-[0_0_15px_rgba(204,255,0,0.3)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] transition-all duration-300 cursor-pointer font-mono"
                         >
-                          <CreditCard className="w-3.5 h-3.5 stroke-[2.5]" />
-                          {confirmingId === proposal.id ? 'CONFIRMANDO...' : 'SIMULAR PAGAMENTO'}
+                          {confirmingId === proposal.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              CONFIRMANDO...
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="w-3.5 h-3.5 stroke-[2.5]" />
+                              [SIMULAR: PAGAMENTO CONFIRMADO 💳]
+                            </>
+                          )}
                         </button>
                       </div>
                     ) : proposal.pagamento_confirmado ? (
-                      /* QUANDO PAGAMENTO CONFIRMADO: BOTÃO VER CONTRATO */
-                      <button
-                        onClick={() => navigate(`/admin/propostas/${proposal.id}`)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-space font-bold text-xs uppercase tracking-wider rounded hover:bg-emerald-500 hover:text-black transition-all duration-300 cursor-pointer"
-                      >
-                        VER CONTRATO
-                        <ArrowUpRight className="w-3.5 h-3.5 stroke-[3]" />
-                      </button>
+                      /* QUANDO PAGAMENTO CONFIRMADO: BADGE VERDE ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO */
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-space font-bold text-xs uppercase tracking-wider rounded">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO
+                      </div>
                     ) : (
                       /* DEMAIS STATUS: BOTÃO REVISAR PROPOSTA */
                       <button

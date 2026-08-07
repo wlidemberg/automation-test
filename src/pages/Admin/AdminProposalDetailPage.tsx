@@ -17,7 +17,7 @@ import {
   ExternalLink,
   CreditCard
 } from 'lucide-react'
-import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta } from '../../services/proposalAdminServices'
+import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao } from '../../services/proposalAdminServices'
 import { promoverLeadParaCliente } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
@@ -40,38 +40,23 @@ export default function AdminProposalDetailPage() {
     linkDefinirSenha: string
   } | null>(null)
 
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState<boolean>(false)
+
   const handleConfirmarPagamento = async () => {
     if (!proposal) return
     setIsConfirmingPayment(true)
     setFeedbackMessage(null)
     try {
-      // 1. Confirma pagamento e ativa contrato
-      const updated = await confirmarPagamentoProposta(proposal.id)
-      if (updated) {
-        setProposal(updated)
-      }
-
-      // 2. Promove lead para cliente no Supabase Auth e public.profiles
       const targetLeadId = proposal.lead_id || proposal.lead?.id || proposal.id
-      let passwordLink = `${window.location.origin}/definir-senha`
-      let name = proposal.lead?.razao_social_nome || 'Cliente'
-      let email = proposal.lead?.email || 'N/A'
+      await processarConfirmacaoPagamentoEPromocao(proposal.id, targetLeadId)
 
-      if (targetLeadId) {
-        const promotion = await promoverLeadParaCliente(targetLeadId, proposal.id)
-        if (promotion.linkDefinirSenha) {
-          passwordLink = promotion.linkDefinirSenha
-        }
-      }
+      setProposal(prev => prev ? {
+        ...prev,
+        pagamento_confirmado: true,
+        pago_em: new Date().toISOString()
+      } : null)
 
-      setPromotionModalData({
-        show: true,
-        clientName: name,
-        clientEmail: email,
-        linkDefinirSenha: passwordLink
-      })
-
-      setFeedbackMessage({ type: 'success', text: 'Pagamento de entrada (50%) registrado, contrato ativado e lead promovido a cliente com sucesso!' })
+      setFeedbackMessage({ type: 'success', text: 'Pagamento de entrada (50%) registrado, contrato ativado e perfil de cliente criado com sucesso!' })
     } catch (err: any) {
       console.error(err)
       setFeedbackMessage({ type: 'error', text: err.message || 'Falha ao confirmar pagamento da proposta.' })
@@ -232,7 +217,7 @@ export default function AdminProposalDetailPage() {
               className="w-full sm:w-auto px-5 py-2.5 bg-brand-neon hover:bg-[#b8e600] text-black font-space font-extrabold text-xs uppercase tracking-wider rounded shadow-[0_0_15px_rgba(204,255,0,0.3)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] transition-all duration-300 flex items-center justify-center gap-2 font-mono cursor-pointer"
             >
               <CreditCard className="w-4 h-4 stroke-[2.5]" />
-              {isConfirmingPayment ? 'CONFIRMANDO...' : 'SIMULAR PAGAMENTO'}
+              {isConfirmingPayment ? 'CONFIRMANDO...' : '[SIMULAR: PAGAMENTO CONFIRMADO 💳]'}
             </button>
           </div>
         )}

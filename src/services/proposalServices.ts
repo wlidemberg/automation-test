@@ -160,15 +160,14 @@ export async function acceptProposalAndPayEntry(
     return false;
   }
 
-  // 4. Atualizar o status do perfil do cliente para 'ativo'
+  // 4. Atualizar o timestamp de atualização do perfil do cliente
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({ status: 'ativo' })
+    .update({ updated_at: new Date().toISOString() })
     .eq('id', project.client_id);
 
   if (profileError) {
-    console.error('Erro ao ativar status do perfil do cliente:', profileError);
-    return false;
+    console.warn('Aviso ao atualizar timestamp do perfil do cliente:', profileError);
   }
 
   return true;

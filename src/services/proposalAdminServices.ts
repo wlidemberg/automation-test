@@ -537,53 +537,132 @@ export async function approveAndSendProposal(proposalId: string): Promise<{ succ
   }
 }
 
-export const proposalAdminServices = {
-  ensureValidProposalAiContent,
-  getProposalWithLead,
-  listPendingProposals,
-  requestAiRevision,
-  approveAndSendProposal,
-  confirmarPagamentoProposta
+/**
+ * Confirma o pagamento da proposta, ativa o contrato e promove o lead para a tabela public.profiles.
+ */
+export async function processarConfirmacaoPagamentoEPromocao(proposalId: string, leadId: string) {
+  // PASSO 1: Atualiza a proposta marcando pagamento confirmado
+  const { error: proposalError } = await supabase
+    .from('proposals')
+    .update({
+      pagamento_confirmado: true,
+      pago_em: new Date().toISOString()
+    })
+    .eq('id', proposalId);
+
+  if (proposalError) {
+    console.error('Erro ao atualizar proposta:', proposalError);
+    throw new Error(`Falha ao atualizar proposta: ${proposalError.message}`);
+  }
+
+  // PASSO 2: Ativa o contrato vinculado
+  const { error: contractError } = await supabase
+    .from('contracts')
+    .update({
+      status_contrato: 'ativo',
+      updated_at: new Date().toISOString()
+    })
+    .eq('proposal_id', proposalId);
+
+  if (contractError) {
+    console.warn('Aviso ao atualizar contrato:', contractError.message);
+  }
+
+  // PASSO 3: Busca os dados do Lead para popular a tabela public.profiles
+  const { data: lead, error: leadError } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single();
+
+  if (leadError || !lead) {
+    console.error('Erro ao buscar dados do lead:', leadError);
+    throw new Error('Lead não encontrado para criação de perfil.');
+  }
+
+  // Tratamento dos documentos e tipo de pessoa
+  const rawDoc = lead.cpf_cnpj ? lead.cpf_cnpj.replace(/\D/g, '') : '';
+  const isCnpj = rawDoc.length > 11;
+  const tipoPessoa = isCnpj ? 'PJ' : 'PF';
+
+  const profilePayload = {
+    id: crypto.randomUUID(),
+    email: lead.email,
+    role: 'client' as const,
+    tipo_pessoa: tipoPessoa as 'PJ' | 'PF',
+    razao_social: isCnpj ? (lead.razao_social || lead.nome_completo || null) : null,
+    cnpj: isCnpj ? rawDoc : null,
+    nome_completo: !isCnpj ? (lead.nome_completo || lead.razao_social || null) : null,
+    cpf: !isCnpj ? rawDoc : null,
+    telefone: lead.telefone || null,
+    updated_at: new Date().toISOString()
+  };
+
+  // Upsert na tabela profiles evitando duplicidade por email
+  const { data: profileData, error: profileError } = await supabase
+    .from('profiles')
+    .upsert(profilePayload, { onConflict: 'email' })
+    .select();
+
+  if (profileError) {
+    console.error('Erro ao salvar registro em public.profiles:', profileError);
+    throw new Error(`Falha ao criar perfil do cliente: ${profileError.message}`);
+  }
+
+  return { success: true, profile: profileData };
 }
 
 /**
  * Confirma manualmente o pagamento da entrada de uma proposta no Supabase.
  * Atualiza public.proposals (pagamento_confirmado = true, pago_em = now) e public.contracts (status_contrato = 'ativo')
  */
-export async function confirmarPagamentoProposta(proposalId: string): Promise<Proposal | null> {
+export async function confirmarPagamentoProposta(proposalId: string, leadId?: string | null): Promise<Proposal | null> {
   try {
-    // 1. Atualiza a tabela proposals
-    const { error: proposalError } = await supabase
-      .from('proposals')
-      .update({ 
-        pagamento_confirmado: true,
-        pago_em: new Date().toISOString()
-      })
-      .eq('id', proposalId)
+    if (leadId) {
+      await processarConfirmacaoPagamentoEPromocao(proposalId, leadId);
+    } else {
+      // Fallback 1: Atualiza proposals e contracts
+      const { error: proposalError } = await supabase
+        .from('proposals')
+        .update({ 
+          pagamento_confirmado: true,
+          pago_em: new Date().toISOString()
+        })
+        .eq('id', proposalId);
 
-    if (proposalError) {
-      console.error('Erro ao atualizar pagamento em proposals:', proposalError.message)
-      throw proposalError
+      if (proposalError) {
+        console.error('Erro ao atualizar pagamento em proposals:', proposalError.message);
+        throw proposalError;
+      }
+
+      const { error: contractError } = await supabase
+        .from('contracts')
+        .update({ 
+          status_contrato: 'ativo',
+          updated_at: new Date().toISOString()
+        })
+        .eq('proposal_id', proposalId);
+
+      if (contractError) {
+        console.warn('Aviso ao atualizar contrato vinculado:', contractError.message);
+      }
     }
 
-    // 2. Atualiza a tabela contracts vinculada
-    const { error: contractError } = await supabase
-      .from('contracts')
-      .update({ 
-        status_contrato: 'ativo',
-        updated_at: new Date().toISOString()
-      })
-      .eq('proposal_id', proposalId)
-
-    if (contractError) {
-      console.warn('Aviso ao atualizar contrato vinculado:', contractError.message)
-    }
-
-    return await getProposalWithLead(proposalId)
+    return await getProposalWithLead(proposalId);
   } catch (err) {
-    console.error('Erro ao confirmar pagamento da proposta:', err)
-    throw err
+    console.error('Erro ao confirmar pagamento da proposta:', err);
+    throw err;
   }
 }
 
-export default proposalAdminServices
+export const proposalAdminServices = {
+  ensureValidProposalAiContent,
+  getProposalWithLead,
+  listPendingProposals,
+  requestAiRevision,
+  approveAndSendProposal,
+  confirmarPagamentoProposta,
+  processarConfirmacaoPagamentoEPromocao
+};
+
+export default proposalAdminServices;

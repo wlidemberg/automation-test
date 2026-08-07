@@ -62,9 +62,9 @@ export const updateProfile = async (id: string, updates: Partial<Profile>): Prom
 
 export const updateProfileStatus = async (
   id: string, 
-  status: UserStatus
+  _status: UserStatus
 ): Promise<Profile | null> => {
-  return updateProfile(id, { status });
+  return updateProfile(id, { updated_at: new Date().toISOString() });
 };
 
 export const createProfile = async (profileData: Partial<Profile>): Promise<Profile | null> => {

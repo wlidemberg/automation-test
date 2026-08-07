@@ -47,21 +47,7 @@ export interface Address {
   estado?: string;
 }
 
-export interface Profile {
-  id: string;
-  email: string;
-  role: UserRole;
-  tipo_pessoa: TipoPessoa;
-  razao_social?: string | null;
-  cnpj?: string | null;
-  nome_completo?: string | null;
-  cpf?: string | null;
-  data_nascimento?: string | null;
-  telefone?: string | null;
-  endereco?: Address | Record<string, any> | null;
-  created_at?: string;
-  updated_at?: string;
-}
+export type { Profile } from './profile';
 
 export interface Product {
   id: string;
