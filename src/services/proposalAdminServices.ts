@@ -536,24 +536,9 @@ export async function approveAndSendProposal(proposalId: string): Promise<{ succ
 }
 
 /**
- * Confirma o pagamento da proposta, ativa o contrato e promove o lead para a tabela public.profiles.
+ * Cria ou atualiza o contrato vinculado à proposta, usando o schema correto.
  */
-export async function processarConfirmacaoPagamentoEPromocao(proposalId: string, leadId: string) {
-  // PASSO 1: Atualiza a proposta marcando pagamento confirmado
-  const { error: proposalError } = await supabase
-    .from('proposals')
-    .update({
-      pagamento_confirmado: true,
-      pago_em: new Date().toISOString()
-    })
-    .eq('id', proposalId);
-
-  if (proposalError) {
-    console.error('Erro ao atualizar proposta:', proposalError);
-    throw new Error(`Falha ao atualizar proposta: ${proposalError.message}`);
-  }
-
-  // PASSO 2: Ativa o contrato vinculado ou cria se não existir
+export async function gerarContratoDaProposta(proposalId: string, leadId: string) {
   const { data: existingContract } = await supabase
     .from('contracts')
     .select('id')
@@ -569,33 +554,36 @@ export async function processarConfirmacaoPagamentoEPromocao(proposalId: string,
       })
       .eq('id', existingContract.id);
       
-    if (contractError) console.warn('Aviso ao atualizar contrato:', contractError.message);
+    if (contractError) throw new Error(contractError.message);
+    return true;
   } else {
-    // Contract does not exist, let's create it
     const currentProp = await getProposalWithLead(proposalId);
     const validAi = currentProp?.proposta_ia || {};
     
+    const payload = {
+      proposal_id: proposalId,
+      lead_id: leadId,
+      valor_setup_base: Number(validAi.valor_setup || 4500),
+      modulos_upsell_selecionados: validAi.modulos_upsell || [],
+      valor_total_contrato: Number(validAi.valor_setup || 4500), 
+      valor_entrada_50: Number(validAi.parcela_entrada || 2250),
+      mensalidade_recorrente: Number(validAi.valor_mensal || 590),
+      status_contrato: 'ativo'
+    };
+
     const { error: contractError } = await supabase
       .from('contracts')
-      .insert([{
-        id: crypto.randomUUID(),
-        proposal_id: proposalId,
-        lead_id: leadId,
-        valor_setup_base: Number(validAi.valor_setup || 4500),
-        modulos_upsell: validAi.modulos_upsell || [],
-        valor_total_contrato: Number(validAi.valor_setup || 4500), 
-        valor_entrada_50: Number(validAi.parcela_entrada || 2250),
-        mensalidade_recorrente: Number(validAi.valor_mensal || 590),
-        status_contrato: 'ativo',
-        token_acesso: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }]);
+      .insert([payload]);
       
-    if (contractError) console.warn('Aviso ao criar contrato:', contractError.message);
+    if (contractError) throw new Error(contractError.message);
+    return true;
   }
+}
 
-  // PASSO 3: Busca os dados do Lead para popular a tabela public.profiles
+/**
+ * Cria o usuário na tabela profiles a partir dos dados de leads.
+ */
+export async function gerarUsuarioDoLead(leadId: string) {
   const { data: lead, error: leadError } = await supabase
     .from('leads')
     .select('*')
@@ -603,11 +591,9 @@ export async function processarConfirmacaoPagamentoEPromocao(proposalId: string,
     .single();
 
   if (leadError || !lead) {
-    console.error('Erro ao buscar dados do lead:', leadError);
     throw new Error('Lead não encontrado para criação de perfil.');
   }
 
-  // Tratamento dos documentos e tipo de pessoa
   const rawDoc = lead.cpf_cnpj ? lead.cpf_cnpj.replace(/\D/g, '') : '';
   const isCnpj = rawDoc.length > 11;
   const tipoPessoa = isCnpj ? 'PJ' : 'PF';
@@ -636,18 +622,51 @@ export async function processarConfirmacaoPagamentoEPromocao(proposalId: string,
     updated_at: new Date().toISOString()
   };
 
-  // Upsert na tabela profiles pelo ID
   const { data: profileData, error: profileError } = await supabase
     .from('profiles')
     .upsert(profilePayload)
     .select();
 
   if (profileError) {
-    console.error('Erro ao salvar registro em public.profiles:', profileError);
     throw new Error(`Falha ao criar perfil do cliente: ${profileError.message}`);
   }
 
   return { success: true, profile: profileData };
+}
+
+/**
+ * Confirma o pagamento da proposta, ativa o contrato e promove o lead para a tabela public.profiles.
+ */
+export async function processarConfirmacaoPagamentoEPromocao(proposalId: string, leadId: string) {
+  // PASSO 1: Atualiza a proposta marcando pagamento confirmado
+  const { error: proposalError } = await supabase
+    .from('proposals')
+    .update({
+      pagamento_confirmado: true,
+      pago_em: new Date().toISOString()
+    })
+    .eq('id', proposalId);
+
+  if (proposalError) {
+    console.error('Erro ao atualizar proposta:', proposalError);
+    throw new Error(`Falha ao atualizar proposta: ${proposalError.message}`);
+  }
+
+  // PASSO 2: Ativa o contrato vinculado ou cria se não existir
+  try {
+    await gerarContratoDaProposta(proposalId, leadId);
+  } catch (err: any) {
+    console.warn('Aviso ao gerenciar contrato:', err.message);
+  }
+
+  // PASSO 3: Busca os dados do Lead para popular a tabela public.profiles
+  try {
+    const profileRes = await gerarUsuarioDoLead(leadId);
+    return profileRes;
+  } catch (err: any) {
+    console.warn('Aviso ao gerar usuário:', err.message);
+    return { success: false, error: err.message };
+  }
 }
 
 /**
@@ -700,7 +719,9 @@ export const proposalAdminServices = {
   requestAiRevision,
   approveAndSendProposal,
   confirmarPagamentoProposta,
-  processarConfirmacaoPagamentoEPromocao
+  processarConfirmacaoPagamentoEPromocao,
+  gerarContratoDaProposta,
+  gerarUsuarioDoLead
 };
 
 export default proposalAdminServices;

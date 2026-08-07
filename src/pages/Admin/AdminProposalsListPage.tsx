@@ -14,7 +14,7 @@ import {
   X,
   Zap
 } from 'lucide-react'
-import { listPendingProposals, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao } from '../../services/proposalAdminServices'
+import { listPendingProposals, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao, gerarContratoDaProposta, gerarUsuarioDoLead } from '../../services/proposalAdminServices'
 import { promoverLeadParaCliente, processAllAcceptedProposals, type BatchProvisionResult } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
@@ -27,6 +27,8 @@ export default function AdminProposalsListPage() {
   const [statusFilter, setStatusFilter] = useState<string>('todos')
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [generatingUserId, setGeneratingUserId] = useState<string | null>(null)
+  const [generatingContractId, setGeneratingContractId] = useState<string | null>(null)
   const [isProcessingBatch, setIsProcessingBatch] = useState<boolean>(false)
   const [batchModalResult, setBatchModalResult] = useState<BatchProvisionResult | null>(null)
   const [promotionModalData, setPromotionModalData] = useState<{
@@ -71,9 +73,35 @@ export default function AdminProposalsListPage() {
       }))
     } catch (err: any) {
       console.error(err)
-      alert('Falha ao confirmar pagamento e promover perfil: ' + (err.message || ''))
+      alert('Falha ao confirmar pagamento: ' + (err.message || ''))
     } finally {
       setConfirmingId(null)
+    }
+  }
+
+  const handleGerarUsuario = async (proposalId: string, leadId: string) => {
+    setGeneratingUserId(proposalId)
+    try {
+      const res = await gerarUsuarioDoLead(leadId)
+      alert(`Sucesso! Usuário criado em profiles. ID: ${res.profile?.id}`)
+    } catch (err: any) {
+      console.error(err)
+      alert('Falha ao gerar usuário: ' + (err.message || ''))
+    } finally {
+      setGeneratingUserId(null)
+    }
+  }
+
+  const handleGerarContrato = async (proposalId: string, leadId: string) => {
+    setGeneratingContractId(proposalId)
+    try {
+      await gerarContratoDaProposta(proposalId, leadId)
+      alert('Sucesso! Contrato gerado/atualizado e ativado.')
+    } catch (err: any) {
+      console.error(err)
+      alert('Falha ao gerar contrato: ' + (err.message || ''))
+    } finally {
+      setGeneratingContractId(null)
     }
   }
 
@@ -370,10 +398,30 @@ export default function AdminProposalsListPage() {
                         </button>
                       </div>
                     ) : proposal.pagamento_confirmado ? (
-                      /* QUANDO PAGAMENTO CONFIRMADO: BADGE VERDE ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO */
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-space font-bold text-xs uppercase tracking-wider rounded">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                        ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO
+                      /* QUANDO PAGAMENTO CONFIRMADO: EXIBIR BADGE VERDE E BOTÕES MANUAIS */
+                      <div className="flex flex-col gap-2 items-end">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-space font-bold text-xs uppercase tracking-wider rounded">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          ✅ ENTRADA PAGA (50%)
+                        </div>
+                        <div className="flex gap-2 mt-1">
+                          <button
+                            onClick={() => handleGerarUsuario(proposal.id, proposal.lead_id)}
+                            disabled={generatingUserId === proposal.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            {generatingUserId === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                            Gerar Usuário
+                          </button>
+                          <button
+                            onClick={() => handleGerarContrato(proposal.id, proposal.lead_id)}
+                            disabled={generatingContractId === proposal.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-neon/20 hover:bg-brand-neon/30 text-brand-neon border border-brand-neon/30 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            {generatingContractId === proposal.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+                            Gerar Contrato
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       /* DEMAIS STATUS: BOTÃO REVISAR PROPOSTA */

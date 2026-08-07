@@ -17,7 +17,7 @@ import {
   ExternalLink,
   CreditCard
 } from 'lucide-react'
-import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao } from '../../services/proposalAdminServices'
+import { getProposalWithLead, requestAiRevision, approveAndSendProposal, confirmarPagamentoProposta, processarConfirmacaoPagamentoEPromocao, gerarContratoDaProposta, gerarUsuarioDoLead } from '../../services/proposalAdminServices'
 import { promoverLeadParaCliente } from '../../services/clientServices'
 import type { Proposal } from '../../types/database'
 import StatusBadge from '../../components/StatusBadge'
@@ -41,6 +41,9 @@ export default function AdminProposalDetailPage() {
   } | null>(null)
 
   const [isConfirmingPayment, setIsConfirmingPayment] = useState<boolean>(false)
+  const [generatingUserId, setGeneratingUserId] = useState<boolean>(false)
+  const [generatingContractId, setGeneratingContractId] = useState<boolean>(false)
+  const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   const handleConfirmarPagamento = async () => {
     if (!proposal) return
@@ -62,6 +65,38 @@ export default function AdminProposalDetailPage() {
       setFeedbackMessage({ type: 'error', text: err.message || 'Falha ao confirmar pagamento da proposta.' })
     } finally {
       setIsConfirmingPayment(false)
+    }
+  }
+
+  const handleGerarUsuario = async () => {
+    if (!proposal) return
+    setGeneratingUserId(true)
+    setFeedbackMessage(null)
+    try {
+      const targetLeadId = proposal.lead_id || proposal.lead?.id || proposal.id
+      const res = await gerarUsuarioDoLead(targetLeadId)
+      setFeedbackMessage({ type: 'success', text: `Sucesso! Usuário criado em profiles. ID: ${res.profile?.id}` })
+    } catch (err: any) {
+      console.error(err)
+      setFeedbackMessage({ type: 'error', text: 'Falha ao gerar usuário: ' + (err.message || '') })
+    } finally {
+      setGeneratingUserId(false)
+    }
+  }
+
+  const handleGerarContrato = async () => {
+    if (!proposal) return
+    setGeneratingContractId(true)
+    setFeedbackMessage(null)
+    try {
+      const targetLeadId = proposal.lead_id || proposal.lead?.id || proposal.id
+      await gerarContratoDaProposta(proposal.id, targetLeadId)
+      setFeedbackMessage({ type: 'success', text: 'Sucesso! Contrato gerado/atualizado e ativado.' })
+    } catch (err: any) {
+      console.error(err)
+      setFeedbackMessage({ type: 'error', text: 'Falha ao gerar contrato: ' + (err.message || '') })
+    } finally {
+      setGeneratingContractId(false)
     }
   }
 
@@ -224,24 +259,43 @@ export default function AdminProposalDetailPage() {
 
         {/* CONDICIONAL 2: PAGAMENTO CONFIRMADO & CONTRATO ATIVO */}
         {proposal.pagamento_confirmado && (
-          <div className="p-4 border border-emerald-500/30 bg-emerald-500/10 rounded-xl flex items-center justify-between shadow-xl">
+          <div className="p-4 border border-emerald-500/30 bg-emerald-500/10 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 rounded-full bg-emerald-400 shrink-0"></span>
               <span className="text-xs text-emerald-400 font-mono font-bold">
-                ✅ ENTRADA PAGA (50%) — CONTRATO ATIVADO
+                ✅ ENTRADA PAGA (50%)
               </span>
+              {proposal.pago_em && (
+                <span className="text-xs text-zinc-400 font-mono">
+                  ({new Date(proposal.pago_em).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })})
+                </span>
+              )}
             </div>
-            {proposal.pago_em && (
-              <span className="text-xs text-zinc-400 font-mono">
-                {new Date(proposal.pago_em).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
-            )}
+            
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={handleGerarUsuario}
+                disabled={generatingUserId}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {generatingUserId ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
+                Gerar Usuário
+              </button>
+              <button
+                onClick={handleGerarContrato}
+                disabled={generatingContractId}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-neon/20 hover:bg-brand-neon/30 text-brand-neon border border-brand-neon/30 text-[10px] font-mono font-bold uppercase tracking-wider rounded transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {generatingContractId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Code2 className="w-4 h-4" />}
+                Gerar Contrato
+              </button>
+            </div>
           </div>
         )}
 
